@@ -1,0 +1,103 @@
+.App {
+}
+
+.cut-preview {
+  padding: 10px;
+  margin: auto;
+  display: block;
+  height: 95%;
+}
+.logo {
+  display: inline-block;
+  padding: 10px;
+}
+.submit-button {
+  float: right;
+  height:50px;
+}
+.App-header {
+  background-color: whitesmoke;
+  min-height: 10vh;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  border-style: solid;
+  border-width: 0 0 2px 0 ;
+  border-color: darkgray;
+}
+.leftBar {
+  display: inline-block;
+  width: 3%;
+  height: 80vh;
+  background-color: gainsboro;
+}
+.cut-view {
+  align-content: center;
+  display: inline-block;
+  width: 80%;
+  height: 80vh;
+}
+.detailBar {
+  float: right;
+  width: 19.8%;
+  height: 80vh;
+  background-color: whitesmoke;
+  border-style: solid;
+  border-width: 0 0 0 2px;
+  border-color: darkgrey;
+}
+.footerBar {
+  min-height: 5vh;
+  background-color: whitesmoke;
+}
+.App-link {
+  color: #61dafb;
+}
+
+.graphic-detail {
+  display: flex;
+  border-color: darkgray;
+  border-width: 0 0 2px 0;
+  border-style: solid;
+}
+.graphic-preview {
+  margin: 10px;
+  width: 35%;
+  height: 150px;
+}
+.graphic-line-color-list {
+  padding: 10px;
+ flex-grow: 1;
+}
+.graphic-line-color {
+  margin: 5px;
+  width: 20px;
+  height: 20px;
+  background-color: aqua;
+  display: inline-block;
+}
+.graphic-line-color-mode {
+    margin: 4px;
+   vertical-align: top;
+}
+.add-graphic-detail {
+  padding: 20px;
+  display: flex;
+  align-content: center;
+  border-color: darkgray;
+  border-width: 0 0 2px 0;
+  border-style: solid;
+}
+.dialog {
+  position: absolute;
+  top: 35%;
+  left: 35%;
+  /*border-style: solid;*/
+  border-color: lightgray;
+  border-radius: 5px;
+  box-shadow: 0 0 5px 5px darkgray;
+  background-color: white;
+}
+
+.hidden {
+  visibility: hidden;
+}
