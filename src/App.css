@@ -7,9 +7,11 @@
   display: block;
   height: 95%;
 }
-.logo {
+.logo img {
   display: inline-block;
   padding: 10px;
+  padding-left: 20px;
+  width: 80px;
 }
 .submit-button {
   float: right;
@@ -17,12 +19,10 @@
 }
 .App-header {
   background-color: whitesmoke;
-  min-height: 10vh;
+  /*min-height: 10vh;*/
   font-size: calc(10px + 2vmin);
   color: white;
-  border-style: solid;
-  border-width: 0 0 2px 0 ;
-  border-color: darkgray;
+  border-bottom: 1px solid rgba(0,0,0,.15);
 }
 .leftBar {
   display: inline-block;
@@ -41,9 +41,7 @@
   width: 19.8%;
   height: 80vh;
   background-color: whitesmoke;
-  border-style: solid;
-  border-width: 0 0 0 2px;
-  border-color: darkgrey;
+  border-left: 1px solid rgba(0,0,0,.15);
 }
 .footerBar {
   min-height: 5vh;
@@ -53,11 +51,31 @@
   color: #61dafb;
 }
 
+.bottom-separator {
+  margin: 10px;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+}
+
+.configuration-view {
+  padding: 10px;
+}
+
+.configuration-header{
+  display: flex;
+  padding-bottom: 20px;
+}
+
+.configuration-header .save-and-order-button {
+  display: inline-block;
+  float: right;
+}
+.configuration-header h2 {
+  margin: 0px;
+  flex-grow: 1;
+}
+
 .graphic-detail {
   display: flex;
-  border-color: darkgray;
-  border-width: 0 0 2px 0;
-  border-style: solid;
 }
 .graphic-preview {
   margin: 10px;
@@ -68,25 +86,25 @@
   padding: 10px;
  flex-grow: 1;
 }
+.graphic-line-color-item {
+ display: flex;
+}
 .graphic-line-color {
-  margin: 5px;
-  width: 20px;
-  height: 20px;
+  margin: 4px;
+  width: calc(1.65rem + 2px);
+  height:calc(1.65rem + 2px);
   background-color: aqua;
   display: inline-block;
 }
 .graphic-line-color-mode {
     margin: 4px;
-   vertical-align: top;
 }
 .add-graphic-detail {
-  padding: 20px;
+  padding: 10px;
   display: flex;
   align-content: center;
-  border-color: darkgray;
-  border-width: 0 0 2px 0;
-  border-style: solid;
 }
+
 .dialog {
   position: absolute;
   top: 35%;
@@ -100,4 +118,57 @@
 
 .hidden {
   visibility: hidden;
+}
+
+.pretty-button:hover {
+  background-color: rgb(41, 201, 88);
+}
+
+.pretty-button:focus {
+  /*background-color: #2fea67;*/
+}
+.pretty-button {
+  color: #212529;
+  background-color: #24af4d;
+  border-color: #24af4d;
+
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /*border: 1px solid transparent;*/
+  /*border-top-color: transparent;*/
+  /*border-right-color: transparent;*/
+  /*border-bottom-color: transparent;*/
+  /*border-left-color: transparent;*/
+  padding: .375rem .75rem;
+  font-size: .9rem;
+  line-height: 1;
+  border-radius: .25rem;
+  -webkit-transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;
+  /*transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;*/
+  /*transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;*/
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;
+}
+.pretty-select {
+  display: inline-block;
+  /*width: 100%;*/
+  height: calc(1.65rem + 2px);
+  padding: .375rem 1.75rem .375rem .75rem;
+  line-height: 1;
+  color: #444;
+  /*vertical-align: middle;*/
+  background: #fff url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23373a3c' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E") no-repeat right .75rem center;
+  background-size: auto;
+  background-size: 8px 10px;
+  border: 1px solid #bbb;
+  border-radius: .25rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
