@@ -1,0 +1,58 @@
+{
+  "Wood": [
+    {
+      name: "Hickory (1/8\" Double Sided)",
+      image: "Hickory.webp"
+    },
+    {
+      name: "Hickory (1/4\" Double Sided)",
+      image: "Hickory.webp"
+    },
+    {
+      name: "Maple (1/4\" Double Sided)",
+      image: "Maple.webp"
+    },
+    {
+      name: "Cherry (1/4\" Double Sided)",
+      image: "Cherry.webp"
+    },
+    {
+      name: "Walnut (1/8\" Double Sided)",
+      image: "Walnut.webp"
+    },
+    {
+      name: "Walnut (1/4\" Double Sided)",
+      image: "Walnut.webp"
+    }
+  ],
+  "Melamine": [
+    {
+      name: "Melamine",
+      image: "Hickory.webp"
+    }
+  ],
+  "Ply Wood/MDF": [
+    {
+      name: "Birch Ply Wood",
+      image: "Hickory.webp"
+    }
+  ],
+  "Acrylic": [
+    {
+      name: "Red (Acrylic)",
+      image: "Hickory.webp"
+    },
+    {
+      name: "Blue (Acrylic)",
+      image: "Hickory.webp"
+    },
+    {
+      name: "Green (Acrylic)",
+      image: "Hickory.webp"
+    },
+    {
+      name: "Orange(Acrylic)",
+      image: "Hickory.webp"
+    }
+  ]
+}

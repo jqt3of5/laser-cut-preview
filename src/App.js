@@ -1,85 +1,136 @@
-import woodgrain from './Assets/woodgrain.jpg';
 import logo from './Assets/Craft_Closet_Logo.webp'
-import hickory from './Assets/RusticHickoryforwebsiteRECTANGLE_1800x1800.webp'
+
+// import hickory from './Assets/Hickory.webp'
+// import maple from './Assets/Maple.webp'
+// import cherry from './Assets/Cherry.webp'
+// import walnut from './Assets/Walnut.webp'
+
+import axios from 'axios';
+
 import './App.css';
+import React from "react";
 
-function ConfigurationView() {
-   return (
-      <div className={"configuration-view bottom-separator"}>
-          <div className={"configuration-header"}>
-              <h2>Details</h2>
-              <button className={"pretty-button save-and-order-button"}>Save and Order</button>
-          </div>
-          <select className={"pretty-select"}>
-              <option>Choose your material...</option>
-              <optgroup label={"1/8\" Wood"}>
-                  <option>Birch (1/8")</option>
-                  <option>Red Oak</option>
-                  <option>Walnut</option>
-                  <option>Maple</option>
-              </optgroup>
-              <optgroup label={"Acrylic"}>
-                  <option>Red</option>
-                  <option>Blue</option>
-              </optgroup>
-          </select>
-      </div>
-   )
+const ServerURL = "http://localhost:3001/"
+
+class GraphicDetail extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div className={"graphic-detail bottom-separator"}>
+                <img className="graphic-preview" src={this.props.graphicSrc}></img>
+                <div className={"graphic-line-color-list"}>
+                    <div className={"graphic-line-color-item"}>
+                        <div className={"graphic-line-color"}></div>
+                        <select className={"graphic-line-color-mode pretty-select"}>
+                            <option>Cut</option>
+                            <option>Score</option>
+                            <option>Engrave</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 }
 
-function GraphicDetail() {
-  return (
-      <div className={"graphic-detail bottom-separator"}>
-          <img className="graphic-preview"></img>
-          <div className={"graphic-line-color-list"}>
-              <div className={"graphic-line-color-item"}>
-                  <div className={"graphic-line-color"}></div>
-                  <select className={"graphic-line-color-mode pretty-select"}>
-                      <option>Cut</option>
-                      <option>Score</option>
-                      <option>Engrave</option>
-                  </select>
-              </div>
-          </div>
-      </div>
-  )}
+class App extends React.Component
+{
+    constructor(props) {
+        super(props);
+        //graphics: [{guid: {}, colors:[{color:0xff, mode:"Cut"]]
+        this.state = {projectId:"1234", materialImage: "", graphics:[], selectedGraphic:{}, materials:{}}
+    }
 
-function AddGraphicDetail() {
-    return (
-        <div className={"add-graphic-detail bottom-separator"}>
-            <input type={"file"}></input>
-        </div>
-    )
-}
+    componentDidMount() {
+        axios.post(ServerURL + this.state.projectId).then(response => {
+            axios.get(ServerURL + "materials").then(response => {
+                this.setState({materials:response.data})
+            })
+        })
+    }
 
-function App() {
-  return (
-    <div className="App">
-        <div className="App-header">
+    render()
+    {
+        return (
+            <div className="App">
+                <this.AppHeader></this.AppHeader>
+                <div className="cut-view">
+                    <img src={ServerURL + "static/" + this.state.materialImage} className="cut-preview" alt="logo" />
+                    {/*Draw cuts, scores, and engraves*/}
+                </div>
+                <div className="detailBar">
+                    <this.ConfigurationView></this.ConfigurationView>
+                    {this.state.graphics.map(graphic => {<GraphicDetail graphicSrc={graphic.guid}></GraphicDetail>})}
+                    <this.AddGraphicDetail></this.AddGraphicDetail>
+                </div>
+                {/*<div className="footerBar"></div>*/}
+            </div>
+        );
+    }
+
+    ConfigurationView = () => {
+        return (
+            <div className={"configuration-view bottom-separator"}>
+                <div className={"configuration-header"}>
+                    <h2>Details</h2>
+                    <button className={"pretty-button save-and-order-button"}>Save and Order</button>
+                </div>
+                <select className={"pretty-select"}>
+                    <option>Choose your material...</option>
+                    {
+                        Object.keys(this.state.materials).map(key =>
+                        <optgroup key={key} label={"Wood"}>
+                            {
+                                this.state.materials[key].map(o =>
+                                    <option key={o.name} onClick={(e) => this.setState(state => ({materialImage: o.image}))}>{o.name}</option>
+                                )
+                            }
+                        </optgroup>)
+                    }
+                </select>
+            </div>
+        )
+    }
+    OnFileChanged = (event) => {
+        this.setState({selectedGraphic: event.target.files[0]})
+    }
+    OnFileUpload = (event) => {
+        const formData = new FormData();
+        // Update the formData object
+        formData.append(
+            "file",
+            this.state.selectedGraphic,
+            this.state.selectedGraphic.name
+        );
+
+        // Request made to the backend api
+        // Send formData object
+        axios.post(ServerURL + "/uploadgraphic", formData).then(response => {
+
+        });
+    }
+
+    AddGraphicDetail = () => {
+        return (
+            <div className={"add-graphic-detail bottom-separator"}>
+                <input type={"file"} onChange={this.OnFileChanged}></input>
+                <button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>
+            </div>
+        )
+    }
+
+    AppHeader = () => {
+        return <div className="App-header">
             <div className="logo">
                 <a href="https://CraftCloset.com">
                     <img src={logo}></img>
                 </a>
             </div>
         </div>
-
-        <div className="cut-view">
-            <img src={hickory} className="cut-preview" alt="logo" />
-            {/*<canvas className={"cut-preview-canvas"}>*/}
-            {/**/}
-            {/*</canvas>*/}
-            {/*Draw wood*/}
-            {/*Draw cuts, scores, and engraves*/}
-        </div>
-
-        <div className="detailBar">
-            <ConfigurationView></ConfigurationView>
-            <GraphicDetail></GraphicDetail>
-            <AddGraphicDetail></AddGraphicDetail>
-        </div>
-        <div className="footerBar"></div>
-    </div>
-  );
+    }
 }
 
 export default App;
