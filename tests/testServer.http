@@ -1,0 +1,13 @@
+GET http://localhost:3001/materials
+
+###
+
+POST http://localhost:3001/1234/material
+Content-Type: application/json
+
+{
+  "materialId": "material1"
+}
+###
+
+GET http://localhost:3001/1234/

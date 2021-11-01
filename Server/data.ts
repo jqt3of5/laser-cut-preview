@@ -8,35 +8,39 @@ const assetDir = __dirname + "/Assets/"
 const uploadDir = __dirname + "/upload/"
 const materialsFile = assetDir + "materials.json"
 
-interface MaterialCategory {
+export interface MaterialCategory {
     category: string,
     materials: Material[]
 }
-interface Material  {
+export interface Material  {
     id: string,
     name: string,
     image: string
 }
 
-class Color {
+export class Color {
     color: string
     mode: string
+
+    public constructor(init?:Partial<Color>) {
+        Object.assign(this, init);
+    }
 }
-class Graphic {
+export class Graphic {
     guid: string
     colors: Color[]
     posX : number
     posY : number
-    dimX : number
-    dimY : number
+    width: number
+    height : number
 
     public constructor(init?:Partial<Graphic>) {
         Object.assign(this, init);
     }
 }
-class Project {
+export class Project {
     projectId: string
-    materialId: string
+    material:Material
     graphics: Graphic[]
 
     public constructor(init?:Partial<Project>) {
@@ -44,50 +48,73 @@ class Project {
     }
 }
 
-class Repo {
+export class Repo {
 
-    createProject(projectId) : void {
-       documentDB[projectId] = new Project({projectId: projectId, materialId:"", graphics: [] as Graphic[]})
+    public createProject(projectId) : Project {
+       documentDB[projectId] = new Project({projectId: projectId, material:undefined, graphics: [] as Graphic[]})
+        return documentDB[projectId]
     }
 
     getProject(projectId) : Promise<Project> {
         return new Promise((resolve, reject) => {
             if (documentDB[projectId] == undefined)
             {
-                reject(projectId + " not found")
+                this.createProject(projectId)
             }
-            else
-            {
-                resolve(documentDB[projectId])
-            }
+            resolve(documentDB[projectId])
         })
     }
 
-    moveGraphic(projectId : string, graphicId: string, newX:number, newY:number)
-    {
+    // translateGraphic(projectId : string, graphicId: string, newX:number, newY:number)
+    // {
+    //
+    // }
+    //
+    // resizeGraphic(projectId : string, graphicId: string, newX : number, newY:number)
+    // {
+    //
+    // }
 
+    getGraphic(projectId : string, graphicId : string) : Promise<Graphic>
+    {
+        return this.getProject(projectId).then(project => {
+           return new Promise((resolve, reject) => {
+               var graphic = project.graphics.find((value, index, obj) => {
+                  if (value.guid == graphicId)
+                  {
+                      return value
+                  }
+               })
+
+               if (graphic != undefined)
+               {
+                   resolve(graphic)
+               }
+               else
+               {}
+
+           })
+        })
+    }
+    addGraphicTo(projectId : string, graphic: Graphic) : Promise<void>
+    {
+        return this.getProject(projectId).then(proj => {
+           proj.graphics.push(graphic)
+        })
     }
 
-    resizeGraphic(projectId : string, graphicId: string, newX : number, newY:number)
+    deleteGraphicFrom(projectId : string, graphicId : string) : Promise<Project>
     {
-
+        return this.getProject(projectId).then(proj => {
+            return proj
+        })
     }
 
-    addGraphicTo(projectId : string, graphic: Graphic)
-    {
-        //TODO: the user is going to upload an image, and we then need to calculate the colors.
-    }
+    setMaterialFor(projectId, material) : Promise<Project> {
 
-    deleteGraphicFrom(projectId : string, graphicId : string)
-    {
-
-    }
-
-    setMaterialFor(projectId, materialId) : Promise<boolean> {
-        documentDB.projects[projectId].materialId = materialId
-
-        return new Promise((resolve, reject) => {
-           resolve(true)
+        return this.getProject(projectId).then(proj => {
+            proj.material = material
+            return proj
         })
     }
 
@@ -107,7 +134,4 @@ class Repo {
             })
         })
     }
-
 }
-
-module.exports = Repo

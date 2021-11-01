@@ -41,7 +41,7 @@ class App extends React.Component
     constructor(props) {
         super(props);
         //graphics: [{guid: {}, colors:[{color:0xff, mode:"Cut"]]
-        this.state = {projectId:"1234", materialImage: "", graphics:[], selectedGraphic:{}, materials:{}}
+        this.state = {project:{projectId:"1234", material: "", graphics:[]}, selectedGraphic:{}, materials:{}}
     }
 
     componentDidMount() {
@@ -85,7 +85,7 @@ class App extends React.Component
                         <optgroup key={key} label={"Wood"}>
                             {
                                 this.state.materials[key].map(o =>
-                                    <option key={o.name} onClick={(e) => this.setState(state => ({materialImage: o.image}))}>{o.name}</option>
+                                    <option key={o.name} onClick={(e) =>this.OnMaterialClicked(o, e)}>{o.name}</option>
                                 )
                             }
                         </optgroup>)
@@ -94,6 +94,12 @@ class App extends React.Component
             </div>
         )
     }
+
+    OnMaterialClicked = (material, event) => {
+        this.setState(state => ({materialImage: o.image}))
+        axios.post(ServerURL + )
+    }
+
     OnFileChanged = (event) => {
         this.setState({selectedGraphic: event.target.files[0]})
     }
