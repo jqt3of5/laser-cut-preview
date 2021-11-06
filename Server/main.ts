@@ -26,35 +26,39 @@ app.get('/', (req, res) => {
 })
 
 app.get('/materials', (req, res) => {
-    repo.getMaterials().then(materialCategories => {
+    repo.getMaterialCategories().then(materialCategories => {
         res.send(materialCategories)
     }).catch(reason => {
         res.send(reason)
     })
 })
 
+//Set the material object for the currentproject
 app.post('/:projectId/material', (req, res) => {
-    //TODO: Should probably do some kind of parsing of the body before blindly passing it to the repo
-    repo.setMaterialFor(req.params.projectId, req.body.material).then(proj => {
+    repo.setMaterialFor(req.params.projectId, req.body.materialId).then(proj => {
         res.send(proj)
     })
 })
 
+//gets the image for the graphic
 app.get("/:projectId/graphic/:imageId/image", (req, res) => {
+    //TODO: content-type header
     res.sendFile(uploadDir + req.params.imageId)
 })
 
-//Gets the details on the graphic
+//Gets the json object on the graphic
 app.get("/:projectId/graphic/:imageId", (req, res) => {
     repo.getGraphic(req.params.projectId, req.params.imageId).then(graphic => {
        res.send(graphic)
     })
 })
+//Deletes the graphic
 app.delete("/:projectId/graphic/:imageId", (req, res) => {
     repo.deleteGraphicFrom(req.params.projectId, req.params.imageId).then(project => {
         res.send(project)
     })
 })
+
 //add a new graphic
 app.post('/:projectId/graphic', (req, res) => {
     console.log(req.file)
@@ -78,7 +82,7 @@ app.post("/:projectId", (req, res) => {
 app.get("/:projectId", (req, res) => {
     repo.getProject(req.params.projectId).then(project => {
         res.send(project)
-    });
+    })
 })
 
 app.listen(port, () => {

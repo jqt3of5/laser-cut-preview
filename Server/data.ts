@@ -12,10 +12,12 @@ export interface MaterialCategory {
     category: string,
     materials: Material[]
 }
+
 export interface Material  {
+    category: string,
     id: string,
     name: string,
-    image: string
+    imageURL: string
 }
 
 export class Color {
@@ -28,6 +30,7 @@ export class Color {
 }
 export class Graphic {
     guid: string
+    url: string
     colors: Color[]
     posX : number
     posY : number
@@ -110,17 +113,37 @@ export class Repo {
         })
     }
 
-    setMaterialFor(projectId, material) : Promise<Project> {
+    setMaterialFor(projectId, materialId) : Promise<Project> {
 
         return this.getProject(projectId).then(proj => {
-            proj.material = material
-            return proj
+            return this.getMaterial(materialId).then(material => {
+                proj.material = material
+                return proj
+            })
         })
     }
 
-    getMaterials() : Promise<[MaterialCategory]> {
+    getMaterial(materialId) : Promise<Material> {
 
-        return new Promise<[MaterialCategory]>((resolve, reject) => {
+        return new Promise<Material>((resolve, reject) => {
+            this.getMaterialCategories().then(categories => {
+                for (var category of categories) {
+                    for (var material of category.materials) {
+                        if (material.id == materialId) {
+                            resolve(material)
+                        }
+                    }
+                }
+                reject(materialId + " not found")
+            }).catch(reason => {
+                reject(reason)
+            })
+        })
+    }
+
+    getMaterialCategories() : Promise<MaterialCategory[]> {
+
+        return new Promise<MaterialCategory[]>((resolve, reject) => {
             if (!fs.existsSync(materialsFile))
             {
                 reject(materialsFile + " Does not exist")

@@ -6,8 +6,10 @@ POST http://localhost:3001/1234/material
 Content-Type: application/json
 
 {
-  "materialId": "material1"
+  "materialId": "birch_ply_1_4_double"
 }
 ###
+POST http://localhost:3001/1234/
 
+###
 GET http://localhost:3001/1234/

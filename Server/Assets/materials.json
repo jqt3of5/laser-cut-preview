@@ -5,32 +5,32 @@
       {
         "id": "wood_hickory_1_8_double",
         "name": "Hickory (1/8\" Double Sided)",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       },
       {
         "id": "wood_hickory_1_4_double",
         "name": "Hickory (1/4\" Double Sided)",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       },
       {
         "id": "wood_maple_1_4_double",
         "name": "Maple (1/4\" Double Sided)",
-        "image": "Maple.webp"
+        "image": "/static/Maple.webp"
       },
       {
         "id": "wood_cherry_1_4_double",
         "name": "Cherry (1/4\" Double Sided)",
-        "image": "Cherry.webp"
+        "image": "/static/Cherry.webp"
       },
       {
         "id": "wood_walnut_1_8_double",
         "name": "Walnut (1/8\" Double Sided)",
-        "image": "Walnut.webp"
+        "image": "/static/Walnut.webp"
       },
       {
         "id": "wood_walnut_1_4_double",
         "name": "Walnut (1/4\" Double Sided)",
-        "image": "Walnut.webp"
+        "image": "/static/Walnut.webp"
       }
     ]
   },
@@ -40,7 +40,7 @@
       {
         "id": "melamine_1_4_double",
         "name": "Melamine",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       }
     ]
   },
@@ -50,7 +50,7 @@
       {
         "id": "birch_ply_1_4_double",
         "name": "Birch Ply Wood",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       }
     ]
   },
@@ -60,23 +60,23 @@
       {
         "id": "red_acrylic_1_4_double",
         "name": "Red (Acrylic)",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       },
       {
         "id": "blue_acrylic_1_4_double",
         "name": "Blue (Acrylic)",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       },
       {
         "id": "green_acrylic_1_4_double",
         "name": "Green (Acrylic)",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       },
       {
         "id": "orange_acrylic_1_4_double",
         "name": "Orange(Acrylic)",
-        "image": "Hickory.webp"
+        "image": "/static/Hickory.webp"
       }
     ]
   }
-}
+]

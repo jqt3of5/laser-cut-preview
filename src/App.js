@@ -20,7 +20,7 @@ class GraphicDetail extends React.Component {
     render() {
         return (
             <div className={"graphic-detail bottom-separator"}>
-                <img className="graphic-preview" src={this.props.graphicSrc}></img>
+                <img className="graphic-preview" src={this.props.graphicUrl}></img>
                 <div className={"graphic-line-color-list"}>
                     <div className={"graphic-line-color-item"}>
                         <div className={"graphic-line-color"}></div>
@@ -41,11 +41,11 @@ class App extends React.Component
     constructor(props) {
         super(props);
         //graphics: [{guid: {}, colors:[{color:0xff, mode:"Cut"]]
-        this.state = {project:{projectId:"1234", material: "", graphics:[]}, selectedGraphic:{}, materials:{}}
+        this.state = {project:{projectId:"1234", material: {}, graphics:[]}, selectedGraphic:{}, materials:[]}
     }
 
     componentDidMount() {
-        axios.post(ServerURL + this.state.projectId).then(response => {
+        axios.post(ServerURL + this.state.project.projectId).then(response => {
             axios.get(ServerURL + "materials").then(response => {
                 this.setState({materials:response.data})
             })
@@ -58,15 +58,18 @@ class App extends React.Component
             <div className="App">
                 <this.AppHeader></this.AppHeader>
                 <div className="cut-view">
-                    <img src={ServerURL + "static/" + this.state.materialImage} className="cut-preview" alt="logo" />
+                    <img src={ServerURL + this.state.project.material.url} className="cut-preview" alt="logo" />
                     {/*Draw cuts, scores, and engraves*/}
                 </div>
                 <div className="detailBar">
                     <this.ConfigurationView></this.ConfigurationView>
-                    {this.state.graphics.map(graphic => {<GraphicDetail graphicSrc={graphic.guid}></GraphicDetail>})}
+                    {
+                        this.state.project.graphics.map(graphic => {
+                            <GraphicDetail graphicSrc={graphic.guid}></GraphicDetail>
+                        })
+                    }
                     <this.AddGraphicDetail></this.AddGraphicDetail>
                 </div>
-                {/*<div className="footerBar"></div>*/}
             </div>
         );
     }
@@ -96,8 +99,8 @@ class App extends React.Component
     }
 
     OnMaterialClicked = (material, event) => {
-        this.setState(state => ({materialImage: o.image}))
-        axios.post(ServerURL + )
+        this.setState(state => ({project: {material: material}}))
+        axios.post(ServerURL + this.state.project.projectId + "/material", {materialId: material.id})
     }
 
     OnFileChanged = (event) => {

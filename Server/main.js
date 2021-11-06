@@ -22,29 +22,34 @@ app.get('/', function (req, res) {
     res.send('Hello World!');
 });
 app.get('/materials', function (req, res) {
-    repo.getMaterials().then(function (materialCategories) {
+    repo.getMaterialCategories().then(function (materialCategories) {
         res.send(materialCategories);
     }).catch(function (reason) {
         res.send(reason);
     });
 });
+//Set the material object for the currentproject
 app.post('/:projectId/material', function (req, res) {
-    console.log(req.body);
     repo.setMaterialFor(req.params.projectId, req.body.materialId).then(function (proj) {
         res.send(proj);
     });
 });
+//gets the image for the graphic
 app.get("/:projectId/graphic/:imageId/image", function (req, res) {
+    //TODO: content-type header
     res.sendFile(uploadDir + req.params.imageId);
 });
-//Gets the details on the graphic
+//Gets the json object on the graphic
 app.get("/:projectId/graphic/:imageId", function (req, res) {
     repo.getGraphic(req.params.projectId, req.params.imageId).then(function (graphic) {
         res.send(graphic);
     });
 });
-//TODO: Posts new details on the graphic.
-app.post("/:projectId/graphic/:imageId", function (req, res) {
+//Deletes the graphic
+app.delete("/:projectId/graphic/:imageId", function (req, res) {
+    repo.deleteGraphicFrom(req.params.projectId, req.params.imageId).then(function (project) {
+        res.send(project);
+    });
 });
 //add a new graphic
 app.post('/:projectId/graphic', function (req, res) {
