@@ -1,14 +1,13 @@
 import {ServerURL} from "./contexts/ProjectContext";
-import {Component} from "react";
-import React = require("react");
+import React, {Component} from "react";
 import {Graphic} from "../Server/data";
 
 export interface GraphicProps {
     graphic: Graphic
 }
 
-export class GraphicDetail extends Component<GraphicProps> {
-    constructor(props) {
+export class GraphicDetail extends Component<GraphicProps, any> {
+    constructor(props: GraphicProps | Readonly<GraphicProps>) {
         super(props);
     }
 

@@ -1,16 +1,23 @@
-import {Component} from "react";
-import React = require("react");
-import ProjectContext from "./ProjectContext";
+import React, {Component} from "react";
+import ProjectContext, {ServerURL} from "./ProjectContext";
+import axios from "axios";
+import {Project} from "../../Server/data";
 
-class ProjectProvider extends Component {
-   constructor(props) {
+
+export class ProjectProvider extends Component<any, Project> {
+   constructor(props : any) {
        super(props);
        this.updateState = this.updateState.bind(this)
-       this.state = {
-       }
+       this.state = {projectId:"1234", material: {id:"", category:"", name:"", url:""}, graphics:[]}
    }
 
-   updateState(values) {
+   componentDidMount() {
+       axios.get(ServerURL + "/" + this.state.projectId).then(response => {
+           this.setState(response.data)
+       })
+   }
+
+   updateState(values : any) {
        this.setState(values)
    }
 
@@ -18,7 +25,7 @@ class ProjectProvider extends Component {
        return (
            <ProjectContext.Provider value={{
                state: this.state,
-               update: this.updateState
+               setState: this.updateState
            }}>
                {this.props.children}
            </ProjectContext.Provider>
