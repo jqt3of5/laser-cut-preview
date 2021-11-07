@@ -34,8 +34,8 @@ app.get('/materials', (req, res) => {
 })
 
 //Set the material object for the currentproject
-app.post('/:projectId/material', (req, res) => {
-    repo.setMaterialFor(req.params.projectId, req.body.materialId).then(proj => {
+app.post('/:projectId/material/:materialId', (req, res) => {
+    repo.setMaterialFor(req.params.projectId, req.params.materialId).then(proj => {
         res.send(proj)
     })
 })
@@ -65,11 +65,19 @@ app.post('/:projectId/graphic', (req, res) => {
     const guid = uuid.v5()
     fs.open(uploadDir + guid, 'w', (err, fd) => {
         fs.write(fd, req.file.buffer)
+
         //TODO: Get a real width and height
         //Perhaps resize if it's too big
-        let graphic = new Graphic({guid:guid, colors:[new Color({color:"ffaabb", mode:"cut"})], posX:0, posY:0, height:100, width:100})
-        repo.addGraphicTo(req.params.projectId, graphic).then(v => {
-            res.send(graphic)
+        let graphic = new Graphic({
+            guid:guid,
+            url:`/${req.params.projectId}/graphic/${guid}/image`,
+            colors:[new Color({color:"blue", mode:"cut"}),
+                    new Color({color:"red", mode:"cut"})],
+            posX:0, posY:0,
+            height:100, width:100})
+
+        repo.addGraphicTo(req.params.projectId, graphic).then(proj => {
+            res.send(proj)
         })
     })
 })

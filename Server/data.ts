@@ -17,7 +17,7 @@ export interface Material  {
     category: string,
     id: string,
     name: string,
-    imageURL: string
+    url: string
 }
 
 export class Color {
@@ -99,10 +99,11 @@ export class Repo {
            })
         })
     }
-    addGraphicTo(projectId : string, graphic: Graphic) : Promise<void>
+    addGraphicTo(projectId : string, graphic: Graphic) : Promise<Project>
     {
         return this.getProject(projectId).then(proj => {
-           proj.graphics.push(graphic)
+            proj.graphics.push(graphic)
+            return proj
         })
     }
 

@@ -20,16 +20,18 @@ class GraphicDetail extends React.Component {
     render() {
         return (
             <div className={"graphic-detail bottom-separator"}>
-                <img className="graphic-preview" src={this.props.graphicUrl}></img>
+                <img className="graphic-preview" src={this.props.graphic.url}></img>
                 <div className={"graphic-line-color-list"}>
-                    <div className={"graphic-line-color-item"}>
-                        <div className={"graphic-line-color"}></div>
-                        <select className={"graphic-line-color-mode pretty-select"}>
-                            <option>Cut</option>
-                            <option>Score</option>
-                            <option>Engrave</option>
-                        </select>
-                    </div>
+                    {this.props.graphic.colors.map(color => {
+                        return (<div className={"graphic-line-color-item"}>
+                            <div className={"graphic-line-color"}></div>
+                            <select className={"graphic-line-color-mode pretty-select"} defaultValue={color.mode}>
+                                <option>Cut</option>
+                                <option>Score</option>
+                                <option>Engrave</option>
+                            </select>
+                        </div>)
+                    })}
                 </div>
             </div>
         )
@@ -65,7 +67,7 @@ class App extends React.Component
                     <this.ConfigurationView></this.ConfigurationView>
                     {
                         this.state.project.graphics.map(graphic => {
-                            <GraphicDetail graphicSrc={graphic.guid}></GraphicDetail>
+                            <GraphicDetail graphic={graphic}></GraphicDetail>
                         })
                     }
                     <this.AddGraphicDetail></this.AddGraphicDetail>
@@ -99,13 +101,15 @@ class App extends React.Component
     }
 
     OnMaterialClicked = (material, event) => {
-        this.setState(state => ({project: {material: material}}))
-        axios.post(ServerURL + this.state.project.projectId + "/material", {materialId: material.id})
+        axios.post(`${ServerURL}/${this.state.project.projectId}/material/${material.id}`).then(r =>
+            this.setState(state => ({project: {material: material}}))
+        )
     }
 
     OnFileChanged = (event) => {
         this.setState({selectedGraphic: event.target.files[0]})
     }
+
     OnFileUpload = (event) => {
         const formData = new FormData();
         // Update the formData object
@@ -117,8 +121,8 @@ class App extends React.Component
 
         // Request made to the backend api
         // Send formData object
-        axios.post(ServerURL + "/uploadgraphic", formData).then(response => {
-
+        axios.post(`${ServerURL}/${this.state.project.projectId}/graphic`, formData).then(response => {
+            this.setState({project: response.data})
         });
     }
 

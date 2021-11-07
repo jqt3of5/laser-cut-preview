@@ -72,6 +72,7 @@ var Repo = /** @class */ (function () {
     Repo.prototype.addGraphicTo = function (projectId, graphic) {
         return this.getProject(projectId).then(function (proj) {
             proj.graphics.push(graphic);
+            return proj;
         });
     };
     Repo.prototype.deleteGraphicFrom = function (projectId, graphicId) {
