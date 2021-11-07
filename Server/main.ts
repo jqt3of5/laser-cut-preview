@@ -14,6 +14,7 @@ const uploadDir = __dirname + "/upload/"
 const upload = multer();
 const app = express()
 const port = 3001
+
 let repo = new Repo();
 
 app.use(cors())
@@ -62,24 +63,7 @@ app.delete("/:projectId/graphic/:imageId", (req, res) => {
 //add a new graphic
 app.post('/:projectId/graphic', (req, res) => {
     console.log(req.file)
-    const guid = uuid.v5()
-    fs.open(uploadDir + guid, 'w', (err, fd) => {
-        fs.write(fd, req.file.buffer)
-
-        //TODO: Get a real width and height
-        //Perhaps resize if it's too big
-        let graphic = new Graphic({
-            guid:guid,
-            url:`/${req.params.projectId}/graphic/${guid}/image`,
-            colors:[new Color({color:"blue", mode:"cut"}),
-                    new Color({color:"red", mode:"cut"})],
-            posX:0, posY:0,
-            height:100, width:100})
-
-        repo.addGraphicTo(req.params.projectId, graphic).then(proj => {
-            res.send(proj)
-        })
-    })
+    repo.saveGraphicFor(req.params.projectId, req.file.buffer).then(proj => res.send(proj))
 })
 
 app.post("/:projectId", (req, res) => {

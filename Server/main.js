@@ -54,23 +54,7 @@ app.delete("/:projectId/graphic/:imageId", function (req, res) {
 //add a new graphic
 app.post('/:projectId/graphic', function (req, res) {
     console.log(req.file);
-    var guid = uuid.v5();
-    fs.open(uploadDir + guid, 'w', function (err, fd) {
-        fs.write(fd, req.file.buffer);
-        //TODO: Get a real width and height
-        //Perhaps resize if it's too big
-        var graphic = new data_1.Graphic({
-            guid: guid,
-            url: "/" + req.params.projectId + "/graphic/" + guid + "/image",
-            colors: [new data_1.Color({ color: "blue", mode: "cut" }),
-                new data_1.Color({ color: "red", mode: "cut" })],
-            posX: 0, posY: 0,
-            height: 100, width: 100
-        });
-        repo.addGraphicTo(req.params.projectId, graphic).then(function (proj) {
-            res.send(proj);
-        });
-    });
+    repo.saveGraphicFor(req.params.projectId, req.file.buffer).then(function (proj) { return res.send(proj); });
 });
 app.post("/:projectId", function (req, res) {
     var project = repo.createProject(req.params.projectId);

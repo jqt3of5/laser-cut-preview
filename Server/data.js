@@ -5,46 +5,40 @@ var fs = require("fs");
 var uuid = require("uuid");
 //{projects:{"" : {guid:"", materialId: "", graphics:[{posX:0, posY:0, dimX:0, dimY:0, guid:"", colors:[{color:"", mode:""}] }
 var documentDB = { projects: {} };
-var assetDir = __dirname + "/Assets/";
-var uploadDir = __dirname + "/upload/";
-var materialsFile = assetDir + "materials.json";
-var Color = /** @class */ (function () {
-    function Color(init) {
+const assetDir = __dirname + "/Assets/";
+const uploadDir = __dirname + "/upload/";
+const materialsFile = assetDir + "materials.json";
+class Color {
+    constructor(init) {
         Object.assign(this, init);
     }
-    return Color;
-}());
+}
 exports.Color = Color;
-var Graphic = /** @class */ (function () {
-    function Graphic(init) {
+class Graphic {
+    constructor(init) {
         Object.assign(this, init);
     }
-    return Graphic;
-}());
+}
 exports.Graphic = Graphic;
-var Project = /** @class */ (function () {
-    function Project(init) {
+class Project {
+    constructor(init) {
         Object.assign(this, init);
     }
-    return Project;
-}());
+}
 exports.Project = Project;
-var Repo = /** @class */ (function () {
-    function Repo() {
-    }
-    Repo.prototype.createProject = function (projectId) {
-        documentDB[projectId] = new Project({ projectId: projectId, material: undefined, graphics: [] });
+class Repo {
+    createProject(projectId) {
+        documentDB[projectId] = new Project({ projectId: projectId, material: { url: "", name: "none", id: "", category: "none" }, graphics: [] });
         return documentDB[projectId];
-    };
-    Repo.prototype.getProject = function (projectId) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
+    }
+    getProject(projectId) {
+        return new Promise((resolve, reject) => {
             if (documentDB[projectId] == undefined) {
-                _this.createProject(projectId);
+                this.createProject(projectId);
             }
             resolve(documentDB[projectId]);
         });
-    };
+    }
     // translateGraphic(projectId : string, graphicId: string, newX:number, newY:number)
     // {
     //
@@ -54,10 +48,10 @@ var Repo = /** @class */ (function () {
     // {
     //
     // }
-    Repo.prototype.getGraphic = function (projectId, graphicId) {
-        return this.getProject(projectId).then(function (project) {
-            return new Promise(function (resolve, reject) {
-                var graphic = project.graphics.find(function (value, index, obj) {
+    getGraphic(projectId, graphicId) {
+        return this.getProject(projectId).then(project => {
+            return new Promise((resolve, reject) => {
+                var graphic = project.graphics.find((value, index, obj) => {
                     if (value.guid == graphicId) {
                         return value;
                     }
@@ -68,61 +62,82 @@ var Repo = /** @class */ (function () {
                 else { }
             });
         });
-    };
-    Repo.prototype.addGraphicTo = function (projectId, graphic) {
-        return this.getProject(projectId).then(function (proj) {
+    }
+    saveGraphicFor(projectId, buffer) {
+        const guid = uuid.v4();
+        //TODO: ensure uploadDir exists
+        return new Promise((resolve, reject) => {
+            fs.open(uploadDir + guid, 'w', (err, fd) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                fs.writeSync(fd, buffer);
+                //TODO: Get a real width and height
+                //Perhaps resize if it's too big
+                let graphic = new Graphic({
+                    guid: guid,
+                    url: `/${projectId}/graphic/${guid}/image`,
+                    colors: [new Color({ color: "blue", mode: "cut" }),
+                        new Color({ color: "red", mode: "cut" })],
+                    posX: 0, posY: 0,
+                    height: 100, width: 100
+                });
+                this.addGraphicTo(projectId, graphic).then(proj => {
+                    resolve(proj);
+                });
+            });
+        });
+    }
+    addGraphicTo(projectId, graphic) {
+        return this.getProject(projectId).then(proj => {
             proj.graphics.push(graphic);
             return proj;
         });
-    };
-    Repo.prototype.deleteGraphicFrom = function (projectId, graphicId) {
-        return this.getProject(projectId).then(function (proj) {
+    }
+    deleteGraphicFrom(projectId, graphicId) {
+        return this.getProject(projectId).then(proj => {
             return proj;
         });
-    };
-    Repo.prototype.setMaterialFor = function (projectId, materialId) {
-        var _this = this;
-        return this.getProject(projectId).then(function (proj) {
-            return _this.getMaterial(materialId).then(function (material) {
+    }
+    setMaterialFor(projectId, materialId) {
+        return this.getProject(projectId).then(proj => {
+            return this.getMaterial(materialId).then(material => {
                 proj.material = material;
                 return proj;
             });
         });
-    };
-    Repo.prototype.getMaterial = function (materialId) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.getMaterialCategories().then(function (categories) {
-                for (var _i = 0, categories_1 = categories; _i < categories_1.length; _i++) {
-                    var category = categories_1[_i];
-                    for (var _a = 0, _b = category.materials; _a < _b.length; _a++) {
-                        var material = _b[_a];
+    }
+    getMaterial(materialId) {
+        return new Promise((resolve, reject) => {
+            this.getMaterialCategories().then(categories => {
+                for (var category of categories) {
+                    for (var material of category.materials) {
                         if (material.id == materialId) {
                             resolve(material);
                         }
                     }
                 }
                 reject(materialId + " not found");
-            }).catch(function (reason) {
+            }).catch(reason => {
                 reject(reason);
             });
         });
-    };
-    Repo.prototype.getMaterialCategories = function () {
-        return new Promise(function (resolve, reject) {
+    }
+    getMaterialCategories() {
+        return new Promise((resolve, reject) => {
             if (!fs.existsSync(materialsFile)) {
                 reject(materialsFile + " Does not exist");
                 return;
             }
-            fs.open(materialsFile, 'r', function (err, fd) {
-                fs.readFile(fd, function (err, buffer) {
-                    var categories = JSON.parse(buffer);
+            fs.open(materialsFile, 'r', (err, fd) => {
+                fs.readFile(fd, (err, buffer) => {
+                    let categories = JSON.parse(buffer);
                     resolve(categories);
                 });
             });
         });
-    };
-    return Repo;
-}());
+    }
+}
 exports.Repo = Repo;
 //# sourceMappingURL=data.js.map

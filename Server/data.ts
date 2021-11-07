@@ -54,7 +54,7 @@ export class Project {
 export class Repo {
 
     public createProject(projectId) : Project {
-       documentDB[projectId] = new Project({projectId: projectId, material:undefined, graphics: [] as Graphic[]})
+       documentDB[projectId] = new Project({projectId: projectId, material:{url:"", name:"none", id:"", category:"none"} as Material, graphics: [] as Graphic[]})
         return documentDB[projectId]
     }
 
@@ -99,6 +99,35 @@ export class Repo {
            })
         })
     }
+
+    saveGraphicFor(projectId : string, buffer : Buffer) : Promise<Project> {
+        const guid = uuid.v4()
+        //TODO: ensure uploadDir exists
+        return new Promise<Project>((resolve, reject) => {
+            fs.open(uploadDir + guid, 'w', (err, fd) => {
+                if (err) {
+                    console.log(err)
+                    return
+                }
+                fs.writeSync(fd, buffer )
+
+                //TODO: Get a real width and height
+                //Perhaps resize if it's too big
+                let graphic = new Graphic({
+                    guid:guid,
+                    url:`/${projectId}/graphic/${guid}/image`,
+                    colors:[new Color({color:"blue", mode:"cut"}),
+                        new Color({color:"red", mode:"cut"})],
+                    posX:0, posY:0,
+                    height:100, width:100})
+
+                this.addGraphicTo(projectId, graphic).then(proj => {
+                    resolve(proj)
+                })
+            })
+        })
+    }
+
     addGraphicTo(projectId : string, graphic: Graphic) : Promise<Project>
     {
         return this.getProject(projectId).then(proj => {
@@ -158,4 +187,6 @@ export class Repo {
             })
         })
     }
+
+
 }
