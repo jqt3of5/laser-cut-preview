@@ -28,37 +28,47 @@ app.get('/materials', (req, res) => {
         res.send(reason);
     });
 });
-//Set the material object for the currentproject
-app.post('/:projectId/material/:materialId', (req, res) => {
-    repo.setMaterialFor(req.params.projectId, req.params.materialId).then(proj => {
-        res.send(proj);
-    });
-});
+//
+// //Set the material object for the currentproject
+// app.post('/:projectId/material/:materialId', (req, res) => {
+//     repo.setMaterialFor(req.params.projectId, req.params.materialId).then(proj => {
+//         res.send(proj)
+//     })
+// })
 //gets the image for the graphic
-app.get("/:projectId/graphic/:imageId/image", (req, res) => {
+app.get("/graphic/:imageId/image", (req, res) => {
     //TODO: content-type header
     res.sendFile(uploadDir + req.params.imageId);
 });
-//Gets the json object on the graphic
-app.get("/:projectId/graphic/:imageId", (req, res) => {
-    repo.getGraphic(req.params.projectId, req.params.imageId).then(graphic => {
+//
+// //Gets the json object on the graphic
+// app.get("/:projectId/graphic/:imageId", (req, res) => {
+//     repo.getGraphic(req.params.projectId, req.params.imageId).then(graphic => {
+//        res.send(graphic)
+//     })
+// })
+//
+// //Deletes the graphic
+// app.delete("/:projectId/graphic/:imageId", (req, res) => {
+//     repo.deleteGraphicFrom(req.params.projectId, req.params.imageId).then(project => {
+//         res.send(project)
+//     })
+// })
+//upload a new graphic and perform the processing
+app.post('/graphic', (req, res) => {
+    console.log(req.file);
+    repo.saveGraphic(req.file.buffer).then(graphic => {
         res.send(graphic);
     });
 });
-//Deletes the graphic
-app.delete("/:projectId/graphic/:imageId", (req, res) => {
-    repo.deleteGraphicFrom(req.params.projectId, req.params.imageId).then(project => {
-        res.send(project);
-    });
-});
-//add a new graphic
-app.post('/:projectId/graphic', (req, res) => {
-    console.log(req.file);
-    repo.saveGraphicFor(req.params.projectId, req.file.buffer).then(proj => res.send(proj));
+app.post("/:projectId/save", (req, res) => {
+    //TODO: Validate project data is correct
+    repo.saveProject(req.body).then(project => res.send(project));
 });
 app.post("/:projectId", (req, res) => {
-    var project = repo.createProject(req.params.projectId);
-    res.send(project);
+    repo.saveProject(req.body).then(project => {
+        res.send(project);
+    });
 });
 app.get("/:projectId", (req, res) => {
     repo.getProject(req.params.projectId).then(project => {

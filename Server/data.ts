@@ -1,3 +1,5 @@
+import {Project, Graphic, Color, MaterialCategory, Material, UploadedFile} from "../src/common/data";
+
 var fs = require("fs")
 var uuid = require("uuid")
 
@@ -8,53 +10,10 @@ const assetDir = __dirname + "/Assets/"
 const uploadDir = __dirname + "/upload/"
 const materialsFile = assetDir + "materials.json"
 
-export interface MaterialCategory {
-    category: string,
-    materials: Material[]
-}
-
-export interface Material  {
-    category: string,
-    id: string,
-    name: string,
-    url: string
-}
-
-export class Color {
-    color: string
-    mode: string
-
-    public constructor(init?:Partial<Color>) {
-        Object.assign(this, init);
-    }
-}
-export class Graphic {
-    guid: string
-    url: string
-    colors: Color[]
-    posX : number
-    posY : number
-    width: number
-    height : number
-
-    public constructor(init?:Partial<Graphic>) {
-        Object.assign(this, init);
-    }
-}
-export class Project {
-    projectId: string
-    material:Material
-    graphics: Graphic[]
-
-    public constructor(init?:Partial<Project>) {
-        Object.assign(this, init);
-    }
-}
-
 export class Repo {
 
-    public createProject(projectId) : Project {
-       documentDB[projectId] = new Project({projectId: projectId, material:{url:"", name:"none", id:"", category:"none"} as Material, graphics: [] as Graphic[]})
+    createProject(projectId) : Project {
+       documentDB[projectId] = new Project(projectId, {url:"", name:"none", id:"", category:"none"}, [])
         return documentDB[projectId]
     }
 
@@ -68,108 +27,107 @@ export class Repo {
         })
     }
 
-    // translateGraphic(projectId : string, graphicId: string, newX:number, newY:number)
-    // {
-    //
-    // }
-    //
-    // resizeGraphic(projectId : string, graphicId: string, newX : number, newY:number)
-    // {
-    //
-    // }
-
-    getGraphic(projectId : string, graphicId : string) : Promise<Graphic>
-    {
-        return this.getProject(projectId).then(project => {
-           return new Promise((resolve, reject) => {
-               var graphic = project.graphics.find((value, index, obj) => {
-                  if (value.guid == graphicId)
-                  {
-                      return value
-                  }
-               })
-
-               if (graphic != undefined)
-               {
-                   resolve(graphic)
-               }
-               else
-               {}
-
-           })
+    saveProject(project : Project) : Promise<Project> {
+        documentDB[project.projectId] = project
+        return new Promise<Project>((resolve, reject) => {
+            resolve(project)
         })
     }
 
-    saveGraphicFor(projectId : string, buffer : Buffer) : Promise<Project> {
+    // getGraphic(projectId : string, graphicId : string) : Promise<Graphic>
+    // {
+    //     return this.getProject(projectId).then(project => {
+    //        return new Promise((resolve, reject) => {
+    //            var graphic = project.graphics.find((value, index, obj) => {
+    //               if (value.guid == graphicId)
+    //               {
+    //                   return value
+    //               }
+    //            })
+    //
+    //            if (graphic != undefined)
+    //            {
+    //                resolve(graphic)
+    //            }
+    //            else
+    //            {}
+    //
+    //        })
+    //     })
+    // }
+
+    saveGraphic(file: UploadedFile) : Promise<Graphic> {
         const guid = uuid.v4()
         //TODO: ensure uploadDir exists
-        return new Promise<Project>((resolve, reject) => {
+        return new Promise<Graphic>((resolve, reject) => {
             fs.open(uploadDir + guid, 'w', (err, fd) => {
                 if (err) {
                     console.log(err)
                     return
                 }
-                fs.writeSync(fd, buffer )
+                fs.writeSync(fd, file.buffer)
 
                 //TODO: Get a real width and height
                 //Perhaps resize if it's too big
-                let graphic = new Graphic({
+                let graphic = {
                     guid:guid,
-                    url:`/${projectId}/graphic/${guid}/image`,
-                    colors:[new Color({color:"blue", mode:"cut"}),
-                        new Color({color:"red", mode:"cut"})],
+                    type: file.mimetype,
+                    name: file.originalname,
+                    url:`/graphic/${guid}/image`,
+                    colors:
+                        [
+                            {color:"blue", mode:"cut"},
+                            {color:"red", mode:"cut"}
+                        ],
                     posX:0, posY:0,
-                    height:100, width:100})
-
-                this.addGraphicTo(projectId, graphic).then(proj => {
-                    resolve(proj)
-                })
+                    height:100, width:100}
+                resolve(graphic)
             })
         })
     }
 
-    addGraphicTo(projectId : string, graphic: Graphic) : Promise<Project>
-    {
-        return this.getProject(projectId).then(proj => {
-            proj.graphics.push(graphic)
-            return proj
-        })
-    }
+    // addGraphicTo(projectId : string, graphic: Graphic) : Promise<Project>
+    // {
+    //     return this.getProject(projectId).then(proj => {
+    //         proj.graphics.push(graphic)
+    //         return proj
+    //     })
+    // }
+    //
+    // deleteGraphicFrom(projectId : string, graphicId : string) : Promise<Project>
+    // {
+    //     return this.getProject(projectId).then(proj => {
+    //         return proj
+    //     })
+    // }
 
-    deleteGraphicFrom(projectId : string, graphicId : string) : Promise<Project>
-    {
-        return this.getProject(projectId).then(proj => {
-            return proj
-        })
-    }
-
-    setMaterialFor(projectId, materialId) : Promise<Project> {
-
-        return this.getProject(projectId).then(proj => {
-            return this.getMaterial(materialId).then(material => {
-                proj.material = material
-                return proj
-            })
-        })
-    }
-
-    getMaterial(materialId) : Promise<Material> {
-
-        return new Promise<Material>((resolve, reject) => {
-            this.getMaterialCategories().then(categories => {
-                for (var category of categories) {
-                    for (var material of category.materials) {
-                        if (material.id == materialId) {
-                            resolve(material)
-                        }
-                    }
-                }
-                reject(materialId + " not found")
-            }).catch(reason => {
-                reject(reason)
-            })
-        })
-    }
+    // setMaterialFor(projectId, materialId) : Promise<Project> {
+    //
+    //     return this.getProject(projectId).then(proj => {
+    //         return this.getMaterial(materialId).then(material => {
+    //             proj.material = material
+    //             return proj
+    //         })
+    //     })
+    // }
+    //
+    // getMaterial(materialId) : Promise<Material> {
+    //
+    //     return new Promise<Material>((resolve, reject) => {
+    //         this.getMaterialCategories().then(categories => {
+    //             for (var category of categories) {
+    //                 for (var material of category.materials) {
+    //                     if (material.id == materialId) {
+    //                         resolve(material)
+    //                     }
+    //                 }
+    //             }
+    //             reject(materialId + " not found")
+    //         }).catch(reason => {
+    //             reject(reason)
+    //         })
+    //     })
+    // }
 
     getMaterialCategories() : Promise<MaterialCategory[]> {
 

@@ -1,4 +1,4 @@
-import {MaterialCategory} from "../../Server/data";
+import {MaterialCategory} from "../common/data";
 import axios from "axios";
 
 const ServerURL = "http://localhost:3001"

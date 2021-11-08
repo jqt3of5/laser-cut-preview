@@ -1,7 +1,13 @@
 .App {
 }
 
-.cut-preview {
+.cut-material {
+  padding: 10px;
+  margin: auto;
+  display: block;
+  height: 95%;
+}
+.cut-graphic{
   padding: 10px;
   margin: auto;
   display: block;
