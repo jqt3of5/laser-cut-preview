@@ -4,12 +4,11 @@ import logo from './Assets/Craft_Closet_Logo.webp'
 import axios from 'axios';
 
 import './App.css';
-import ProjectContext, {ServerURL} from "./contexts/ProjectContext";
+import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component} from "react";
 import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
 import {Graphic, Material, MaterialCategory, Project} from "./common/data";
-import { ProjectProvider } from './contexts/ProjectProvider';
 import {PrettyButton} from "./PrettyButton";
 
 

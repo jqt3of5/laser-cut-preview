@@ -1,5 +1,5 @@
 import React, {Component, } from "react";
-import ProjectContext, {ServerURL} from "./contexts/ProjectContext";
+import {ServerURL} from "./contexts/ProjectRepo";
 import {Graphic, Project} from "./common/data";
 
 export interface CutViewProps {

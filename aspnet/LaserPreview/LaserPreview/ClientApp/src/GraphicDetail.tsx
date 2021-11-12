@@ -1,4 +1,4 @@
-import ProjectContext, {ServerURL} from "./contexts/ProjectContext";
+import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component, ReactEventHandler, SyntheticEvent} from "react";
 import {ColorMode, Graphic, Project} from "./common/data";
 
