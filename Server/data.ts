@@ -1,10 +1,10 @@
-import {Project, Graphic, Color, MaterialCategory, Material, UploadedFile} from "../src/common/data";
+import {Project, Graphic, ColorMode, MaterialCategory, Material, UploadedFile} from "../src/common/data";
 
 var fs = require("fs")
 var uuid = require("uuid")
 
 //{projects:{"" : {guid:"", materialId: "", graphics:[{posX:0, posY:0, dimX:0, dimY:0, guid:"", colors:[{color:"", mode:""}] }
-var documentDB = {projects: {}}
+var documentDB = {projects: {}, graphics:{} }
 
 const assetDir = __dirname + "/Assets/"
 const uploadDir = __dirname + "/upload/"
@@ -13,22 +13,22 @@ const materialsFile = assetDir + "materials.json"
 export class Repo {
 
     createProject(projectId) : Project {
-       documentDB[projectId] = new Project(projectId, {url:"", name:"none", id:"", category:"none"}, [])
-        return documentDB[projectId]
+       documentDB.projects[projectId] = new Project(projectId, {url:"", name:"none", id:"", category:"none"}, [])
+        return documentDB.projects[projectId]
     }
 
     getProject(projectId) : Promise<Project> {
         return new Promise((resolve, reject) => {
-            if (documentDB[projectId] == undefined)
+            if (documentDB.projects[projectId] == undefined)
             {
                 this.createProject(projectId)
             }
-            resolve(documentDB[projectId])
+            resolve(documentDB.projects[projectId])
         })
     }
 
     saveProject(project : Project) : Promise<Project> {
-        documentDB[project.projectId] = project
+        documentDB.projects[project.projectId] = project
         return new Promise<Project>((resolve, reject) => {
             resolve(project)
         })
@@ -71,18 +71,30 @@ export class Repo {
                 //Perhaps resize if it's too big
                 let graphic = {
                     guid:guid,
-                    type: file.mimetype,
+                    mimetype: file.mimetype,
                     name: file.originalname,
                     url:`/graphic/${guid}/image`,
-                    colors:
-                        [
-                            {color:"blue", mode:"cut"},
-                            {color:"red", mode:"cut"}
+                    colorModes: [
+                            {color:"blue", mode:"cut", guid: guid, url:`/graphic/${guid}/image`},
+                            {color:"red", mode:"cut", guid:guid, url:`/graphic/${guid}/image`}
                         ],
                     posX:0, posY:0,
                     height:100, width:100}
+
+                documentDB.graphics[guid] = graphic
                 resolve(graphic)
             })
+        })
+    }
+    getGraphic(imageId : string) : Promise<Graphic> {
+        return new Promise<Graphic>((resolve, reject)=> {
+            let graphic = documentDB.graphics[imageId]
+            if (graphic == undefined)
+            {
+                reject(`graphic with Id ${imageId} not found`)
+                return
+            }
+           resolve(graphic)
         })
     }
 

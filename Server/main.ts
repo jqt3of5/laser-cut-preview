@@ -44,7 +44,9 @@ app.get('/materials', (req, res) => {
 //gets the image for the graphic
 app.get("/graphic/:imageId/image", (req, res) => {
     //TODO: content-type header
-    res.sendFile(uploadDir + req.params.imageId)
+    repo.getGraphic(req.params.imageId).then(graphic => {
+        res.sendFile(uploadDir + graphic.guid, {headers:{"content-type": graphic.mimetype}})
+    })
 })
 //
 // //Gets the json object on the graphic
@@ -63,7 +65,13 @@ app.get("/graphic/:imageId/image", (req, res) => {
 
 //upload a new graphic and perform the processing
 app.post('/graphic', (req, res) => {
-    console.log(req.file)
+
+    if (req.file.mimetype != "image/svg+xml" && req.file.mimetype != "image/pdf")
+    {
+        res.statusCode = 402
+        res.send("File type " + req.file.mimetype + " not supported")
+        return
+    }
     repo.saveGraphic(req.file).then(graphic => {
         res.send(graphic)
     })

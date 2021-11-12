@@ -3,34 +3,34 @@
     "category": "Wood",
     "materials": [
       {
-        "id": "wood_hickory_1_8_double",
-        "name": "Hickory (1/8\" Double Sided)",
-        "url": "/static/Hickory.webp"
+        "id": "wood_ash_1_8_double",
+        "name": "Ash (1/8\" Double Sided)",
+        "url": "/static/Ash.jpeg"
       },
       {
-        "id": "wood_hickory_1_4_double",
-        "name": "Hickory (1/4\" Double Sided)",
-        "url": "/static/Hickory.webp"
+        "id": "wood_bamboo_1_4_double",
+        "name": "Bamboo (1/4\" Double Sided)",
+        "url": "/static/bamboo.jpeg"
       },
       {
         "id": "wood_maple_1_4_double",
         "name": "Maple (1/4\" Double Sided)",
-        "url": "/static/Maple.webp"
+        "url": "/static/maple.jpeg"
       },
       {
         "id": "wood_cherry_1_4_double",
         "name": "Cherry (1/4\" Double Sided)",
-        "url": "/static/Cherry.webp"
+        "url": "/static/Cherry.jpeg"
       },
       {
         "id": "wood_walnut_1_8_double",
         "name": "Walnut (1/8\" Double Sided)",
-        "url": "/static/Walnut.webp"
+        "url": "/static/Walnut.jpeg"
       },
       {
         "id": "wood_walnut_1_4_double",
         "name": "Walnut (1/4\" Double Sided)",
-        "url": "/static/Walnut.webp"
+        "url": "/static/Walnut.jpeg"
       }
     ]
   },
@@ -40,7 +40,7 @@
       {
         "id": "melamine_1_4_double",
         "name": "Melamine",
-        "url": "/static/Hickory.webp"
+        "url": "/static/white melamine.jpeg"
       }
     ]
   },
@@ -50,7 +50,7 @@
       {
         "id": "birch_ply_1_4_double",
         "name": "Birch Ply Wood",
-        "url": "/static/Hickory.webp"
+        "url": "/static/mdf.jpeg"
       }
     ]
   },
@@ -60,21 +60,6 @@
       {
         "id": "red_acrylic_1_4_double",
         "name": "Red (Acrylic)",
-        "url": "/static/Hickory.webp"
-      },
-      {
-        "id": "blue_acrylic_1_4_double",
-        "name": "Blue (Acrylic)",
-        "url": "/static/Hickory.webp"
-      },
-      {
-        "id": "green_acrylic_1_4_double",
-        "name": "Green (Acrylic)",
-        "url": "/static/Hickory.webp"
-      },
-      {
-        "id": "orange_acrylic_1_4_double",
-        "name": "Orange(Acrylic)",
         "url": "/static/Hickory.webp"
       }
     ]

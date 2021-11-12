@@ -10,6 +10,8 @@ import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
 import {Graphic, Material, MaterialCategory, Project} from "./common/data";
 import { ProjectProvider } from './contexts/ProjectProvider';
+import {PrettyButton} from "./PrettyButton";
+
 
 interface AppState {
     selectedGraphic: any,
@@ -58,42 +60,62 @@ class App extends Component<AppProps, AppState>
                             <img src={logo}></img>
                         </a>
                     </div>
+                    <PrettyButton className={"save-and-order-button"}>Save and Order</PrettyButton>
                 </div>
 
-                <CutView project={this.state.project}/>
+                <div className={"App-content"}>
+                    <CutView project={this.state.project}/>
 
-                <div className="detailBar">
-                    <div className={"configuration-view bottom-separator"}>
-                        <div className={"configuration-header"}>
-                            <h2>Details</h2>
-                            <button className={"pretty-button save-and-order-button"}>Save and Order</button>
+                    <div className="detailBar">
+                        <div className={"configuration-view bottom-separator"}>
+                            <div className={"configuration-header"}>
+                                <h2>Details</h2>
+                            </div>
+                            <select className={"pretty-select"} value={this.state.project.material.id}>
+                                <option>Choose your material...</option>
+                                {
+                                    this.state.materials.map(category =>
+                                        <optgroup key={category.category} label={category.category}>
+                                            {
+                                                category.materials.map(material =>
+                                                    <option key={material.id} value={material.id} onClick={(e) => this.OnMaterialClicked(material)}>{material.name}</option>
+                                                )
+                                            }
+                                        </optgroup>)
+                                }
+                            </select>
                         </div>
-                        <select className={"pretty-select"} value={this.state.project.material.id}>
-                            <option>Choose your material...</option>
-                            {
-                                this.state.materials.map(category =>
-                                    <optgroup key={category.category} label={category.category}>
-                                        {
-                                            category.materials.map(material =>
-                                                <option key={material.id} value={material.id} onClick={(e) => this.OnMaterialClicked(material)}>{material.name}</option>
-                                            )
-                                        }
-                                    </optgroup>)
-                            }
-                        </select>
-                    </div>
 
-                    {
-                        this.state.project.graphics.map((graphic : Graphic) => <GraphicDetail key={graphic.guid} graphic={graphic} project={this.state.project} updateProject={this.state.updateProject}/>)
-                    }
+                        <div className={"add-graphic-detail bottom-separator"}>
+                            <input type={"file"} accept={".pdf, .svg"} onChange={this.OnFileChanged}/>
+                            <button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>
+                        </div>
 
-                    <div className={"add-graphic-detail bottom-separator"}>
-                        <input type={"file"} onChange={this.OnFileChanged}/>
-                        <button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>
+                        {
+                            this.state.project.graphics.map((graphic : Graphic) => <GraphicDetail key={graphic.guid} graphic={graphic} onChange={this.OnGraphicChanged} onDelete={this.OnGraphicDelete}/>)
+                        }
                     </div>
                 </div>
+
             </div>
         );
+    }
+
+    OnGraphicDelete = (graphicToDelete : Graphic) => {
+        let project = {...this.state.project, graphics: this.state.project.graphics.filter(graphic => {
+                return graphic != graphicToDelete
+            })}
+        this.state.updateProject(project)
+    }
+    OnGraphicChanged = (oldGraphic : Graphic, newGraphic : Graphic) => {
+        let project = {...this.state.project, graphics: this.state.project.graphics.map(graphic => {
+           if (oldGraphic == graphic)
+           {
+               return newGraphic
+           }
+           return graphic
+        })}
+        this.state.updateProject(project)
     }
 
     OnMaterialClicked = (material : Material) => {

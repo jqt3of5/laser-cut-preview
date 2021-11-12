@@ -19,19 +19,22 @@ export interface Material  {
     url: string
 }
 
-export class Color {
-    constructor(
+export class ColorMode {
+    constructor (
         public color: string,
-        public mode: string) {}
-
+        public guid: string,
+        public url: string,
+        public mode: string
+    ) {}
 }
+
 export class Graphic {
     constructor(
         public guid: string,
         public name: string,
-        public type: string,
+        public mimetype: string,
         public url: string,
-        public colors: Color[],
+        public colorModes: ColorMode[],
         public posX : number,
         public posY : number,
         public width: number,
