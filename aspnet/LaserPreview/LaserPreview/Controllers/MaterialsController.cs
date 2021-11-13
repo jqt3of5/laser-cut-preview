@@ -1,26 +1,42 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Text.Json;
 using LaserPreview.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace LaserPreview.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class MaterialsController
+    public class MaterialsController : Controller
     {
+        private MaterialCategory[] _categories;
+        public MaterialsController()
+        {
+            var json = System.IO.File.ReadAllText("Models/Assets/materials.json");
+            _categories = JsonSerializer.Deserialize<MaterialCategory[]>(json);  
+        }
+        
         [HttpGet]
         public MaterialCategory [] GetMaterials()
         {
-            //TODO: Perhaps refactor this into a repo?
-            var json = File.ReadAllText("Models/Assets/materials.json");
-            return JsonSerializer.Deserialize<MaterialCategory[]>(json);
+            return _categories;
         }
 
-        public Stream GetMaterialImage(string materialId)
+        [HttpGet("{materialId}")]
+        public ActionResult<Stream> GetMaterialImage(string materialId)
         {
-            //TODO: open the material image file and return it.     
-            //TODO: Certainly we need to set the content type for this to work right. 
+            var material = _categories.SelectMany(cat => cat.materials).FirstOrDefault(mat => mat.id == materialId);
+            if (material == null)
+            {
+                return NotFound($"Could not find material with Id: {materialId}");
+            }
+            
+            var stream = System.IO.File.OpenRead($"Models/Assets/{material.fileName}");
+
+            HttpContext.Response.Headers["Content-Type"] = "image/jpg";
+            return Ok(stream);
         }
     }
 }

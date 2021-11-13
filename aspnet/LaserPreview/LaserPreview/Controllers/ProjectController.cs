@@ -21,13 +21,13 @@ namespace LaserPreview.Controllers
             _repo = repo;
         }
 
-        [HttpGet("/{projectId}")]
+        [HttpGet("{projectId}")]
         public Project GetProject(string projectId)
         {
             return _repo.GetProject(projectId);
         }
 
-        [HttpPost("/{projectId}")]
+        [HttpPost("{projectId}")]
         public Project SaveProject([FromBody] Project project)
         {
             return _repo.SaveProject(project);

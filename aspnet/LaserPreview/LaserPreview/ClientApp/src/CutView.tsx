@@ -33,7 +33,7 @@ export class CutView extends Component<CutViewProps>
           })
        })
 
-        return this.loadImage(this.props.project.material.url).then(background => {
+        return this.loadImage(`/materials/${this.props.project.material.id}`).then(background => {
             //Update the canvas dimensions to bethe same as the material image.
             //this way it doesn't look terrible.
             let originPx = 0

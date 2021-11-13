@@ -28,10 +28,10 @@ class App extends Component<AppProps, AppState>
     constructor(props: AppProps | Readonly<AppProps>) {
         super(props);
         this.state = {selectedGraphic:{}, materials:[],
-            project: {projectId: "12345", material: {id: "", category: "", name: "", url: ""}, graphics: []},
+            project: {projectId: "12345", material: {id: "", category: "", name: ""}, graphics: []},
             updateProject: (project: Project) => {
                 this.setState({project: project}, () => {
-                    axios.post(ServerURL + "/" + this.state.project.projectId, project)
+                    axios.post(ServerURL + "/project/" + this.state.project.projectId, project)
                         .then(response => {
                             this.setState({project: response.data})
                         })
@@ -40,7 +40,7 @@ class App extends Component<AppProps, AppState>
     }
 
     componentDidMount() {
-        axios.get(ServerURL + "/" + this.state.project.projectId).then(response => {
+        axios.get(ServerURL + "/project/" + this.state.project.projectId).then(response => {
             this.setState({project:response.data})
         })
 

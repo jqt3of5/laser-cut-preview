@@ -11,6 +11,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.6" />
+        <PackageReference Include="Svg" Version="3.3.0" />
     </ItemGroup>
 
     <ItemGroup>

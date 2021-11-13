@@ -16,7 +16,6 @@ export interface Material  {
     category: string,
     id: string,
     name: string,
-    url: string
 }
 
 export class ColorMode {

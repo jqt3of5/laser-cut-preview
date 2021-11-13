@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using Svg;
 
 namespace LaserPreview.Models
 {
@@ -32,17 +33,21 @@ namespace LaserPreview.Models
 
             var guid = Guid.NewGuid().ToString();
 
+            var filePath = Path.Combine(UploadDir, guid);
             using (var reader = new BinaryReader(stream))
             {
-                File.WriteAllBytes(Path.Combine(UploadDir, guid), reader.ReadBytes((int)length));
+                File.WriteAllBytes(filePath, reader.ReadBytes((int)length));
             }
+
+            var svg = SvgDocument.Open(filePath);
+            
             
             //TODO: Get a real width and height
             //TODO: Generate the URL in a smarter way
             //TODO: Process the graphic and add ColorModes
-            var graphic = new Graphic(guid, fileName, mimeType, $"graphic/{guid}/image", new ColorMode[]
+            var graphic = new Graphic(guid, fileName, mimeType, $"/graphic/{guid}/image", new ColorMode[]
             {
-               new ColorMode("000000",guid, $"graphic/{guid}/image", LaserMode.Cut) 
+               new ColorMode("000000",guid, $"/graphic/{guid}/image", "Cut")//LaserMode.Cut) 
             }, 0, 0, 100, 100);
             
             _graphics[guid] = graphic;

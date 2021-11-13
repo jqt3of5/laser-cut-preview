@@ -5,32 +5,32 @@
       {
         "id": "wood_ash_1_8_double",
         "name": "Ash (1/8\" Double Sided)",
-        "url": "/static/Ash.jpeg"
+        "fileName": "Ash.jpeg"
       },
       {
         "id": "wood_bamboo_1_4_double",
         "name": "Bamboo (1/4\" Double Sided)",
-        "url": "/static/bamboo.jpeg"
+        "fileName": "bamboo.jpeg"
       },
       {
         "id": "wood_maple_1_4_double",
         "name": "Maple (1/4\" Double Sided)",
-        "url": "/static/maple.jpeg"
+        "fileName": "maple.jpeg"
       },
       {
         "id": "wood_cherry_1_4_double",
         "name": "Cherry (1/4\" Double Sided)",
-        "url": "/static/Cherry.jpeg"
+        "fileName": "Cherry.jpeg"
       },
       {
         "id": "wood_walnut_1_8_double",
         "name": "Walnut (1/8\" Double Sided)",
-        "url": "/static/Walnut.jpeg"
+        "fileName": "Walnut.jpeg"
       },
       {
         "id": "wood_walnut_1_4_double",
         "name": "Walnut (1/4\" Double Sided)",
-        "url": "/static/Walnut.jpeg"
+        "fileName": "Walnut.jpeg"
       }
     ]
   },
@@ -40,7 +40,7 @@
       {
         "id": "melamine_1_4_double",
         "name": "Melamine",
-        "url": "/static/white melamine.jpeg"
+        "fileName": "white melamine.jpeg"
       }
     ]
   },
@@ -50,7 +50,7 @@
       {
         "id": "birch_ply_1_4_double",
         "name": "Birch Ply Wood",
-        "url": "/static/mdf.jpeg"
+        "fileName": "mdf.jpeg"
       }
     ]
   },
@@ -60,7 +60,7 @@
       {
         "id": "red_acrylic_1_4_double",
         "name": "Red (Acrylic)",
-        "url": "/static/Hickory.webp"
+        "fileName": "Hickory.webp"
       }
     ]
   }

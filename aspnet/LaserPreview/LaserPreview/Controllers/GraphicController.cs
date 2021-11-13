@@ -7,7 +7,7 @@ namespace LaserPreview.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class GraphicController
+    public class GraphicController : Controller
     {
         private readonly GraphicRepo _repo;
 
@@ -16,7 +16,7 @@ namespace LaserPreview.Controllers
             _repo = repo;
         }
 
-        [HttpGet("/{graphicId}/image")]
+        [HttpGet("{graphicId}/image")]
         public Stream GetGraphicImage(string graphicId)
         {
             var graphic = _repo.GetGraphic(graphicId);
@@ -24,15 +24,14 @@ namespace LaserPreview.Controllers
             {
                 return null;
             }
+            
+            var stream = _repo.GetGraphicBytes(graphicId);
 
-            using (var stream = _repo.GetGraphicBytes(graphicId))
-            using (var reader = new StreamReader(stream))
-            {
-                //TODO: Certainly we need to set the content type for this to work right. 
-                return stream;
-            }
+            HttpContext.Response.Headers["Content-Type"] = graphic.mimetype;
+            return stream;
+            
         }
-        [HttpGet("/{graphicId}")]
+        [HttpGet("{graphicId}")]
         public Graphic GetGraphic(string graphicId)
         {
             var graphic = _repo.GetGraphic(graphicId);
@@ -47,6 +46,7 @@ namespace LaserPreview.Controllers
         [HttpPost]
         public Graphic ProcessGraphic(IFormFile file)
         {
+            //TODO: validate mimetype is a vector graphic
             return _repo.ProcessGraphic(file.FileName, file.ContentType, file.Length, file.OpenReadStream());
         }
     }
