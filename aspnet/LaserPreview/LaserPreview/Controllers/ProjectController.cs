@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LaserPreview.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -12,16 +13,24 @@ namespace LaserPreview.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly ILogger<ProjectController> _logger;
+        private readonly ProjectRepo _repo;
 
-        public ProjectController(ILogger<ProjectController> logger)
+        public ProjectController(ILogger<ProjectController> logger, ProjectRepo repo)
         {
             _logger = logger;
+            _repo = repo;
         }
 
-        [HttpGet]
-        public string Get()
+        [HttpGet("/{projectId}")]
+        public Project GetProject(string projectId)
         {
-            return "";
+            return _repo.GetProject(projectId);
+        }
+
+        [HttpPost("/{projectId}")]
+        public Project SaveProject([FromBody] Project project)
+        {
+            return _repo.SaveProject(project);
         }
     }
 }

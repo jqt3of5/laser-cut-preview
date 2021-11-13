@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="main.js" type="NodeJSConfigurationType" nameIsGenerated="true" path-to-js-file="Server/main.js" working-dir="$PROJECT_DIR$">
-    <method v="2">
-      <option name="TypeScript.Before.Run" enabled="true" FAIL_ON_ERROR="true" CONFIG_PATH="C:\Users\jqt3o\WebstormProjects\craft-closet-preview\react\Server\tsconfig.json" />
-    </method>
-  </configuration>
-</component>
