@@ -19,15 +19,15 @@ namespace LaserPreview.Controllers
         [HttpGet("{graphicId}/image")]
         public Stream GetGraphicImage(string graphicId)
         {
-            var graphic = _repo.GetGraphic(graphicId);
-            if (graphic == null)
+            var image = _repo.GetImage(graphicId);
+            if (image == null)
             {
                 return null;
             }
             
-            var stream = _repo.GetGraphicBytes(graphicId);
+            var stream = _repo.GetImageBytes(graphicId);
 
-            HttpContext.Response.Headers["Content-Type"] = graphic.mimetype;
+            HttpContext.Response.Headers["Content-Type"] = image.mimetype;
             return stream;
             
         }
