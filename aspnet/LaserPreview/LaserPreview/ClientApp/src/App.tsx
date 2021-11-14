@@ -8,8 +8,9 @@ import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component} from "react";
 import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
-import {Dimension, DimensionUnits, Graphic, Material, MaterialCategory, Project} from "./common/data";
+import {SvgGraphic, Material, MaterialCategory, Project} from "./common/data";
 import {PrettyButton} from "./PrettyButton";
+import {Dimension, DimensionUnits} from "./common/Dimension";
 
 
 interface AppState {
@@ -91,7 +92,7 @@ class App extends Component<AppProps, AppState>
                         </div>
 
                         {
-                            this.state.project.graphics.map((graphic : Graphic) => <GraphicDetail key={graphic.guid} graphic={graphic} onChange={this.OnGraphicChanged} onDelete={this.OnGraphicDelete}/>)
+                            this.state.project.graphics.map((graphic : SvgGraphic) => <GraphicDetail key={graphic.guid} graphic={graphic} onChange={this.OnGraphicChanged} onDelete={this.OnGraphicDelete}/>)
                         }
                     </div>
                 </div>
@@ -100,13 +101,13 @@ class App extends Component<AppProps, AppState>
         );
     }
 
-    OnGraphicDelete = (graphicToDelete : Graphic) => {
+    OnGraphicDelete = (graphicToDelete : SvgGraphic) => {
         let project = {...this.state.project, graphics: this.state.project.graphics.filter(graphic => {
                 return graphic != graphicToDelete
             })}
         this.state.updateProject(project)
     }
-    OnGraphicChanged = (oldGraphic : Graphic, newGraphic : Graphic) => {
+    OnGraphicChanged = (oldGraphic : SvgGraphic, newGraphic : SvgGraphic) => {
         let project = {...this.state.project, graphics: this.state.project.graphics.map(graphic => {
            if (oldGraphic == graphic)
            {

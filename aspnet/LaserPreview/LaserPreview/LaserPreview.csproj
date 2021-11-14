@@ -121,6 +121,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="TestAssets" />
       <Folder Include="uploads" />
     </ItemGroup>
 

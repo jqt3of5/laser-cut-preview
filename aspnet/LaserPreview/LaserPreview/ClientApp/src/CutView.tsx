@@ -1,23 +1,19 @@
 import React, {Component, MouseEvent} from "react";
 import {ServerURL} from "./contexts/ProjectRepo";
 import {
-    AddDimensions,
-    ColorMode,
-    Dimension,
-    DimensionUnits,
-    Graphic,
+    SvgSubGraphic,
+    SvgGraphic,
     Material,
     Project,
-    ToPixels,
-    ToType
 } from "./common/data";
+import {AddDimensions, Dimension, ToPixels} from "./common/Dimension";
 
 export interface CutViewProps {
     boardWidth: Dimension
     boardHeight: Dimension
     material: Material
-    graphics: Graphic[]
-    onChange: (oldGraphic : Graphic, newGraphic:Graphic) => void
+    graphics: SvgGraphic[]
+    onChange: (oldGraphic : SvgGraphic, newGraphic:SvgGraphic) => void
 }
 
 export interface CutViewState {
@@ -37,7 +33,9 @@ export class CutView extends Component<CutViewProps, CutViewState>
 {
     private canvasRef: React.RefObject<any>;
     private ctx : CanvasRenderingContext2D | undefined;
+    //In canvas pixels, not client pixels
     private pxPerUnitWidth : number;
+    //In canvas pixels, not client pixels
     private pxPerUnitHeight: number;
 
     constructor(props : any) {
@@ -46,11 +44,14 @@ export class CutView extends Component<CutViewProps, CutViewState>
         this.state = {
             mouseDown: false,
             selectedGraphicIndex: -1,
+            //In canvas pixels, not client pixels
             mouseX: 0,
             mouseY: 0,
             mousedX: 0,
             mousedY: 0,
         }
+        
+        //In canvas pixels, not client pixels
         this.pxPerUnitHeight = 0
         this.pxPerUnitWidth= 0 
     }
@@ -67,15 +68,17 @@ export class CutView extends Component<CutViewProps, CutViewState>
     draw() : Promise<void> {
 
         return this.loadImage(`/materials/${this.props.material.id}`).then(background => {
-            //Update the canvas dimensions to bethe same as the material image.
-            //this way it doesn't look terrible.
             if (this.canvasRef.current == null)
             {
                 return;
             }
-            this.canvasRef.current.width = background.width 
+            //Sets canvas drawing area so that the background image is fit nicely. 
+            //clientHeight/Width is the actual dimensions of the canvas element
+            this.canvasRef.current.width = background.width
             this.canvasRef.current.height = background.height
             
+            console.log(this.canvasRef)
+
             this.pxPerUnitWidth = background.width/this.props.boardWidth.value
             this.pxPerUnitHeight= background.height/this.props.boardHeight.value
             
@@ -85,16 +88,18 @@ export class CutView extends Component<CutViewProps, CutViewState>
                 
                let promises = graphic.colorModes.map(mode => {
                    return this.loadImage(mode.url).then(image => {
-                       return [image, mode] as [HTMLImageElement, ColorMode]
+                       return [image, mode] as [HTMLImageElement, SvgSubGraphic]
                    }) 
                }) 
                //TODO: We're not waiting for all these to finish, do we need to?
-               this.drawGraphic(graphic, promises) 
+               this.drawGraphic(graphic, promises).then(r => {
+                   
+               }) 
             }
        })
     }
     
-    drawGraphic = (graphic : Graphic, imagePromises: Promise<[HTMLImageElement, ColorMode]>[]) : Promise<void> => {
+    drawGraphic = (graphic : SvgGraphic, imagePromises: Promise<[HTMLImageElement, SvgSubGraphic]>[]) : Promise<void> => {
         let heightUnit = this.props.boardHeight.unit
         let widthUnit = this.props.boardWidth.unit
         
@@ -146,13 +151,19 @@ export class CutView extends Component<CutViewProps, CutViewState>
     onMouseDown = (event : MouseEvent<HTMLCanvasElement>) => {
         let widthUnit = this.props.boardWidth.unit
         let heightUnit = this.props.boardHeight.unit
+        
+        let rect = this.canvasRef.current.getBoundingClientRect()
+        let canvasX = (event.clientX - rect.x) / rect.width * this.canvasRef.current.width
+        let canvasY = (event.clientY - rect.y) / rect.height * this.canvasRef.current.height
         //Locate the first graphic that surrounds the cursor
         let selectedGraphicIndex = this.props.graphics.findIndex(graphic => {
-            return event.clientX < ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit)  + ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit) && event.clientX > ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) 
-            && event.clientY > ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) && event.clientY < ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) + ToPixels(graphic.height, this.pxPerUnitHeight, heightUnit)
+            return canvasX < ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit)  + ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit) 
+                && canvasX > ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) 
+                && canvasY > ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) 
+                && canvasY < ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) + ToPixels(graphic.height, this.pxPerUnitHeight, heightUnit)
         })
 
-        this.setState({mouseDown: true, mouseX:event.clientX, mouseY: event.clientY, mousedY: 0, mousedX: 0, selectedGraphicIndex: selectedGraphicIndex})
+        this.setState({mouseDown: true, mouseX:canvasX, mouseY: canvasY, mousedY: 0, mousedX: 0, selectedGraphicIndex: selectedGraphicIndex})
     }
     onMouseUp = (event : MouseEvent<HTMLCanvasElement>) => {
         this.setState({mouseDown: false})
@@ -169,7 +180,10 @@ export class CutView extends Component<CutViewProps, CutViewState>
     }
     onMouseMove = (event : MouseEvent<HTMLCanvasElement>) => {
        if (this.state.mouseDown) {
-           this.setState(state => {return {mousedX:event.clientX - state.mouseX, mousedY:event.clientY - state.mouseY}})
+           let rect = this.canvasRef.current.getBoundingClientRect()
+           let canvasX = (event.clientX - rect.x) / rect.width * this.canvasRef.current.width
+           let canvasY = (event.clientY - rect.y) / rect.height * this.canvasRef.current.height
+           this.setState(state => {return {mousedX:canvasX - state.mouseX, mousedY:canvasY - state.mouseY}})
        } 
     }
     

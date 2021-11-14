@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserPreview", "LaserPrevie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicProcess", "GraphicProcess\GraphicProcess.csproj", "{AEA2B664-9F66-4459-916D-AFF9E89D2750}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaserPreviewTests", "LaserPreviewTests\LaserPreviewTests.csproj", "{7580C980-6054-4D09-B5DD-D695FE1A03BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{AEA2B664-9F66-4459-916D-AFF9E89D2750}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEA2B664-9F66-4459-916D-AFF9E89D2750}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEA2B664-9F66-4459-916D-AFF9E89D2750}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7580C980-6054-4D09-B5DD-D695FE1A03BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7580C980-6054-4D09-B5DD-D695FE1A03BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7580C980-6054-4D09-B5DD-D695FE1A03BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7580C980-6054-4D09-B5DD-D695FE1A03BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

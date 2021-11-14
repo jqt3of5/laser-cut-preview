@@ -8,7 +8,7 @@ namespace LaserPreview.Models
 
         public Project CreateProject(string projectId)
         {
-            _projects[projectId] = new Project(projectId, new Material("", "", "", ""), new Dimension(18, Units.Inches), new Dimension(12, Units.Inches), new Graphic[]{}, Units.Inches);
+            _projects[projectId] = new Project(projectId, new Material("", "", "", ""), new Dimension(18, DimensionUnits.Inches), new Dimension(12, DimensionUnits.Inches), new SvgGraphic[]{}, DimensionUnits.Inches);
             return _projects[projectId];
         }
         

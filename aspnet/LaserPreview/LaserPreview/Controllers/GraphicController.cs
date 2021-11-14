@@ -32,7 +32,7 @@ namespace LaserPreview.Controllers
             
         }
         [HttpGet("{graphicId}")]
-        public Graphic GetGraphic(string graphicId)
+        public SvgGraphic GetGraphic(string graphicId)
         {
             var graphic = _repo.GetGraphic(graphicId);
             if (graphic == null)
@@ -44,10 +44,10 @@ namespace LaserPreview.Controllers
         }
 
         [HttpPost]
-        public Graphic ProcessGraphic(IFormFile file)
+        public SvgGraphic ProcessGraphic(IFormFile file)
         {
             //TODO: validate mimetype is a vector graphic
-            return _repo.ProcessGraphic(file.FileName, file.ContentType, file.Length, file.OpenReadStream());
+            return _repo.ProcessGraphic(file.FileName, file.Length, file.OpenReadStream());
         }
     }
 }

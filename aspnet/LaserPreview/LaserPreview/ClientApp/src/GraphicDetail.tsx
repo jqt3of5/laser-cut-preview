@@ -1,21 +1,22 @@
 import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component, ReactEventHandler, SyntheticEvent} from "react";
-import {ColorMode, Dimension, Graphic, LaserMode, Project, ToUnitName} from "./common/data";
+import {SvgSubGraphic, SvgGraphic, LaserMode, Project} from "./common/data";
 
 import Button from 'react-bootstrap/Button';
+import {Dimension, ToUnitName} from "./common/Dimension";
 
 export interface GraphicProps {
-    graphic: Graphic
+    graphic: SvgGraphic
     // project: Project,
     // updateProject: (project:Project) => void
-    onChange: (oldGraphic : Graphic, newGraphic : Graphic) => void
-    onDelete: (graphic : Graphic) => void
+    onChange: (oldGraphic : SvgGraphic, newGraphic : SvgGraphic) => void
+    onDelete: (graphic : SvgGraphic) => void
 }
 
 interface GraphicColorProps
 {
-    color: ColorMode
-    onChange: (oldColor:ColorMode, newColor: ColorMode) => void
+    color: SvgSubGraphic
+    onChange: (oldColor:SvgSubGraphic, newColor: SvgSubGraphic) => void
 }
 
 function GraphicColor(props : GraphicColorProps)
@@ -74,7 +75,7 @@ export class GraphicDetail extends Component<GraphicProps, any> {
         )
     }
 
-    onColorChange = (oldColor : ColorMode, newColor : ColorMode) => {
+    onColorChange = (oldColor : SvgSubGraphic, newColor : SvgSubGraphic) => {
         this.props.onChange(this.props.graphic, {...this.props.graphic,
             //Replace the old color with the new color
             colorModes:this.props.graphic.colorModes.map(c => {

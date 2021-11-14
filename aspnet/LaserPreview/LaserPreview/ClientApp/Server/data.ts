@@ -1,4 +1,4 @@
-import {Project, Graphic, ColorMode, MaterialCategory, Material, UploadedFile} from "../src/common/data";
+import {Project, SvgGraphic, SvgSubGraphic, MaterialCategory, Material, UploadedFile} from "../src/common/data";
 
 var fs = require("fs")
 var uuid = require("uuid")
@@ -56,10 +56,10 @@ export class Repo {
     //     })
     // }
 
-    saveGraphic(file: UploadedFile) : Promise<Graphic> {
+    saveGraphic(file: UploadedFile) : Promise<SvgGraphic> {
         const guid = uuid.v4()
         //TODO: ensure uploadDir exists
-        return new Promise<Graphic>((resolve, reject) => {
+        return new Promise<SvgGraphic>((resolve, reject) => {
             fs.open(uploadDir + guid, 'w', (err, fd) => {
                 if (err) {
                     console.log(err)
@@ -86,8 +86,8 @@ export class Repo {
             })
         })
     }
-    getGraphic(imageId : string) : Promise<Graphic> {
-        return new Promise<Graphic>((resolve, reject)=> {
+    getGraphic(imageId : string) : Promise<SvgGraphic> {
+        return new Promise<SvgGraphic>((resolve, reject)=> {
             let graphic = documentDB.graphics[imageId]
             if (graphic == undefined)
             {

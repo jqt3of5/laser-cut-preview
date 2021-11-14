@@ -32,16 +32,15 @@ namespace LaserPreview.Models
     /// <param name="height"></param>
     /// <param name="color"></param>
     /// <param name="mode"></param>
-    public record ColorMode(
+    public record SvgSubGraphic(
         string guid,
         string url,
-        string mimetype,
         Dimension posX,
         Dimension posY,
         Dimension width,
         Dimension height,
         Color color,
-        LaserMode mode): Image(guid, mimetype, url, posX, posY, width, height);
+        LaserMode mode): Image(guid, "image/svg+xml", url, posX, posY, width, height);
         // LaserMode mode);
 
     /// <summary>
@@ -56,16 +55,15 @@ namespace LaserPreview.Models
     /// <param name="height"></param>
     /// <param name="originalFileName"></param>
     /// <param name="colorModes"></param>
-    public record Graphic(
+    public record SvgGraphic(
         string guid,
-        string mimetype,
         string url,
+        string name,
         Dimension posX,
         Dimension posY,
         Dimension width,
         Dimension height,
-        string originalFileName,
-        ColorMode[] colorModes): Image(guid, mimetype, url, posX, posY, width, height);
+        SvgSubGraphic[] colorModes): Image(guid, "image/svg+xml", url, posX, posY, width, height);
 
     public record Material(
         string category,
@@ -74,34 +72,119 @@ namespace LaserPreview.Models
         string fileName);
 
 
-    public record Dimension(
-        float value,
-        Units unit = Units.Centimeters);
+    public record PixelConversion(
+        double pixels,
+        DimensionUnits PerDimensionUnit)
+    {
+        public Dimension FromPixels(double p)
+        {
+            return new Dimension(p/ pixels, PerDimensionUnit);
+        }
 
-    public enum Units
+        public double ToPixels(Dimension dimension)
+        {
+            return dimension.ConvertTo(PerDimensionUnit).value * pixels;
+        } 
+    }
+    public record Dimension(
+        double value,
+        DimensionUnits unit = DimensionUnits.Centimeters) : IComparable
+    {
+        public Dimension Add(Dimension dimension)
+        {
+            var d = dimension.ConvertTo(this.unit);
+            return new Dimension(value + d.value, unit);
+        }
+        
+        public Dimension ConvertTo(DimensionUnits dimensionUnit)
+        {
+            var intermetiate = value;
+            switch (this.unit)
+            {
+               case DimensionUnits.Centimeters:
+                   break; 
+               case DimensionUnits.Millimeters:
+                   intermetiate = intermetiate / 10;
+                   break;
+               case DimensionUnits.Inches:
+                   intermetiate = intermetiate * 2.54;
+                   break;
+               case DimensionUnits.Points:
+                   intermetiate = intermetiate / 72 * 2.54;
+                   break;
+               case DimensionUnits.Picas:
+                   intermetiate = intermetiate / 6 * 2.54;
+                   break;
+               case DimensionUnits.Pixels:
+                   break;
+            }
+            
+            switch (dimensionUnit)
+            {
+                case DimensionUnits.Centimeters:
+                    break; 
+                case DimensionUnits.Millimeters:
+                    intermetiate = intermetiate * 10;
+                    break;
+                case DimensionUnits.Inches:
+                    intermetiate = intermetiate / 2.54;
+                    break;
+                case DimensionUnits.Points:
+                    intermetiate = intermetiate * 72 / 2.54;
+                    break;
+                case DimensionUnits.Picas:
+                    intermetiate = intermetiate * 6 / 2.54;
+                    break;
+                case DimensionUnits.Pixels:
+                    break;
+            }
+
+            return new Dimension(intermetiate, dimensionUnit);
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj is Dimension d)
+            {
+                var n = d.ConvertTo(this.unit);
+                if (n.value == value)
+                {
+                    return 0;
+                }
+
+                return value < n.value ? -1 : 1;
+            }
+
+            return -1;
+        }
+    };
+
+    public enum DimensionUnits
     {
         Inches,
         Millimeters,
         Centimeters,
+        Picas, 
+        Points,
         Pixels
     }
     public static class UnitConversions
     {
-        public static Units ToUnits(this SvgUnitType unit)
+        public static DimensionUnits ToUnits(this SvgUnitType unit)
         {
             return unit switch
             {
-                SvgUnitType.None =>Units.Pixels,
-                SvgUnitType.Pixel => Units.Pixels,
-                SvgUnitType.Em => Units.Pixels,
-                SvgUnitType.Ex => Units.Pixels,
-                SvgUnitType.Percentage => Units.Pixels,
-                SvgUnitType.User => Units.Centimeters,
-                SvgUnitType.Inch => Units.Inches,
-                SvgUnitType.Centimeter => Units.Centimeters,
-                SvgUnitType.Millimeter => Units.Millimeters,
-                SvgUnitType.Pica => Units.Pixels,
-                SvgUnitType.Point => Units.Pixels,
+                SvgUnitType.None =>DimensionUnits.Pixels,
+                SvgUnitType.Pixel => DimensionUnits.Pixels,
+                SvgUnitType.Em => DimensionUnits.Pixels,
+                SvgUnitType.Ex => DimensionUnits.Pixels,
+                SvgUnitType.Percentage => DimensionUnits.Pixels,
+                SvgUnitType.User => DimensionUnits.Centimeters,
+                SvgUnitType.Inch => DimensionUnits.Inches,
+                SvgUnitType.Centimeter => DimensionUnits.Centimeters,
+                SvgUnitType.Millimeter => DimensionUnits.Millimeters,
+                SvgUnitType.Pica => DimensionUnits.Picas,
+                SvgUnitType.Point => DimensionUnits.Points,
                 _ => throw new ArgumentOutOfRangeException()
             }; 
         }
@@ -111,8 +194,8 @@ namespace LaserPreview.Models
         Material material,
         Dimension boardWidth,
         Dimension boardHeight,
-        Graphic [] graphics,
-        Units units);
+        SvgGraphic [] graphics,
+        DimensionUnits DimensionUnits);
 
     public record MaterialCategory(
         string category,
