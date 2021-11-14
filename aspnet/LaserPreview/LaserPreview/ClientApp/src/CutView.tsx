@@ -1,12 +1,22 @@
-import React, {Component, } from "react";
+import React, {Component, MouseEvent} from "react";
 import {ServerURL} from "./contexts/ProjectRepo";
-import {ColorMode, Graphic, Project, ToPixels} from "./common/data";
+import {ColorMode, DimensionUnits, Graphic, Project, ToPixels} from "./common/data";
 
 export interface CutViewProps {
     project:Project
+    onChange: (oldGraphic : Graphic, newGraphic:Graphic) => void
 }
 
-export class CutView extends Component<CutViewProps>
+export interface CutViewState {
+    mouseDown: boolean 
+    selectedGraphic: Graphic | undefined
+    // pxPerHeightUnit: number
+    // pxPerWidthUnit: number
+    // widthUnit: DimensionUnits
+    // heightUnit: DimensionUnits
+}
+
+export class CutView extends Component<CutViewProps, CutViewState>
 {
     private canvasRef: React.RefObject<any>;
     private ctx : CanvasRenderingContext2D | undefined;
@@ -14,6 +24,14 @@ export class CutView extends Component<CutViewProps>
     constructor(props : any) {
         super(props);
         this.canvasRef = React.createRef()
+        this.state = {
+            mouseDown: false,
+            selectedGraphic: undefined,
+            // pxPerHeightUnit: 0,
+            // pxPerWidthUnit: 0,
+            // widthUnit: DimensionUnits.Inches,
+            // heightUnit: DimensionUnits.Inches
+        }
     }
 
     componentDidUpdate(prevProps: Readonly<CutViewProps>, prevState: Readonly<{}>, snapshot?: any) {
@@ -32,20 +50,22 @@ export class CutView extends Component<CutViewProps>
                return [image, mode, graphic] as [HTMLImageElement, ColorMode, Graphic]
            })
        })).flat()
-       
 
         return this.loadImage(`/materials/${this.props.project.material.id}`).then(background => {
             //Update the canvas dimensions to bethe same as the material image.
             //this way it doesn't look terrible.
             this.canvasRef.current.width = background.width 
             this.canvasRef.current.height = background.height
-
-            this.ctx?.drawImage(background, 0,0)
             
             let pxPerUnitWidth = background.width/this.props.project.boardWidth.value
             let widthUnit = this.props.project.boardWidth.unit
+            
             let pxPerUnitHeight= background.height/this.props.project.boardHeight.value
             let heightUnit = this.props.project.boardHeight.unit
+            
+            // this.setState({pxPerWidthUnit: pxPerUnitWidth, pxPerHeightUnit: pxPerUnitHeight, heightUnit: heightUnit, widthUnit: widthUnit})
+            
+            this.ctx?.drawImage(background, 0, 0)
 
             return Promise.all(imagePromises).then(tuples => {
 
@@ -83,11 +103,31 @@ export class CutView extends Component<CutViewProps>
            }
        })
     }
-
+    onMouseDown = (event : MouseEvent<HTMLCanvasElement>) => {
+        console.log(event)
+        let selectedGraphic = this.props.project.graphics.find(graphic => {
+            return event.clientX < graphic.posX + graphic.width && event.clientX > graphic.posX 
+            && event.clientY > graphic.posY && event.clientY < graphic.posY + graphic.height
+        })
+        
+        this.setState({mouseDown: true, selectedGraphic: selectedGraphic})    
+    }
+    onMouseUp = (event : MouseEvent<HTMLCanvasElement>) => {
+        console.log(event)
+        this.setState({mouseDown: false})
+        this.props.onChange(this.state.selectedGraphic)
+    }
+    onMouseMove = (event : MouseEvent<HTMLCanvasElement>) => {
+       if (this.state.mouseDown) 
+       {
+          this.setState(state => {{selectedGraphic: {...state.selectedGraphic, }}} ) 
+       }
+    }
+    
     render() {
         return  (
             <div className={"cut-view"}>
-                <canvas ref={this.canvasRef} className={"cut-material"}>
+                <canvas ref={this.canvasRef} className={"cut-material"} onMouseDown={this.onMouseDown} onMouseUp={this.onMouseUp} onMouseMove={this.onMouseMove}>
                 </canvas>
             </div>
         )

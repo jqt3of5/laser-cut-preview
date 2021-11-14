@@ -63,7 +63,7 @@ class App extends Component<AppProps, AppState>
                 </div>
 
                 <div className={"App-content"}>
-                    <CutView project={this.state.project}/>
+                    <CutView project={this.state.project} onChange={this.OnGraphicChanged}/>
 
                     <div className="detailBar">
                         <div className={"configuration-view bottom-separator"}>

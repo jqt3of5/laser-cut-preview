@@ -110,7 +110,7 @@ namespace LaserPreview.Models
                 
                 var mode = new ColorMode(modeGuid, $"/graphic/{modeGuid}/image", "image/svg+xml", 
                     new Dimension(svgGroup.Bounds.X/pxPerWidthUnit, widthUnit), new Dimension(svgGroup.Bounds.Y/pxPerHeightUnit, heightUnit), 
-                    new Dimension(doc.Bounds.Width/ pxPerWidthUnit, widthUnit), new Dimension(doc.Bounds.Height/ pxPerHeightUnit, heightUnit), 
+                    new Dimension(doc.Bounds.Width/pxPerWidthUnit, widthUnit), new Dimension(doc.Bounds.Height/pxPerHeightUnit, heightUnit), 
                     group.Key, LaserMode.Cut);
                 
                 modes.Add(mode);
