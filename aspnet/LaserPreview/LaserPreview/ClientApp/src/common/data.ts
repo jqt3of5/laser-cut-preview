@@ -32,6 +32,11 @@ export class Dimension {
     }
 }
 
+export function AddDimensions(a : Dimension, b: Dimension) : Dimension
+{
+    let c = ToType(b, a.unit) 
+    return new Dimension(c.value + a.value, a.unit)
+}
 export function ToType(d : Dimension, t: DimensionUnits ): Dimension
 {
     if (t == d.unit)

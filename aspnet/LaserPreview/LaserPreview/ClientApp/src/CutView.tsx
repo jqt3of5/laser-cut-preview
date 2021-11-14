@@ -1,6 +1,16 @@
 import React, {Component, MouseEvent} from "react";
 import {ServerURL} from "./contexts/ProjectRepo";
-import {ColorMode, Dimension, DimensionUnits, Graphic, Material, Project, ToPixels, ToType} from "./common/data";
+import {
+    AddDimensions,
+    ColorMode,
+    Dimension,
+    DimensionUnits,
+    Graphic,
+    Material,
+    Project,
+    ToPixels,
+    ToType
+} from "./common/data";
 
 export interface CutViewProps {
     boardWidth: Dimension
@@ -12,8 +22,11 @@ export interface CutViewProps {
 
 export interface CutViewState {
     mouseDown: boolean 
+    mouseX : number
+    mouseY : number
+    mousedX: number
+    mousedY : number
     selectedGraphicIndex: number
-    selectedGraphic: Graphic | undefined
     // pxPerHeightUnit: number
     // pxPerWidthUnit: number
     // widthUnit: DimensionUnits
@@ -33,7 +46,10 @@ export class CutView extends Component<CutViewProps, CutViewState>
         this.state = {
             mouseDown: false,
             selectedGraphicIndex: -1,
-            selectedGraphic: undefined
+            mouseX: 0,
+            mouseY: 0,
+            mousedX: 0,
+            mousedY: 0,
         }
         this.pxPerUnitHeight = 0
         this.pxPerUnitWidth= 0 
@@ -53,6 +69,10 @@ export class CutView extends Component<CutViewProps, CutViewState>
         return this.loadImage(`/materials/${this.props.material.id}`).then(background => {
             //Update the canvas dimensions to bethe same as the material image.
             //this way it doesn't look terrible.
+            if (this.canvasRef.current == null)
+            {
+                return;
+            }
             this.canvasRef.current.width = background.width 
             this.canvasRef.current.height = background.height
             
@@ -60,13 +80,8 @@ export class CutView extends Component<CutViewProps, CutViewState>
             this.pxPerUnitHeight= background.height/this.props.boardHeight.value
             
             this.ctx?.drawImage(background, 0, 0)
-            console.log(this.props.graphics)
 
             for (let graphic of this.props.graphics) {
-                if (this.state.selectedGraphic != undefined && this.state.mouseDown)
-                {
-                   graphic = this.state.selectedGraphic 
-                }
                 
                let promises = graphic.colorModes.map(mode => {
                    return this.loadImage(mode.url).then(image => {
@@ -82,14 +97,24 @@ export class CutView extends Component<CutViewProps, CutViewState>
     drawGraphic = (graphic : Graphic, imagePromises: Promise<[HTMLImageElement, ColorMode]>[]) : Promise<void> => {
         let heightUnit = this.props.boardHeight.unit
         let widthUnit = this.props.boardWidth.unit
+        
+        //variables to hold the offset when we're dragging around
+        let offsetX = 0 
+        let offsetY = 0
+        if (graphic == this.props.graphics[this.state.selectedGraphicIndex] && this.state.mouseDown)
+        {
+            offsetX = this.state.mousedX
+            offsetY = this.state.mousedY
+        }
+        
         return Promise.all(imagePromises).then(tuples => {
            if (this.ctx != undefined)
            {
                for (const [image, mode] of tuples) {
 
                    this.ctx.drawImage(image,
-                       ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit),
-                       ToPixels(graphic.posY,  this.pxPerUnitHeight, heightUnit) + ToPixels(mode.posY,  this.pxPerUnitHeight, heightUnit),
+                       ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) + offsetX,
+                       ToPixels(graphic.posY,  this.pxPerUnitHeight, heightUnit) + ToPixels(mode.posY,  this.pxPerUnitHeight, heightUnit) + offsetY,
                        ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit),
                        ToPixels(mode.height,  this.pxPerUnitHeight, heightUnit))
                }
@@ -98,8 +123,8 @@ export class CutView extends Component<CutViewProps, CutViewState>
                this.ctx.lineWidth = 2
                this.ctx.strokeStyle = '#7777ff'
                this.ctx.rect(
-                   ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit),
-                   ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit),
+                   ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) + offsetX,
+                   ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) + offsetY,
                    ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit),
                    ToPixels(graphic.height, this.pxPerUnitHeight, heightUnit))
                this.ctx.stroke()
@@ -127,28 +152,25 @@ export class CutView extends Component<CutViewProps, CutViewState>
             && event.clientY > ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) && event.clientY < ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) + ToPixels(graphic.height, this.pxPerUnitHeight, heightUnit)
         })
 
-        this.setState({mouseDown: true, selectedGraphicIndex: selectedGraphicIndex, selectedGraphic: this.props.graphics[selectedGraphicIndex]})
+        this.setState({mouseDown: true, mouseX:event.clientX, mouseY: event.clientY, mousedY: 0, mousedX: 0, selectedGraphicIndex: selectedGraphicIndex})
     }
     onMouseUp = (event : MouseEvent<HTMLCanvasElement>) => {
         this.setState({mouseDown: false})
-        if (this.state.selectedGraphicIndex != -1 && this.state.selectedGraphic != undefined)
+        if (this.state.selectedGraphicIndex != -1)
         {
-            this.props.onChange(this.props.graphics[this.state.selectedGraphicIndex], this.state.selectedGraphic)
+            let oldGraphic = this.props.graphics[this.state.selectedGraphicIndex]
+            
+            let offsety = new Dimension(this.state.mousedY / this.pxPerUnitHeight, this.props.boardHeight.unit)
+            let offsetx = new Dimension(this.state.mousedX / this.pxPerUnitWidth, this.props.boardWidth.unit)
+             
+            let newGraphic = {...oldGraphic, posX: AddDimensions(oldGraphic.posX, offsetx), posY: AddDimensions(oldGraphic.posY, offsety)}
+            this.props.onChange(oldGraphic, newGraphic)
         }
     }
     onMouseMove = (event : MouseEvent<HTMLCanvasElement>) => {
-       if (this.state.mouseDown) 
-       {
-           this.setState((state:CutViewState, props:CutViewProps) => {
-               if (state.selectedGraphicIndex != -1 && this.state.selectedGraphic != undefined)
-               {
-                   let y = new Dimension(event.clientY / this.pxPerUnitHeight, this.props.boardHeight.unit)
-                   let x = new Dimension(event.clientX / this.pxPerUnitWidth, this.props.boardWidth.unit)
-                   return {...state, selectedGraphic: {...this.state.selectedGraphic, posX: x, posY: y}}
-               }
-               return state
-           })
-       }
+       if (this.state.mouseDown) {
+           this.setState(state => {return {mousedX:event.clientX - state.mouseX, mousedY:event.clientY - state.mouseY}})
+       } 
     }
     
     render() {
