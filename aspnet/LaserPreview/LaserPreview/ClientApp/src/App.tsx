@@ -63,7 +63,7 @@ class App extends Component<AppProps, AppState>
                 </div>
 
                 <div className={"App-content"}>
-                    <CutView project={this.state.project} onChange={this.OnGraphicChanged}/>
+                    <CutView material={this.state.project.material} graphics={this.state.project.graphics} boardHeight={this.state.project.boardHeight} boardWidth={this.state.project.boardWidth} onChange={this.OnGraphicChanged}/>
 
                     <div className="detailBar">
                         <div className={"configuration-view bottom-separator"}>
@@ -115,6 +115,9 @@ class App extends Component<AppProps, AppState>
            return graphic
         })}
         this.state.updateProject(project)
+    }
+    OnProjectChanged = (oldProject : Project, newProject : Project) => {
+        this.state.updateProject(newProject)
     }
 
     OnMaterialClicked = (material : Material) => {
