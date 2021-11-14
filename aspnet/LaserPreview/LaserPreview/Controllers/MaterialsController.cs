@@ -27,7 +27,7 @@ namespace LaserPreview.Controllers
         [HttpGet("{materialId}")]
         public ActionResult<Stream> GetMaterialImage(string materialId)
         {
-            var material = _categories.SelectMany(cat => cat.materials).FirstOrDefault(mat => mat.id == materialId);
+            var material = _categories.SelectMany(cat => cat.materials).FirstOrDefault(mat => materialId == "default" || mat.id == materialId);
             if (material == null)
             {
                 return NotFound($"Could not find material with Id: {materialId}");

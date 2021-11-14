@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Svg;
+using Svg.ExCSS;
 
 namespace LaserPreview.Models
 {
@@ -43,6 +44,15 @@ namespace LaserPreview.Models
             return _graphics[graphicId];
         }
 
+        private bool SaveStream(Stream stream, int length, string filePath)
+        {
+            using (var reader = new BinaryReader(stream))
+            {
+                File.WriteAllBytes(filePath, reader.ReadBytes((int)length));
+            }
+
+            return true;
+        }
         public Graphic ProcessGraphic(string originalFileName, string mimeType, long length, Stream stream)
         {
             if (!Directory.Exists(UploadDir))
@@ -50,21 +60,14 @@ namespace LaserPreview.Models
                 Directory.CreateDirectory(UploadDir);
             }
 
-            var guid = Guid.NewGuid().ToString();
-
-            var originalFilePath = ImagePath(guid, ".original.svg");
-            using (var reader = new BinaryReader(stream))
-            {
-                File.WriteAllBytes(originalFilePath, reader.ReadBytes((int)length));
-            }
-
-            var originalSvg  = SvgDocument.Open(originalFilePath);
-
-            Color LeafMostColor(SvgElement element)
+            // When we're grouping drawable elements, we really only care about the set color for the actually drawable elements.
+            // So traverse the tree until we get to the bottom, and use that color.
+            // Assume that there is only ever one child at each level. 
+            Color ColorOfLeaf(SvgElement element)
             {
                 if (element.Children.Any())
                 {
-                    return LeafMostColor(element.Children.First());
+                    return ColorOfLeaf(element.Children.First());
                 }
                 if (element.Color is SvgColourServer server)
                 {
@@ -73,9 +76,19 @@ namespace LaserPreview.Models
 
                 return Color.Transparent; 
             }
-            var objectsByColor = ExtractDrawableElements(originalSvg ).GroupBy(LeafMostColor);
+            var guid = Guid.NewGuid().ToString();
+            var originalFilePath = ImagePath(guid, ".original.svg");
+                       
+            SaveStream(stream, (int)length, originalFilePath);
+ 
+            var originalSvg  = SvgDocument.Open(originalFilePath);
+            var objectsByColor = ExtractDrawableElements(originalSvg).GroupBy(ColorOfLeaf);
+            
+            var pxPerWidthUnit = originalSvg.ViewBox.Width / originalSvg.Width.Value;
+            var pxPerHeightUnit = originalSvg.ViewBox.Height/ originalSvg.Height.Value;
+            var widthUnit = originalSvg.Width.Type.ToUnits(); 
+            var heightUnit = originalSvg.Height.Type.ToUnits(); 
 
-            var fullSvgGroup = new SvgGroup();
             List<ColorMode> modes = new List<ColorMode>();
             foreach (var group in objectsByColor)
             {
@@ -83,39 +96,38 @@ namespace LaserPreview.Models
                 foreach (var svgElement in group)
                 {
                     svgGroup.Children.Add(svgElement);
-                    fullSvgGroup.Children.Add(svgElement);
                 }
 
                 var doc = new SvgDocument();
                 doc.Children.Add(svgGroup);
-                doc.ViewBox = originalSvg.ViewBox;
-                doc.Width = originalSvg.Width;
-                doc.Height = originalSvg.Height;
+                doc.ViewBox = new SvgViewBox(svgGroup.Bounds.X, svgGroup.Bounds.Y, svgGroup.Bounds.Width, svgGroup.Bounds.Height);
+                doc.Width = new SvgUnit(originalSvg.Width.Type, svgGroup.Bounds.Width / pxPerWidthUnit);
+                doc.Height= new SvgUnit(originalSvg.Height.Type, svgGroup.Bounds.Height / pxPerHeightUnit);
                 
                 var modeGuid = Guid.NewGuid().ToString();
                 var modeFilePath = ImagePath(modeGuid);
                 doc.Write(modeFilePath); 
                 
-                var mode = new ColorMode(modeGuid, $"/graphic/{modeGuid}/image", "image/svg+xml", 0, 0, doc.Bounds.Width, doc.Bounds.Height, group.Key, "Cut");
+                var mode = new ColorMode(modeGuid, $"/graphic/{modeGuid}/image", "image/svg+xml", 
+                    new Dimension(svgGroup.Bounds.X/pxPerWidthUnit, widthUnit), new Dimension(svgGroup.Bounds.Y/pxPerHeightUnit, heightUnit), 
+                    new Dimension(doc.Bounds.Width/ pxPerWidthUnit, widthUnit), new Dimension(doc.Bounds.Height/ pxPerHeightUnit, heightUnit), 
+                    group.Key, LaserMode.Cut);
+                
                 modes.Add(mode);
                 
                 _images[modeGuid] = mode;
             }
-
-            //TODO: SVGs can have physical dimensions attached to them. We should try to read and respect these on the canvas. 
-            //TODO: If the original SVG has a bunch of padding and such, we don't currently remove any of that. 
+            
+            //TODO: Addition doesn't factor in units. Hopefully they're always the same. 
+            var height = modes.Max(mode => mode.posY.value + mode.height.value);
+            var width = modes.Max(mode => mode.posX.value + mode.width.value);
+            
             //TODO: Generate the URL in a smarter way
-            var fullSvgDoc = new SvgDocument();
-            fullSvgDoc.Children.Add(fullSvgGroup);
-            fullSvgDoc.ViewBox = originalSvg.ViewBox;
-            fullSvgDoc.Width = originalSvg.Width;
-            fullSvgDoc.Height = originalSvg.Height;
-             
-            var fullSvgFilePath = ImagePath(guid);
-            fullSvgDoc.Write(fullSvgFilePath);
-            var graphic = new Graphic(guid,  mimeType, $"/graphic/{guid}/image", 0, 0, fullSvgDoc.Bounds.Width, fullSvgDoc.Bounds.Height,originalFileName, modes.ToArray());
+            var graphic = new Graphic(guid,  mimeType, $"/graphic/{guid}/image", 
+                new Dimension(0, widthUnit), new Dimension(0, heightUnit), 
+                new Dimension(width, widthUnit), new Dimension(height, heightUnit),  
+                originalFileName, modes.ToArray());
             _graphics[guid] = graphic;
-            _images[guid] = graphic;
             
             return graphic;
         }

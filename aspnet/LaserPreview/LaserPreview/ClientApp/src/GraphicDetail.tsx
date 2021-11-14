@@ -1,6 +1,6 @@
 import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component, ReactEventHandler, SyntheticEvent} from "react";
-import {ColorMode, Graphic, Project} from "./common/data";
+import {ColorMode, Dimension, Graphic, LaserMode, Project, ToUnitName} from "./common/data";
 
 import Button from 'react-bootstrap/Button';
 
@@ -26,9 +26,9 @@ function GraphicColor(props : GraphicColorProps)
                 <img src={ServerURL + props.color.url}/>
             </div>
             <div className={"graphic-color-select"}>
-                <select className={"graphic-line-color-mode pretty-select"}
-                        value={props.color.mode}
-                        onChange={e => props.onChange(props.color, {...props.color, mode:e.currentTarget.value})}>
+                <select className={"graphic-line-color-mode pretty-select"} 
+                        value={LaserMode[props.color.mode]}
+                        onChange={e => props.onChange(props.color, {...props.color, mode:e.currentTarget.selectedIndex})}>
                     <option value={"Cut"}>Cut</option>
                     <option value={"Score"}>Score</option>
                     <option value={"Engrave"}>Engrave</option>
@@ -55,19 +55,19 @@ export class GraphicDetail extends Component<GraphicProps, any> {
                     <div className={"graphic-dimension"}>
                         <label>Width</label>
                         <div className={"fancy-input"}>
-                            <input className={"input-entry"} value={this.props.graphic.width} onChange={this.onWidthChange}/><div className={"input-unit"}>px</div>
+                            <input className={"input-entry"} value={this.props.graphic.width.value} onChange={this.onWidthChange}/><div className={"input-unit"}>{ToUnitName(this.props.graphic.width.unit)}</div>
                         </div>
                     </div>
                     <div className={"graphic-dimension"}>
                         <label>Height</label>
                         <div className={"fancy-input"}>
-                            <input className={"input-entry"} value={this.props.graphic.height} onChange={this.onHeightChange}/><div className={"input-unit"}>px</div>
+                            <input className={"input-entry"} value={this.props.graphic.height.value} onChange={this.onHeightChange}/><div className={"input-unit"}>{ToUnitName(this.props.graphic.height.unit)}</div>
                         </div>
                     </div>
                 </div>
                 <div className={"graphic-colors"}>
                     {
-                        this.props.graphic.colorModes.map(color => <GraphicColor color={color} onChange={this.onColorChange}></GraphicColor>)
+                        this.props.graphic.colorModes.map(color => <GraphicColor color={color} onChange={this.onColorChange}/>)
                     }
                 </div>
             </div>
@@ -96,7 +96,7 @@ export class GraphicDetail extends Component<GraphicProps, any> {
            return
        }
        //TODO: Scaling should maintain ratio
-       this.props.onChange(this.props.graphic,{...this.props.graphic, width: width})
+       this.props.onChange(this.props.graphic,{...this.props.graphic, width: new Dimension(width, this.props.graphic.width.unit)})
     }
 
     onHeightChange = (event : SyntheticEvent<HTMLInputElement>) => {
@@ -111,6 +111,6 @@ export class GraphicDetail extends Component<GraphicProps, any> {
             return
         }
         //TODO: Scaling should maintain ratio
-        this.props.onChange(this.props.graphic, {...this.props.graphic, height: height})
+        this.props.onChange(this.props.graphic, {...this.props.graphic, height: new Dimension(height, this.props.graphic.height.unit)})
     }
 }

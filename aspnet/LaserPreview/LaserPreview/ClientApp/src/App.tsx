@@ -8,7 +8,7 @@ import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component} from "react";
 import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
-import {Graphic, Material, MaterialCategory, Project} from "./common/data";
+import {Dimension, DimensionUnits, Graphic, Material, MaterialCategory, Project} from "./common/data";
 import {PrettyButton} from "./PrettyButton";
 
 
@@ -28,7 +28,7 @@ class App extends Component<AppProps, AppState>
     constructor(props: AppProps | Readonly<AppProps>) {
         super(props);
         this.state = {selectedGraphic:{}, materials:[],
-            project: {projectId: "12345", material: {id: "", category: "", name: ""}, graphics: []},
+            project: {projectId: "12345", material: {id: "default", category: "", name: ""}, graphics: [], boardHeight: new Dimension(12, DimensionUnits.Inches), boardWidth: new Dimension(18, DimensionUnits.Inches) },
             updateProject: (project: Project) => {
                 this.setState({project: project}, () => {
                     axios.post(ServerURL + "/project/" + this.state.project.projectId, project)
