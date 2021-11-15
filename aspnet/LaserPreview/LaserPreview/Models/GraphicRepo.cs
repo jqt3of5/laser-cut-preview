@@ -73,12 +73,12 @@ namespace LaserPreview.Models
             return IsRealUnit(doc.Width.Type) && IsRealUnit(doc.Height.Type);
         }
 
-        private SvgDocument SetDefaultRealUnits(SvgDocument doc, float defaultWidth = 10,
-            SvgUnitType defaultUnit = SvgUnitType.Centimeter)
+        private SvgDocument SetDefaultRealUnits(SvgDocument doc, 
+            SvgUnitType defaultUnit = SvgUnitType.Millimeter)
         {
-            var ratio = doc.ViewBox.Height / doc.ViewBox.Width;
-            doc.Width = new SvgUnit(defaultUnit, defaultWidth);
-            doc.Height = new SvgUnit(defaultUnit, defaultWidth * ratio);
+            var ratio = (double)doc.ViewBox.Height / doc.ViewBox.Width;
+            doc.Width = new SvgUnit(defaultUnit, doc.ViewBox.Width);
+            doc.Height = new SvgUnit(defaultUnit, (float)(doc.ViewBox.Width* ratio));
             return doc;
         }
 

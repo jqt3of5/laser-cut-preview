@@ -32,8 +32,8 @@ namespace LaserPreview.Models
         }
         public SvgSubGraphic CreateSubGraphicFromSvg(Color color, SvgDocument doc, LaserMode defaultLaserMode = LaserMode.Cut)
         {
-            var pxPerWidthUnit = new PixelConversion(doc.ViewBox.Width / doc.Width.Value, doc.Width.Type.ToUnits());
-            var pxPerHeightUnit = new PixelConversion(doc.ViewBox.Height/ doc.Height.Value, doc.Height.Type.ToUnits());
+            var pxPerWidthUnit = new PixelConversion((double)doc.ViewBox.Width / doc.Width.Value, doc.Width.Type.ToUnits());
+            var pxPerHeightUnit = new PixelConversion((double)doc.ViewBox.Height/ doc.Height.Value, doc.Height.Type.ToUnits());
             
             var modeGuid = Guid.NewGuid().ToString();
             return new SvgSubGraphic(modeGuid, $"/graphic/{modeGuid}/image", 
@@ -58,9 +58,9 @@ namespace LaserPreview.Models
 
                 doc.ViewBox = new SvgViewBox(doc.Bounds.X, doc.Bounds.Y, doc.Bounds.Width, doc.Bounds.Height);
 
-                var pxPerWidthUnit = svg.ViewBox.Width / svg.Width.Value;
+                var pxPerWidthUnit = (double)svg.ViewBox.Width / svg.Width.Value;
                 doc.Width = new SvgUnit(svg.Width.Type, (float)(doc.Bounds.Width / pxPerWidthUnit));
-                var pxPerHeightUnit = svg.ViewBox.Height/ svg.Height.Value;
+                var pxPerHeightUnit = (double)svg.ViewBox.Height/ svg.Height.Value;
                 doc.Height= new SvgUnit(svg.Height.Type, (float)(doc.Bounds.Height / pxPerHeightUnit));
 
                 yield return (group.Key, doc);
