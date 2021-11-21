@@ -13,7 +13,6 @@
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
 }
 .App-content {
   height: 100%;
@@ -26,4 +25,8 @@
   /*width: 200px;*/
   flex-basis: 200px;
 }
+.App-main-view {
+  flex-grow: 1;
+}
+
 

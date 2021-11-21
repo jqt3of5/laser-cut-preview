@@ -1,20 +1,20 @@
 .side-bar-menu {
     display:flex;
     flex-direction: column;
-    align-content: center;
-    text-align: center;
-
 }
 
 .side-bar-item:hover {
-    background-color: aqua;
+    background-color: lightgray;
 }
 .side-bar-item-selected{
-    background-color: aqua;
+    background-color: darkred !important;
+    color:white;
 }
 .side-bar-item {
+    border-radius: 4px;
     padding-top: 12px;
     padding-bottom: 12px;
-
-    border-bottom: lightgray 1px solid;
+    padding-left: 18px;
+    margin: 4px;
+    /*border-bottom: lightgray 1px solid;*/
 }
