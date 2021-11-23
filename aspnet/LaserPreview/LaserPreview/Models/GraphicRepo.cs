@@ -100,7 +100,7 @@ namespace LaserPreview.Models
             }
 
             var processor = new SvgProcessor();
-            var modes = processor.ExtractSubGraphicsByColor(originalSvg).Select(svg => (svg.Item2, processor.CreateSubGraphicFromSvg(svg.Item1, svg.Item2))).ToList();
+            var modes = processor.ExtractSvgsByColor(originalSvg).Select(svg => (svg.Item2, processor.CreateSubGraphicFromSvg(svg.Item1, svg.Item2))).ToList();
 
             if (!modes.Any())
             {

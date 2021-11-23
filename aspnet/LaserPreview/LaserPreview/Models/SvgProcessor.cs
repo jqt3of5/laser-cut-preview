@@ -44,9 +44,9 @@ namespace LaserPreview.Models
                                 color, defaultLaserMode);
         }
         
-        public IEnumerable<(Color, SvgDocument)> ExtractSubGraphicsByColor(SvgDocument svg)
+        public IEnumerable<(Color, SvgDocument)> ExtractSvgsByColor(SvgDocument svg)
         {
-            var objectsByColor = ExtractSubgraphModeElements(svg);
+            var objectsByColor = ExtractSvgElementsByColor(svg);
 
             foreach (var group in objectsByColor)
             {
@@ -67,7 +67,7 @@ namespace LaserPreview.Models
             }
         }
 
-        private IEnumerable<IGrouping<Color, SvgElement>> ExtractSubgraphModeElements(SvgElement element)
+        private IEnumerable<IGrouping<Color, SvgElement>> ExtractSvgElementsByColor(SvgElement element)
         {
             Color ColorOfLeaf(SvgElement element)
             {
@@ -132,13 +132,15 @@ namespace LaserPreview.Models
                 {
                     var fill = element.DeepCopy();
                     fill.Stroke = SvgPaintServer.None;
+                    fill.StrokeWidth = 0;
                     yield return fill;
                 }
                 
                 if (element.Stroke != null && element.Stroke != SvgPaintServer.None)
                 {
                     var stroke = element.DeepCopy();
-                    stroke.Fill = SvgPaintServer.None;
+                    stroke.Fill = null;
+                    stroke.FillOpacity = 0;
                     yield return stroke;
                 } 
             }
