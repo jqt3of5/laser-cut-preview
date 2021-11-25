@@ -1,0 +1,20 @@
+.side-bar-menu {
+    display:flex;
+    flex-direction: column;
+}
+
+.side-bar-item:hover {
+    background-color: lightgray;
+}
+.side-bar-item-selected{
+    background-color: darkred !important;
+    color:white;
+}
+.side-bar-item {
+    border-radius: 4px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 18px;
+    margin: 4px;
+    /*border-bottom: lightgray 1px solid;*/
+}

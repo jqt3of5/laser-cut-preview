@@ -1,0 +1,32 @@
+.App {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App-header {
+  background-color: white;
+  border-bottom: lightgray 1px solid;
+  /*box-shadow: whitesmoke 0 4px 4px 4px;*/
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+}
+.App-content {
+  height: 100%;
+  display: flex;
+}
+.App-side-bar {
+  border-right: lightgray 1px solid;
+  box-shadow: whitesmoke 2px 2px 2px 2px;
+  padding:8px;
+  /*width: 200px;*/
+  flex-basis: 200px;
+}
+.App-main-view {
+  flex-grow: 1;
+}
+
+

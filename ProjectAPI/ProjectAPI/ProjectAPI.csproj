@@ -1,0 +1,162 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+        <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+        <IsPackable>false</IsPackable>
+        <SpaRoot>ClientApp\</SpaRoot>
+        <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+        <RootNamespace>LaserPreview</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.6" />
+        <PackageReference Include="Microsoft.OpenApi" Version="1.2.3" />
+        <PackageReference Include="Svg" Version="3.3.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Don't publish the SPA source files, but do show them in the project files list -->
+        <Content Remove="$(SpaRoot)**" />
+        <None Remove="$(SpaRoot)**" />
+        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+        <None Update="Models\Assets\alabama cherry melamine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\aromatic cedar.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\ash.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\Baltic birch.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\bamboo.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\bender board.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\black melamine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\candlelight apple melamine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\Cherry.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\clear alder.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\Fox Teakwood Melamine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\italian poplar.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\knotty alder.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\knotty pine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\lacewood.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\mahogany.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\maple.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\mdf.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\natural maple melamine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\paduk.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\planked coffee oak melamine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\prefinished baltic birch.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\red oak.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\sapele.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\teak.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\vertical grain fir.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\walnut.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\wenge.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\white melamine.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\white oak.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\wormy maple.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Models\Assets\zebrawood.jpeg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="uploads" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core.Data\Core.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\Error.cshtml" />
+      <_ContentIncludedByDefault Remove="Pages\_ViewImports.cshtml" />
+    </ItemGroup>
+
+    <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+        <!-- Ensure Node.js is installed -->
+        <Exec Command="node --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+        </Exec>
+        <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+        <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+    </Target>
+
+    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+
+        <!-- Include the newly-built files in the publish output -->
+        <ItemGroup>
+            <DistFiles Include="$(SpaRoot)build\**" />
+            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+                <RelativePath>%(DistFiles.Identity)</RelativePath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            </ResolvedFileToPublish>
+        </ItemGroup>
+    </Target>
+
+</Project>
