@@ -1,4 +1,3 @@
-import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component, ReactEventHandler, SyntheticEvent} from "react";
 import {SvgSubGraphic, SvgGraphic, LaserMode, Project} from "./common/data";
 
@@ -24,7 +23,7 @@ function GraphicColor(props : GraphicColorProps)
     return (
         <div className={"graphic-color-item bottom-separator"}>
             <div className={"graphic-color-img"}>
-                <img src={ServerURL + props.color.url}/>
+                <img src={process.env.REACT_APP_API + props.color.url}/>
             </div>
             <div className={"graphic-color-select"}>
                 <select className={"graphic-line-color-mode pretty-select"} 

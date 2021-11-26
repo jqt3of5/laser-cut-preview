@@ -10,23 +10,23 @@ namespace LaserPreview.Controllers
     [Route("[controller]")]
     public class GraphicController : Controller
     {
-        private readonly GraphicModel _model;
+        private readonly GraphicModel _repo;
 
-        public GraphicController(GraphicModel model)
+        public GraphicController(GraphicModel repo)
         {
-            _model = model;
+            _repo = repo;
         }
 
         [HttpGet("{graphicId}/image")]
         public Stream GetGraphicImage(string graphicId)
         {
-            var image = _model.GetImage(graphicId);
+            var image = _repo.GetImage(graphicId);
             if (image == null)
             {
                 return null;
             }
             
-            var stream = _model.GetImageBytes(graphicId);
+            var stream = _repo.GetImageBytes(graphicId);
 
             HttpContext.Response.Headers["Content-Type"] = image.mimetype;
             return stream;
@@ -35,7 +35,7 @@ namespace LaserPreview.Controllers
         [HttpGet("{graphicId}")]
         public SvgGraphic GetGraphic(string graphicId)
         {
-            var graphic = _model.GetGraphic(graphicId);
+            var graphic = _repo.GetGraphic(graphicId);
             if (graphic == null)
             {
                 return null;
@@ -48,7 +48,7 @@ namespace LaserPreview.Controllers
         public SvgGraphic ProcessGraphic(IFormFile file)
         {
             //TODO: validate mimetype is a vector graphic
-            return _model.ProcessGraphic(file.FileName, file.Length, file.OpenReadStream());
+            return _repo.ProcessGraphic(file.FileName, file.Length, file.OpenReadStream());
         }
     }
 }

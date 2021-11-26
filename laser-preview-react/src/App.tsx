@@ -4,7 +4,6 @@ import logo from './Assets/Craft_Closet_Logo.webp'
 import axios from 'axios';
 
 import './App.css';
-import {ServerURL} from "./contexts/ProjectRepo";
 import React, {Component} from "react";
 import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
@@ -32,22 +31,22 @@ class App extends Component<AppProps, AppState>
             project: {projectId: "12345", material: {id: "default", category: "", name: ""}, graphics: [], boardHeight: new Dimension(12, DimensionUnits.Inches), boardWidth: new Dimension(18, DimensionUnits.Inches) },
             updateProject: (project: Project) => {
                 this.setState({project: project}, () => {
-                    axios.post(ServerURL + "/project/" + this.state.project.projectId, project)
+                    axios.post(process.env.REACT_APP_API + "/project/" + this.state.project.projectId, project)
                         .then(response => {
                             this.setState({project: response.data})
-                        })
+                        }).catch(reason => console.log(reason))
                 })
             }}
     }
 
     componentDidMount() {
-        axios.get(ServerURL + "/project/" + this.state.project.projectId).then(response => {
+        axios.get(process.env.REACT_APP_API + "/project/" + this.state.project.projectId).then(response => {
             this.setState({project:response.data})
-        })
+        }).catch(reason => console.log(reason))
 
-        axios.get(ServerURL + "/materials").then(response => {
+        axios.get(process.env.REACT_APP_API + "/materials").then(response => {
             this.setState({materials:response.data})
-        })
+        }).catch(reason => console.log(reason))
     }
 
     render()
@@ -142,7 +141,7 @@ class App extends Component<AppProps, AppState>
             this.state.selectedGraphic.name
         );
 
-        axios.post(`${ServerURL}/graphic`, formData)
+        axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
             .then(response => this.state.updateProject({...this.state.project, graphics:this.state.project.graphics.concat(response.data)}))
     }
 }

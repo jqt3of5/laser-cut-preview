@@ -52,6 +52,8 @@ namespace LaserPreview
                 app.UseHsts();
             }
 
+
+            app.UseCors();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
