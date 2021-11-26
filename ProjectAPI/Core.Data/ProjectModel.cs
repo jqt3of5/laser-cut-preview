@@ -4,7 +4,7 @@ using Core.Data;
 
 namespace LaserPreview.Models
 {
-    public class ProjectRepo
+    public class ProjectModel
     {
         private ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
         private ConcurrentDictionary<string, Order> _orders = new ConcurrentDictionary<string, Order>();

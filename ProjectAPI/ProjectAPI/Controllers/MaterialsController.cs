@@ -36,6 +36,7 @@ namespace LaserPreview.Controllers
             
             var stream = System.IO.File.OpenRead($"Models/Assets/{material.fileName}");
 
+            //TODO: Maybe determine this from the file name?
             HttpContext.Response.Headers["Content-Type"] = "image/jpg";
             return Ok(stream);
         }

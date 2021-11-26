@@ -32,8 +32,8 @@ namespace LaserPreview
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectAPI", Version = "v1" });
             });
             
-            services.AddSingleton<ProjectRepo>();
-            services.AddSingleton<GraphicRepo>();
+            services.AddSingleton<ProjectModel>();
+            services.AddSingleton<GraphicModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

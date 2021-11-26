@@ -5,9 +5,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
+COPY ["Core.Data/Core.Data.csproj", "Core.Data/"]
+RUN dotnet restore "Core.Data/Core.Data.csproj"
+
 COPY ["ProjectAPI/ProjectAPI.csproj", "ProjectAPI/"]
 RUN dotnet restore "ProjectAPI/ProjectAPI.csproj"
+
 COPY . .
+WORKDIR "/src/Core.Data"
+RUN dotnet build "Core.Data.csproj" -c Release -o /app/build
+
 WORKDIR "/src/ProjectAPI"
 RUN dotnet build "ProjectAPI.csproj" -c Release -o /app/build
 

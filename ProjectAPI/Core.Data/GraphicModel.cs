@@ -11,7 +11,7 @@ using Image = Core.Data.Image;
 
 namespace LaserPreview.Models
 {
-    public class GraphicRepo
+    public class GraphicModel
     {
         public string UploadDir = "uploads";
         private ConcurrentDictionary<string, SvgGraphic> _graphics = new ConcurrentDictionary<string, SvgGraphic>();
