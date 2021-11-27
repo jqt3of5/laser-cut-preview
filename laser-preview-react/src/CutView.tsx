@@ -1,5 +1,4 @@
 import React, {Component, MouseEvent} from "react";
-import {ServerURL} from "./contexts/ProjectRepo";
 import {
     SvgSubGraphic,
     SvgGraphic,
@@ -147,7 +146,7 @@ export class CutView extends Component<CutViewProps, CutViewState>
        return new Promise<HTMLImageElement>(resolve => {
 
            let image = new Image()
-           image.src = ServerURL + url
+           image.src = process.env.REACT_APP_API + url
            image.onload = () => {
                resolve(image)
            }

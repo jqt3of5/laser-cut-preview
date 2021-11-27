@@ -14,40 +14,40 @@ namespace LaserPreview.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly ILogger<ProjectController> _logger;
-        private readonly ProjectModel _model;
+        private readonly ProjectModel _repo;
 
-        public ProjectController(ILogger<ProjectController> logger, ProjectModel model)
+        public ProjectController(ILogger<ProjectController> logger, ProjectModel repo)
         {
             _logger = logger;
-            _model = model;
+            _repo = repo;
         }
 
         [HttpGet("{projectId}")]
         public Project GetProject(string projectId)
         {
-            return _model.GetProject(projectId);
+            return _repo.GetProject(projectId);
         }
 
         [HttpPost("{projectId}")]
         public IActionResult SaveProject([FromBody] Project project)
         {
-            if (_model.IsProjectReadonly(project.projectId))
+            if (_repo.IsProjectReadonly(project.projectId))
             {
                 //Not Modified
-                return StatusCode(304, _model.GetProject(project.projectId));
+                return StatusCode(304, _repo.GetProject(project.projectId));
             }
-            return Ok(_model.SaveProject(project));
+            return Ok(_repo.SaveProject(project));
         }
 
         [HttpPost("{projectId}/order")]
         public IActionResult OrderProject(string projectId, [FromBody] Customer customer)
         {
-            if (_model.IsProjectReadonly(projectId))
+            if (_repo.IsProjectReadonly(projectId))
             {
                 return StatusCode(304, "Project already ordered");
             }
 
-            if (!_model.OrderProject(projectId, customer))
+            if (!_repo.OrderProject(projectId, customer))
             {
                 return StatusCode(304, "Order failed");
             }
