@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using Core.Data;
 using Svg;
 
-namespace LaserPreview.Models
+namespace Core.Data
 {
     public class SvgProcessor
     {
