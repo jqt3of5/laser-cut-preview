@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Drawing;
-using Svg;
 
-namespace Core.Data
+namespace ProjectAPI.Interfaces
 {
     public record Image(
         string guid,
@@ -63,6 +62,7 @@ namespace Core.Data
         Dimension posY,
         Dimension width,
         Dimension height,
+        float angle,
         SvgSubGraphic[] colorModes): Image(guid, "image/svg+xml", url, posX, posY, width, height);
 
     public record Material(
@@ -167,27 +167,6 @@ namespace Core.Data
         Picas, 
         Points,
         Pixels
-    }
-    public static class UnitConversions
-    {
-        public static DimensionUnits ToUnits(this SvgUnitType unit)
-        {
-            return unit switch
-            {
-                SvgUnitType.None =>DimensionUnits.Pixels,
-                SvgUnitType.Pixel => DimensionUnits.Pixels,
-                SvgUnitType.Em => DimensionUnits.Pixels,
-                SvgUnitType.Ex => DimensionUnits.Pixels,
-                SvgUnitType.Percentage => DimensionUnits.Pixels,
-                SvgUnitType.User => DimensionUnits.Centimeters,
-                SvgUnitType.Inch => DimensionUnits.Inches,
-                SvgUnitType.Centimeter => DimensionUnits.Centimeters,
-                SvgUnitType.Millimeter => DimensionUnits.Millimeters,
-                SvgUnitType.Pica => DimensionUnits.Picas,
-                SvgUnitType.Point => DimensionUnits.Points,
-                _ => throw new ArgumentOutOfRangeException()
-            }; 
-        }
     }
 
     public record Project(

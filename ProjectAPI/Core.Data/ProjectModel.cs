@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Core.Data;
+using ProjectAPI.Interfaces;
 
 namespace LaserPreview.Models
 {

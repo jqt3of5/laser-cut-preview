@@ -2,94 +2,173 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using ProjectAPI.Interfaces;
 using Svg;
 
 namespace Core.Data
 {
-    public class SvgProcessor
+    public static class UnitConversions
     {
-        public SvgGraphic? CreateGraphicFromSubGraphics(string guid, string name, SvgDocument originalSvg, IEnumerable<(SvgDocument, SvgSubGraphic)> subGraphics)
+        public static DimensionUnits ToUnits(this SvgUnitType unit)
         {
-            //Create the overall graphic object for all the sub graphics. The height/width should contain all child graphics
-            if (subGraphics.Select(m => m.Item2).Max(mode => mode.posY.Add(mode.height)) is { } height)
+            return unit switch
             {
-                if (subGraphics.Select(m => m.Item2).Max(mode => mode.posX.Add(mode.width)) is { } width)
-                {
-                    var widthUnit = originalSvg.Width.Type.ToUnits(); 
-                    var heightUnit = originalSvg.Height.Type.ToUnits();
+                SvgUnitType.None =>DimensionUnits.Pixels,
+                SvgUnitType.Pixel => DimensionUnits.Pixels,
+                SvgUnitType.Em => DimensionUnits.Pixels,
+                SvgUnitType.Ex => DimensionUnits.Pixels,
+                SvgUnitType.Percentage => DimensionUnits.Pixels,
+                SvgUnitType.User => DimensionUnits.Centimeters,
+                SvgUnitType.Inch => DimensionUnits.Inches,
+                SvgUnitType.Centimeter => DimensionUnits.Centimeters,
+                SvgUnitType.Millimeter => DimensionUnits.Millimeters,
+                SvgUnitType.Pica => DimensionUnits.Picas,
+                SvgUnitType.Point => DimensionUnits.Points,
+                _ => throw new ArgumentOutOfRangeException()
+            }; 
+        }
+    }
+    public class SvgProcessor : IGraphicProcessor
+    {
+        private readonly SvgDocument _orignalDoc;
+        private IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)>? _subgraphicList; 
+
+           private bool IsRealUnit(SvgUnitType unit)
+        {
+            switch (unit)
+            {
+                case SvgUnitType.Centimeter:
+                case SvgUnitType.Inch:
+                case SvgUnitType.Millimeter: 
+                    // case SvgUnitType.Pica:
+                    // case SvgUnitType.Point:
+                    return true;    
+                default:
+                    return false;
+            }
+        }
+        private bool HasRealUnits(SvgDocument doc)
+        {
+            return IsRealUnit(doc.Width.Type) && IsRealUnit(doc.Height.Type);
+        }
+
+        private SvgDocument SetDefaultRealUnits(SvgDocument doc, 
+            SvgUnitType defaultUnit = SvgUnitType.Millimeter)
+        {
+            var ratio = (double)doc.ViewBox.Height / doc.ViewBox.Width;
+            doc.Width = new SvgUnit(defaultUnit, doc.ViewBox.Width);
+            doc.Height = new SvgUnit(defaultUnit, (float)(doc.ViewBox.Width* ratio));
+            return doc;
+        }
+        
+        public SvgProcessor(SvgDocument orignalDoc)
+        {
+            _orignalDoc = orignalDoc;
+        }
+
+        public IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)> ExtractSubGraphics()
+        {
+            var svg = _orignalDoc;
+            if (!HasRealUnits(_orignalDoc))
+            {
+                svg = SetDefaultRealUnits(_orignalDoc);
+            }
+            var drawableElements= ExtractDrawableElements(svg).ToList();
             
-                    //TODO: Generate the URL in a smarter way
-                    var graphic = new SvgGraphic(guid,   $"/graphic/{guid}/image", name,
-                        new Dimension(0, widthUnit), new Dimension(0, heightUnit), 
-                        width, height, subGraphics.Select(m => m.Item2).ToArray());
-           
-                    return graphic; 
-                }
+            var subDocsByColor = drawableElements
+                .GroupBy(ColorOfLeaf)
+                .Select(group => (Color: group.Key, Doc: SvgElementsToDocument(svg, group))).ToList();
+            
+            if (!subDocsByColor.Any())
+            {
+                _subgraphicList = new List<(SvgDocument document, SvgSubGraphic subGraphic)>();
+                return _subgraphicList;
             }
 
-            return null;
+            //Sometimes there is space above and to the left, we want the graphic to fit with no empty space around it. 
+            var xOffset = subDocsByColor.Min(subdoc => subdoc.Doc.ViewBox.MinX);
+            var yOffset = subDocsByColor.Min(subdoc => subdoc.Doc.ViewBox.MinY);
+
+            _subgraphicList = subDocsByColor.Select(
+                svg => (svg.Doc, CreateSubGraphicFromSvg(xOffset, yOffset, svg.Color, svg.Doc))).ToList();
+            
+            return _subgraphicList;
         }
-        public SvgSubGraphic CreateSubGraphicFromSvg(Color color, SvgDocument doc, LaserMode defaultLaserMode = LaserMode.Cut)
+
+        public SvgGraphic? CreateGraphicFromSubGraphics(string guid, string name)
+        {
+            if (_subgraphicList == null)
+            {
+                ExtractSubGraphics();
+            }
+            
+            //Create the overall graphic object for all the sub graphics. The height/width should contain all child graphics
+            var height = _subgraphicList.Select(m => m.subGraphic).Max(mode => mode.posY.Add(mode.height));
+            var width = _subgraphicList.Select(m => m.subGraphic).Max(mode => mode.posX.Add(mode.width));
+            
+            var widthUnit = _orignalDoc.Width.Type.ToUnits(); 
+            var heightUnit = _orignalDoc.Height.Type.ToUnits();
+
+            //TODO: Generate the URL in a smarter way
+            var graphic = new SvgGraphic(guid,   $"/graphic/{guid}/image", name,
+                new Dimension(0, widthUnit), new Dimension(0, heightUnit), 
+                width ?? new Dimension(0, widthUnit), height?? new Dimension(0, heightUnit),0,
+                _subgraphicList.Select(m => m.subGraphic).ToArray());
+
+            return graphic; 
+        }
+        private SvgSubGraphic CreateSubGraphicFromSvg(float offsetX, float offsetY, Color color, SvgDocument doc, LaserMode defaultLaserMode = LaserMode.Cut)
         {
             var pxPerWidthUnit = new PixelConversion((double)doc.ViewBox.Width / doc.Width.Value, doc.Width.Type.ToUnits());
             var pxPerHeightUnit = new PixelConversion((double)doc.ViewBox.Height/ doc.Height.Value, doc.Height.Type.ToUnits());
             
             var modeGuid = Guid.NewGuid().ToString();
+            //TODO: Generate the URL in a smarter way
             return new SvgSubGraphic(modeGuid, $"/graphic/{modeGuid}/image", 
-                            pxPerWidthUnit.FromPixels(doc.Bounds.X),
-                            pxPerHeightUnit.FromPixels(doc.Bounds.Y),
+                            pxPerWidthUnit.FromPixels(doc.Bounds.X - offsetX),
+                            pxPerHeightUnit.FromPixels(doc.Bounds.Y - offsetY),
                                 pxPerWidthUnit.FromPixels(doc.Bounds.Width), 
                                 pxPerHeightUnit.FromPixels(doc.Bounds.Height),
                                 color, defaultLaserMode);
         }
         
-        public IEnumerable<(Color, SvgDocument)> ExtractSvgsByColor(SvgDocument svg)
+        private SvgDocument SvgElementsToDocument(SvgDocument fullSvg, IGrouping<Color, SvgElement> groupedElements)
         {
-            var objectsByColor = ExtractSvgElementsByColor(svg);
-
-            foreach (var group in objectsByColor)
+            var doc = new SvgDocument();
+            foreach (var svgElement in groupedElements)
             {
-                var doc = new SvgDocument();
-                foreach (var svgElement in group)
-                {
-                    doc.Children.Add(svgElement);
-                }
-
-                doc.ViewBox = new SvgViewBox(doc.Bounds.X, doc.Bounds.Y, doc.Bounds.Width, doc.Bounds.Height);
-
-                var pxPerWidthUnit = (double)svg.ViewBox.Width / svg.Width.Value;
-                doc.Width = new SvgUnit(svg.Width.Type, (float)(doc.Bounds.Width / pxPerWidthUnit));
-                var pxPerHeightUnit = (double)svg.ViewBox.Height/ svg.Height.Value;
-                doc.Height= new SvgUnit(svg.Height.Type, (float)(doc.Bounds.Height / pxPerHeightUnit));
-
-                yield return (group.Key, doc);
+                doc.Children.Add(svgElement);
             }
+
+            doc.ViewBox = new SvgViewBox(doc.Bounds.X, doc.Bounds.Y, doc.Bounds.Width, doc.Bounds.Height);
+
+            var pxPerWidthUnit = (double)fullSvg.ViewBox.Width / fullSvg.Width.Value;
+            doc.Width = new SvgUnit(fullSvg.Width.Type, (float)(doc.Bounds.Width / pxPerWidthUnit));
+            var pxPerHeightUnit = (double)fullSvg.ViewBox.Height/ fullSvg.Height.Value;
+            doc.Height= new SvgUnit(fullSvg.Height.Type, (float)(doc.Bounds.Height/ pxPerHeightUnit));
+
+            return doc;
         }
 
-        private IEnumerable<IGrouping<Color, SvgElement>> ExtractSvgElementsByColor(SvgElement element)
+        private Color ColorOfLeaf(SvgElement element)
         {
-            Color ColorOfLeaf(SvgElement element)
+            //Always assumes there is only one child ever. OR that all children are the same color. 
+            if (element.Children.Any())
             {
-                //Always assumes there is only one child ever. OR that all children are the same color. 
-                if (element.Children.Any())
-                {
-                    return ColorOfLeaf(element.Children.First());
-                }
-
-                if (element.Stroke != SvgPaintServer.None && element.Stroke is SvgColourServer strokeServer)
-                {
-                    return strokeServer.Colour;
-                }
-                
-                if (element.Fill != SvgPaintServer.None && element.Fill is SvgColourServer fillServer)
-                {
-                    return fillServer.Colour;
-                }
-
-                return Color.Transparent; 
+                return ColorOfLeaf(element.Children.First());
             }
 
-           return  ExtractDrawableElements(element).GroupBy(ColorOfLeaf); 
+            if (element.Stroke != SvgPaintServer.None && element.Stroke is SvgColourServer strokeServer)
+            {
+                return strokeServer.Colour;
+            }
+            
+            if (element.Fill != SvgPaintServer.None && element.Fill is SvgColourServer fillServer)
+            {
+                return fillServer.Colour;
+            }
+
+            return Color.Transparent; 
         }
 
         private IEnumerable<SvgElement> ExtractDrawableElements(SvgElement doc)

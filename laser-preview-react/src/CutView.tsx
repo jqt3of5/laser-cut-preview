@@ -116,13 +116,7 @@ export class CutView extends Component<CutViewProps, CutViewState>
            {
                for (const [image, mode] of tuples) {
 
-                   console.log(this.pxPerUnitWidth)
-                   console.log(ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) + offsetX)
-                   console.log(ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit))
-                   console.log(ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) + offsetX)
-                   console.log(widthUnit)
-                   console.log(graphic.posX)
-                   this.ctx.drawImage(image,
+                       this.ctx.drawImage(image,
                        ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) + offsetX,
                        ToPixels(graphic.posY,  this.pxPerUnitHeight, heightUnit) + ToPixels(mode.posY,  this.pxPerUnitHeight, heightUnit) + offsetY,
                        ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit),

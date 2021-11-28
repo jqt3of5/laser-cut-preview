@@ -48,7 +48,8 @@ export class SvgGraphic {
         public posX : Dimension,
         public posY : Dimension,
         public width: Dimension,
-        public height : Dimension) {}
+        public height : Dimension,
+        public angle : number) {}
 }
 export class Project {
     constructor(

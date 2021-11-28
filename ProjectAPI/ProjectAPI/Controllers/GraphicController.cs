@@ -3,6 +3,7 @@ using Core.Data;
 using LaserPreview.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProjectAPI.Interfaces;
 
 namespace LaserPreview.Controllers
 {

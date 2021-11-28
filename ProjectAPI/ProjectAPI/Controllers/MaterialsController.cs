@@ -5,6 +5,7 @@ using Core.Data;
 using LaserPreview.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using ProjectAPI.Interfaces;
 
 namespace LaserPreview.Controllers
 {

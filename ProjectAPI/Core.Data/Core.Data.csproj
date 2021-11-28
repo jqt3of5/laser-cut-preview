@@ -8,4 +8,8 @@
       <PackageReference Include="Svg" Version="3.3.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ProjectAPI.Interfaces\ProjectAPI.Interfaces.csproj" />
+    </ItemGroup>
+
 </Project>
