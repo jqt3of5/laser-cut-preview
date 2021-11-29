@@ -29,23 +29,25 @@ namespace LaserPreview.Models
         public Project SaveProject(Project project)
         {
             //not allowed to set the project as readonly from a save. 
+            //TODO: Calculate estimate project cost
             project.readOnly = false;
             _projects[project.projectId] = project;
             return project;
         }
         
-        public bool OrderProject(string projectId, Customer customer)
+        public bool OrderProject(string projectId, Customer customer, out string reason)
         {
             if (_orders.ContainsKey(projectId))
             {
+                reason = "Project already ordered";
                 return false;
             }
 
-            //TODO: Calculate estimate project cost
             var order = new Order(customer, projectId, DateTime.Now, OrderStatus.Ordered, 0f, false);
             _orders[projectId] = order;
             _projects[projectId].readOnly = true;
 
+            reason = string.Empty;
             return true;
         }
 

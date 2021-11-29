@@ -17,12 +17,23 @@ namespace Core.Data
         {
             return Path.Combine(UploadDir, imageId + ext);
         }
-        public Stream GetImageBytes(string graphicId)
+        public Stream GetSubGraphicImageBytes(string graphicId)
         {
             return File.OpenRead(ImagePath(graphicId));
         }
 
-        public Image? GetImage(string imageId)
+        public Stream GetGraphicImageBytes(string graphicId)
+        {
+            if (_graphics.TryGetValue(graphicId, out var graphic))
+            {
+                //TODO: Read all the subgraphic files for the graphic, and 
+                //combine them into a single svg to send
+            }
+            
+            return Stream.Null;
+        }
+        
+        public Image? GetSubGraphicImage(string imageId)
         {
             if (!_images.ContainsKey(imageId))
             {
@@ -52,6 +63,7 @@ namespace Core.Data
             return true;
         }
      
+        
         public SvgGraphic? ProcessGraphic(string originalFileName, long streamByteCount, Stream stream)
         {
             if (!Directory.Exists(UploadDir))

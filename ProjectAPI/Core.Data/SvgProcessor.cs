@@ -103,8 +103,12 @@ namespace Core.Data
             }
             
             //Create the overall graphic object for all the sub graphics. The height/width should contain all child graphics
+            //Must maintain aspect ratio, or drawing gets all weird 
             var height = _subgraphicList.Select(m => m.subGraphic).Max(mode => mode.posY.Add(mode.height));
             var width = _subgraphicList.Select(m => m.subGraphic).Max(mode => mode.posX.Add(mode.width));
+           
+            
+            
             
             var widthUnit = _orignalDoc.Width.Type.ToUnits(); 
             var heightUnit = _orignalDoc.Height.Type.ToUnits();
