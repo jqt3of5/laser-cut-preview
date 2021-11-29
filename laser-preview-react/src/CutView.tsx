@@ -14,13 +14,23 @@ export interface CutViewProps {
     graphics: SvgGraphic[]
     onChange: (oldGraphic : SvgGraphic, newGraphic:SvgGraphic) => void
 }
-
+enum MouseMode {
+    Translate,
+   ScaleTopLeft,
+   ScaleTopRight,
+   ScaleBottomRight,
+   ScaleBottomLeft,
+   Rotate,
+   None
+}
 export interface CutViewState {
-    mouseDown: boolean 
+    mouseMode : MouseMode
     mouseX : number
     mouseY : number
-    mousedX: number
-    mousedY : number
+    translateX : number
+    translateY : number
+    scaleX : number
+    scaleY : number
     selectedGraphicIndex: number
     // pxPerHeightUnit: number
     // pxPerWidthUnit: number
@@ -30,29 +40,31 @@ export interface CutViewState {
 
 export class CutView extends Component<CutViewProps, CutViewState>
 {
+    private static resizeHandleWidth = 10;
     private canvasRef: React.RefObject<any>;
     private ctx : CanvasRenderingContext2D | undefined;
     //In canvas pixels, not client pixels
     private pxPerUnitWidth : number;
     //In canvas pixels, not client pixels
-    private pxPerUnitHeight: number;
+    // private pxPerUnitHeight: number;
 
     constructor(props : any) {
         super(props);
         this.canvasRef = React.createRef()
         this.state = {
-            mouseDown: false,
+            mouseMode: MouseMode.None,
             selectedGraphicIndex: -1,
             //In canvas pixels, not client pixels
             mouseX: 0,
             mouseY: 0,
-            mousedX: 0,
-            mousedY: 0,
+            translateX : 0,
+            translateY : 0,
+            scaleX : 0,
+            scaleY : 0
         }
         
         //In canvas pixels, not client pixels
-        this.pxPerUnitHeight = 0
-        this.pxPerUnitWidth= 0 
+        this.pxPerUnitWidth= 0
     }
 
     componentDidUpdate(prevProps: Readonly<CutViewProps>, prevState: Readonly<{}>, snapshot?: any) {
@@ -76,11 +88,8 @@ export class CutView extends Component<CutViewProps, CutViewState>
             this.canvasRef.current.width = background.width
             this.canvasRef.current.height = background.height
             
-            console.log(this.canvasRef)
-
             this.pxPerUnitWidth = background.width/this.props.boardWidth.value
-            this.pxPerUnitHeight= background.height/this.props.boardHeight.value
-            
+
             this.ctx?.drawImage(background, 0, 0)
 
             for (let graphic of this.props.graphics) {
@@ -99,40 +108,75 @@ export class CutView extends Component<CutViewProps, CutViewState>
     }
     
     drawGraphic = (graphic : SvgGraphic, imagePromises: Promise<[HTMLImageElement, SvgSubGraphic]>[]) : Promise<void> => {
-        let heightUnit = this.props.boardHeight.unit
         let widthUnit = this.props.boardWidth.unit
-        
-        //variables to hold the offset when we're dragging around
-        let offsetX = 0 
-        let offsetY = 0
-        if (graphic == this.props.graphics[this.state.selectedGraphicIndex] && this.state.mouseDown)
+
+        let startX = ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit)
+        let startY = ToPixels(graphic.posY,  this.pxPerUnitWidth, widthUnit)
+        let width = ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit)
+        let height = ToPixels(graphic.height, this.pxPerUnitWidth, widthUnit)
+        let aspect = width/height
+
+        let scaleFactorX = 1
+        let scaleFactorY = 1
+        //If this is the selected graphic, calculate the scaling, and translations
+        if (graphic == this.props.graphics[this.state.selectedGraphicIndex] && this.state.mouseMode != MouseMode.None)
         {
-            offsetX = this.state.mousedX
-            offsetY = this.state.mousedY
+            scaleFactorY = scaleFactorX = Math.max(this.state.scaleX, this.state.scaleY)
+            if (this.state.scaleY == scaleFactorY)
+            {
+                startX = startX + this.state.translateY * aspect
+                startY = startY + this.state.translateY
+            }
+            else if (this.state.scaleX == scaleFactorX)
+            {
+                startX = startX + this.state.translateX
+                startY = startY + this.state.translateX / aspect
+            }
+
+            width = width * scaleFactorX
+            height = height * scaleFactorY
         }
-        
-        return Promise.all(imagePromises.reverse()).then(tuples => {
+
+        return Promise.all(imagePromises).then(tuples => {
            if (this.ctx != undefined)
            {
                for (const [image, mode] of tuples) {
 
+                   console.log("width(mm): " + mode.width.value)
+                   console.log("height(mm): " +mode.height.value)
+                   console.log("pxPerUnitHeight: " +this.pxPerUnitWidth)
+                   console.log("psPerUnitWidth: " + this.pxPerUnitWidth)
+                   console.log("width(px): " + ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit))
+                   console.log("height(px): " + ToPixels(mode.height,  this.pxPerUnitWidth, widthUnit))
                        this.ctx.drawImage(image,
-                       ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) + offsetX,
-                       ToPixels(graphic.posY,  this.pxPerUnitHeight, heightUnit) + ToPixels(mode.posY,  this.pxPerUnitHeight, heightUnit) + offsetY,
-                       ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit),
-                       ToPixels(mode.height,  this.pxPerUnitHeight, heightUnit))
+                       startX + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) * scaleFactorX,
+                       startY + ToPixels(mode.posY,  this.pxPerUnitWidth, widthUnit) * scaleFactorY,
+                       ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit) * scaleFactorX,
+                       ToPixels(mode.height,  this.pxPerUnitWidth, widthUnit) * scaleFactorY)
                }
                
                this.ctx.beginPath()
                this.ctx.lineWidth = 2
                this.ctx.strokeStyle = '#7777ff'
                this.ctx.rect(
-                   ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) + offsetX,
-                   ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) + offsetY,
-                   ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit),
-                   ToPixels(graphic.height, this.pxPerUnitHeight, heightUnit))
+                   startX,
+                   startY,
+                   width,
+                   height)
                this.ctx.stroke()
-           } 
+
+               this.ctx.beginPath()
+               this.ctx.fillStyle = "white"
+
+               let halfSize = CutView.resizeHandleWidth / 2
+               this.ctx.rect(startX - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+               this.ctx.rect(startX + width - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+               this.ctx.rect(startX - halfSize, startY + height- halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+               this.ctx.rect(startX + width - halfSize, startY + height- halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+               this.ctx.stroke()
+               this.ctx.fill()
+
+           }
        })
     }
 
@@ -146,44 +190,128 @@ export class CutView extends Component<CutViewProps, CutViewState>
            }
        })
     }
-    
-    onMouseDown = (event : MouseEvent<HTMLCanvasElement>) => {
+
+    IsInRectBounds(tx : number, ty : number, x : number, y:number, w: number, h:number): boolean {
+        return tx <= x + w && tx >= x && ty >= y && ty <= y + h
+    }
+
+    IsOnGraphicHandle(canvasX:number, canvasY:number, graphic : SvgGraphic) : MouseMode
+    {
         let widthUnit = this.props.boardWidth.unit
-        let heightUnit = this.props.boardHeight.unit
-        
+
+        let startX = ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit)
+        let startY = ToPixels(graphic.posY,  this.pxPerUnitWidth, widthUnit)
+        let width = ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit)
+        let height = ToPixels(graphic.height, this.pxPerUnitWidth, widthUnit)
+
+        let clickTargetSize = CutView.resizeHandleWidth * 2
+        if (this.IsInRectBounds(canvasX, canvasY, startX - CutView.resizeHandleWidth, startY - CutView.resizeHandleWidth, clickTargetSize, clickTargetSize))
+        {
+            return MouseMode.ScaleTopLeft
+        }
+        if (this.IsInRectBounds(canvasX, canvasY, startX + width - CutView.resizeHandleWidth, startY - CutView.resizeHandleWidth, clickTargetSize, clickTargetSize))
+        {
+            return MouseMode.ScaleTopRight
+        }
+        if (this.IsInRectBounds(canvasX, canvasY, startX - CutView.resizeHandleWidth, startY + height- CutView.resizeHandleWidth, clickTargetSize, clickTargetSize))
+        {
+            return MouseMode.ScaleBottomLeft
+        }
+        if (this.IsInRectBounds(canvasX, canvasY, startX + width - CutView.resizeHandleWidth, startY + height- CutView.resizeHandleWidth, clickTargetSize, clickTargetSize) )
+        {
+            return MouseMode.ScaleBottomRight
+        }
+
+        if (this.IsInRectBounds(canvasX, canvasY, startX, startY, width, height))
+        {
+            return MouseMode.Translate
+        }
+        return MouseMode.None
+    }
+
+    onMouseDown = (event : MouseEvent<HTMLCanvasElement>) => {
         let rect = this.canvasRef.current.getBoundingClientRect()
         let canvasX = (event.clientX - rect.x) / rect.width * this.canvasRef.current.width
         let canvasY = (event.clientY - rect.y) / rect.height * this.canvasRef.current.height
         //Locate the first graphic that surrounds the cursor
         let selectedGraphicIndex = this.props.graphics.findIndex(graphic => {
-            return canvasX < ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit)  + ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit) 
-                && canvasX > ToPixels(graphic.posX, this.pxPerUnitWidth, widthUnit) 
-                && canvasY > ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) 
-                && canvasY < ToPixels(graphic.posY, this.pxPerUnitHeight, heightUnit) + ToPixels(graphic.height, this.pxPerUnitHeight, heightUnit)
+            return this.IsOnGraphicHandle(canvasX, canvasY, graphic) != MouseMode.None
         })
 
-        this.setState({mouseDown: true, mouseX:canvasX, mouseY: canvasY, mousedY: 0, mousedX: 0, selectedGraphicIndex: selectedGraphicIndex})
+        let mouseMode = selectedGraphicIndex == -1 ? MouseMode.None : this.IsOnGraphicHandle(canvasX, canvasY, this.props.graphics[selectedGraphicIndex])
+        this.setState({mouseMode: mouseMode, mouseX:canvasX, mouseY: canvasY, translateY : 0, translateX: 0, scaleX : 1, scaleY : 1, selectedGraphicIndex: selectedGraphicIndex})
     }
     onMouseUp = (event : MouseEvent<HTMLCanvasElement>) => {
-        this.setState({mouseDown: false})
+        this.setState({mouseMode: MouseMode.None})
         if (this.state.selectedGraphicIndex != -1)
         {
             let oldGraphic = this.props.graphics[this.state.selectedGraphicIndex]
-            
-            let offsety = new Dimension(this.state.mousedY / this.pxPerUnitHeight, this.props.boardHeight.unit)
-            let offsetx = new Dimension(this.state.mousedX / this.pxPerUnitWidth, this.props.boardWidth.unit)
-             
-            let newGraphic = {...oldGraphic, posX: AddDimensions(oldGraphic.posX, offsetx), posY: AddDimensions(oldGraphic.posY, offsety)}
+
+            let translatey = new Dimension(this.state.translateY / this.pxPerUnitWidth, this.props.boardHeight.unit)
+            let translatex = new Dimension(this.state.translateX / this.pxPerUnitWidth, this.props.boardWidth.unit)
+
+            let newGraphic = {...oldGraphic, posX: AddDimensions(oldGraphic.posX, translatex), posY: AddDimensions(oldGraphic.posY, translatey)}
             this.props.onChange(oldGraphic, newGraphic)
         }
     }
     onMouseMove = (event : MouseEvent<HTMLCanvasElement>) => {
-       if (this.state.mouseDown) {
+       if (this.state.mouseMode != MouseMode.None) {
            let rect = this.canvasRef.current.getBoundingClientRect()
            let canvasX = (event.clientX - rect.x) / rect.width * this.canvasRef.current.width
            let canvasY = (event.clientY - rect.y) / rect.height * this.canvasRef.current.height
-           this.setState(state => {return {mousedX:canvasX - state.mouseX, mousedY:canvasY - state.mouseY}})
-       } 
+
+           this.setState(state => {
+               let mousedX = canvasX - state.mouseX
+               let mousedY = canvasY - state.mouseY
+
+               let graphic = this.props.graphics[this.state.selectedGraphicIndex]
+               let widthUnit = this.props.boardWidth.unit
+
+               let width = ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit)
+               let height = ToPixels(graphic.height, this.pxPerUnitWidth, widthUnit)
+               let aspect = width/height
+
+               let scaleX = 1
+               let scaleY = 1
+               let translateX = 0
+               let translateY = 0
+               switch(this.state.mouseMode)
+               {
+                   case MouseMode.None:
+                       break;
+                   case MouseMode.Translate:
+                       translateX = mousedX
+                       translateY = mousedY
+                       break;
+                   case MouseMode.ScaleBottomRight:
+                       scaleX = (width + mousedX) / width
+                       scaleY = (height + mousedY) / height
+                       break;
+                   case MouseMode.ScaleBottomLeft:
+                       translateX = mousedX
+                       translateY = 0
+                       scaleX = (width - mousedX) / width
+                       scaleY = (height + mousedY) / height
+                       break;
+                   case MouseMode.ScaleTopRight:
+                       translateX = 0
+                       translateY = mousedY
+                       scaleX = (width + mousedX) / width
+                       scaleY = (height - mousedY) / height
+                       break;
+                   case MouseMode.ScaleTopLeft:
+                       translateX = mousedX
+                       translateY = mousedY
+                       scaleX = (width - mousedX) / width
+                       scaleY = (height - mousedY) / height
+                       break;
+                   case MouseMode.Rotate:
+                       break;
+               }
+
+               return {translateX: translateX, translateY:translateY, scaleX: scaleX, scaleY: scaleY}
+           })
+       }
     }
     
     render() {
