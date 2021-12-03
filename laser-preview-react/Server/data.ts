@@ -74,7 +74,7 @@ export class Repo {
                     mimetype: file.mimetype,
                     name: file.originalname,
                     url:`/graphic/${guid}/image`,
-                    colorModes: [
+                    subGraphics: [
                             {color:"blue", mode:"cut", guid: guid, url:`/graphic/${guid}/image`},
                             {color:"red", mode:"cut", guid:guid, url:`/graphic/${guid}/image`}
                         ],

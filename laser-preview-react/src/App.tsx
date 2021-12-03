@@ -13,7 +13,7 @@ import {Dimension, DimensionUnits} from "./common/Dimension";
 
 
 interface AppState {
-    selectedGraphic: any,
+    selectedGraphic: File | null,
     materials: MaterialCategory[]
     project: Project,
     updateProject : (project:Project) => void
@@ -27,7 +27,7 @@ class App extends Component<AppProps, AppState>
 {
     constructor(props: AppProps | Readonly<AppProps>) {
         super(props);
-        this.state = {selectedGraphic:{}, materials:[],
+        this.state = {selectedGraphic:null, materials:[],
             project: {projectId: "12345", material: {id: "default", category: "", name: ""}, graphics: [], boardHeight: new Dimension(12, DimensionUnits.Inches), boardWidth: new Dimension(18, DimensionUnits.Inches) },
             updateProject: (project: Project) => {
                 this.setState({project: project}, () => {
@@ -134,15 +134,17 @@ class App extends Component<AppProps, AppState>
 
     OnFileUpload = (event: React.MouseEvent<HTMLButtonElement>) => {
         const formData = new FormData();
-        // Update the formData object
-        formData.append(
-            "file",
-            this.state.selectedGraphic,
-            this.state.selectedGraphic.name
-        );
-
-        axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
-            .then(response => this.state.updateProject({...this.state.project, graphics:this.state.project.graphics.concat(response.data)}))
+        if (this.state.selectedGraphic != null)
+        {
+            // Update the formData object
+            formData.append(
+                "file",
+                this.state.selectedGraphic,
+                this.state.selectedGraphic.name
+            );
+            axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
+                .then(response => this.state.updateProject({...this.state.project, graphics:this.state.project.graphics.concat(response.data)}))
+        }
     }
 }
 

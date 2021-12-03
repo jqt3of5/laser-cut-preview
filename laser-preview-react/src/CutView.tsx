@@ -5,7 +5,7 @@ import {
     Material,
     Project,
 } from "./common/data";
-import {AddDimensions, Dimension, ToPixels} from "./common/Dimension";
+import {AddDimensions, Dimension, MultScaler, ToPixels} from "./common/Dimension";
 
 export interface CutViewProps {
     boardWidth: Dimension
@@ -32,15 +32,11 @@ export interface CutViewState {
     scaleX : number
     scaleY : number
     selectedGraphicIndex: number
-    // pxPerHeightUnit: number
-    // pxPerWidthUnit: number
-    // widthUnit: DimensionUnits
-    // heightUnit: DimensionUnits
 }
 
 export class CutView extends Component<CutViewProps, CutViewState>
 {
-    private static resizeHandleWidth = 10;
+    private static resizeHandleWidth = 15;
     private canvasRef: React.RefObject<any>;
     private ctx : CanvasRenderingContext2D | undefined;
     //In canvas pixels, not client pixels
@@ -94,7 +90,7 @@ export class CutView extends Component<CutViewProps, CutViewState>
 
             for (let graphic of this.props.graphics) {
                 
-               let promises = graphic.colorModes.map(mode => {
+               let promises = graphic.subGraphics.map(mode => {
                    return this.loadImage(mode.url).then(image => {
                        return [image, mode] as [HTMLImageElement, SvgSubGraphic]
                    }) 
@@ -114,25 +110,16 @@ export class CutView extends Component<CutViewProps, CutViewState>
         let startY = ToPixels(graphic.posY,  this.pxPerUnitWidth, widthUnit)
         let width = ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit)
         let height = ToPixels(graphic.height, this.pxPerUnitWidth, widthUnit)
-        let aspect = width/height
 
         let scaleFactorX = 1
         let scaleFactorY = 1
         //If this is the selected graphic, calculate the scaling, and translations
         if (graphic == this.props.graphics[this.state.selectedGraphicIndex] && this.state.mouseMode != MouseMode.None)
         {
-            scaleFactorY = scaleFactorX = Math.max(this.state.scaleX, this.state.scaleY)
-            if (this.state.scaleY == scaleFactorY)
-            {
-                startX = startX + this.state.translateY * aspect
-                startY = startY + this.state.translateY
-            }
-            else if (this.state.scaleX == scaleFactorX)
-            {
-                startX = startX + this.state.translateX
-                startY = startY + this.state.translateX / aspect
-            }
-
+            startX = startX + this.state.translateX
+            startY = startY + this.state.translateY
+            scaleFactorX = this.state.scaleX
+            scaleFactorY = this.state.scaleY
             width = width * scaleFactorX
             height = height * scaleFactorY
         }
@@ -142,17 +129,11 @@ export class CutView extends Component<CutViewProps, CutViewState>
            {
                for (const [image, mode] of tuples) {
 
-                   console.log("width(mm): " + mode.width.value)
-                   console.log("height(mm): " +mode.height.value)
-                   console.log("pxPerUnitHeight: " +this.pxPerUnitWidth)
-                   console.log("psPerUnitWidth: " + this.pxPerUnitWidth)
-                   console.log("width(px): " + ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit))
-                   console.log("height(px): " + ToPixels(mode.height,  this.pxPerUnitWidth, widthUnit))
-                       this.ctx.drawImage(image,
-                       startX + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) * scaleFactorX,
-                       startY + ToPixels(mode.posY,  this.pxPerUnitWidth, widthUnit) * scaleFactorY,
-                       ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit) * scaleFactorX,
-                       ToPixels(mode.height,  this.pxPerUnitWidth, widthUnit) * scaleFactorY)
+                   this.ctx.drawImage(image,
+                   startX + ToPixels(mode.posX,  this.pxPerUnitWidth, widthUnit) * scaleFactorX,
+                   startY + ToPixels(mode.posY,  this.pxPerUnitWidth, widthUnit) * scaleFactorY,
+                   ToPixels(mode.width,  this.pxPerUnitWidth, widthUnit) * scaleFactorX,
+                   ToPixels(mode.height,  this.pxPerUnitWidth, widthUnit) * scaleFactorY)
                }
                
                this.ctx.beginPath()
@@ -247,34 +228,69 @@ export class CutView extends Component<CutViewProps, CutViewState>
         {
             let oldGraphic = this.props.graphics[this.state.selectedGraphicIndex]
 
+            //Convert back into units
             let translatey = new Dimension(this.state.translateY / this.pxPerUnitWidth, this.props.boardHeight.unit)
             let translatex = new Dimension(this.state.translateX / this.pxPerUnitWidth, this.props.boardWidth.unit)
 
-            let newGraphic = {...oldGraphic, posX: AddDimensions(oldGraphic.posX, translatex), posY: AddDimensions(oldGraphic.posY, translatey)}
+            let newGraphic = {...oldGraphic,
+                subGraphics: oldGraphic.subGraphics
+                .map(graphic=> {
+                    return {...graphic,
+                        posX: MultScaler(graphic.posX, this.state.scaleX),
+                        posY: MultScaler(graphic.posY, this.state.scaleY),
+                        width: MultScaler(graphic.width, this.state.scaleX),
+                        height: MultScaler(graphic.height, this.state.scaleY)
+                    }
+                }),
+                posX: AddDimensions(oldGraphic.posX, translatex),
+                posY: AddDimensions(oldGraphic.posY, translatey),
+                width: MultScaler(oldGraphic.width, this.state.scaleX),
+                height: MultScaler(oldGraphic.height, this.state.scaleY)
+            }
             this.props.onChange(oldGraphic, newGraphic)
         }
     }
     onMouseMove = (event : MouseEvent<HTMLCanvasElement>) => {
-       if (this.state.mouseMode != MouseMode.None) {
-           let rect = this.canvasRef.current.getBoundingClientRect()
-           let canvasX = (event.clientX - rect.x) / rect.width * this.canvasRef.current.width
-           let canvasY = (event.clientY - rect.y) / rect.height * this.canvasRef.current.height
 
+        let rect = this.canvasRef.current.getBoundingClientRect()
+        let canvasX = (event.clientX - rect.x) / rect.width * this.canvasRef.current.width
+        let canvasY = (event.clientY - rect.y) / rect.height * this.canvasRef.current.height
+
+        if (this.state.mouseMode == MouseMode.None)
+        {
+            this.canvasRef.current.style.cursor = this.props.graphics.map(graphic => {
+                let mode = this.IsOnGraphicHandle(canvasX, canvasY, graphic)
+                switch(mode)
+                {
+                    case MouseMode.ScaleBottomLeft:
+                        return "sw-resize"
+                    case MouseMode.ScaleBottomRight:
+                        return "se-resize"
+                    case MouseMode.ScaleTopRight:
+                        return "ne-resize"
+                    case MouseMode.ScaleTopLeft:
+                        return "nw-resize"
+                }
+                return null
+            }).find(c => c != null) ?? "default"
+        }
+
+       if (this.state.mouseMode != MouseMode.None) {
            this.setState(state => {
                let mousedX = canvasX - state.mouseX
                let mousedY = canvasY - state.mouseY
 
-               let graphic = this.props.graphics[this.state.selectedGraphicIndex]
+               let graphic = this.props.graphics[state.selectedGraphicIndex]
                let widthUnit = this.props.boardWidth.unit
 
                let width = ToPixels(graphic.width, this.pxPerUnitWidth, widthUnit)
                let height = ToPixels(graphic.height, this.pxPerUnitWidth, widthUnit)
-               let aspect = width/height
 
                let scaleX = 1
                let scaleY = 1
                let translateX = 0
                let translateY = 0
+
                switch(this.state.mouseMode)
                {
                    case MouseMode.None:

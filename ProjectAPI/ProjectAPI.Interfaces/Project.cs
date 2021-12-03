@@ -53,7 +53,7 @@ namespace ProjectAPI.Interfaces
     /// <param name="width"></param>
     /// <param name="height"></param>
     /// <param name="originalFileName"></param>
-    /// <param name="colorModes"></param>
+    /// <param name="subGraphics"></param>
     public record SvgGraphic(
         string guid,
         string url,
@@ -63,7 +63,7 @@ namespace ProjectAPI.Interfaces
         Dimension width,
         Dimension height,
         float angle,
-        SvgSubGraphic[] colorModes): Image(guid, "image/svg+xml", url, posX, posY, width, height);
+        SvgSubGraphic[] subGraphics): Image(guid, "image/svg+xml", url, posX, posY, width, height);
 
     public record Material(
         string category,

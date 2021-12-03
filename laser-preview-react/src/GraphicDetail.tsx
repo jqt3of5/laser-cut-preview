@@ -67,7 +67,7 @@ export class GraphicDetail extends Component<GraphicProps, any> {
                 </div>
                 <div className={"graphic-colors"}>
                     {
-                        this.props.graphic.colorModes.map(color => <GraphicColor color={color} onChange={this.onColorChange}/>)
+                        this.props.graphic.subGraphics.map(color => <GraphicColor color={color} onChange={this.onColorChange}/>)
                     }
                 </div>
             </div>
@@ -77,7 +77,7 @@ export class GraphicDetail extends Component<GraphicProps, any> {
     onColorChange = (oldColor : SvgSubGraphic, newColor : SvgSubGraphic) => {
         this.props.onChange(this.props.graphic, {...this.props.graphic,
             //Replace the old color with the new color
-            colorModes:this.props.graphic.colorModes.map(c => {
+            subGraphics:this.props.graphic.subGraphics.map(c => {
                 if (c == oldColor) {
                     return newColor
                 }

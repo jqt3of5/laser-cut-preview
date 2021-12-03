@@ -14,6 +14,10 @@ export class Dimension {
         public unit : DimensionUnits) {}
 }
 
+export function MultScaler(a : Dimension, s : number) : Dimension
+{
+   return new Dimension(a.value * s, a.unit)
+}
 export function AddDimensions(a : Dimension, b: Dimension) : Dimension
 {
     let c = ConvertTo(b, a.unit)

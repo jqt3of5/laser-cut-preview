@@ -33,7 +33,7 @@ namespace LaserPreviewTests
             Assert.That(graphic, Is.Not.Null);
             Assert.That(graphic.name, Is.EqualTo(filename));
             Assert.That(graphic.guid, Is.EqualTo("12345"));
-            Assert.That(graphic.colorModes, Is.Not.Null.And.Empty);
+            Assert.That(graphic.subGraphics, Is.Not.Null.And.Empty);
             Assert.That(graphic.posX.value, Is.Zero);
             Assert.That(graphic.posY.value, Is.Zero);
             Assert.That(graphic.height.value, Is.Zero);

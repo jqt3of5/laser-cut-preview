@@ -44,7 +44,7 @@ export class SvgGraphic {
         public name: string,
         public mimetype: string,
         public url: string,
-        public colorModes: SvgSubGraphic[],
+        public subGraphics: SvgSubGraphic[],
         public posX : Dimension,
         public posY : Dimension,
         public width: Dimension,
