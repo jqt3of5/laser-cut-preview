@@ -89,6 +89,8 @@ function reduce(state: CutViewState, action: CutViewAction)
            let translateX = 0, translateY = 0, scaleX = 1, scaleY = 1
            let width = state.groups[state.selectedGraphicIndex].width
            let height = state.groups[state.selectedGraphicIndex].height
+           let aspect = width/height
+
            switch(state.mouseMode)
            {
                case MouseMode.None:
@@ -100,33 +102,44 @@ function reduce(state: CutViewState, action: CutViewAction)
                case MouseMode.ScaleBottomRight:
                    scaleX = (width + action.mousedX) / width
                    scaleY = (height + action.mousedY) / height
+                   scaleY = scaleX = Math.min(scaleY, scaleX)
                    break;
                case MouseMode.ScaleBottomLeft:
-                   translateX = action.mousedX
-                   translateY = 0
                    scaleX = (width - action.mousedX) / width
                    scaleY = (height + action.mousedY) / height
+                   //aspect lock
+                   scaleY = scaleX = Math.min(scaleY, scaleX)
+                   translateX = width * (1 - scaleX)
+                   translateY = 0
                    break;
                case MouseMode.ScaleTopRight:
-                   translateX = 0
-                   translateY = action.mousedY
                    scaleX = (width + action.mousedX) / width
                    scaleY = (height - action.mousedY) / height
+                   //aspect lock
+                   scaleY = scaleX = Math.min(scaleY, scaleX)
+
+                   translateX = 0
+                   translateY = height * (1 - scaleY)
                    break;
                case MouseMode.ScaleTopLeft:
-                   translateX = action.mousedX
-                   translateY = action.mousedY
                    scaleX = (width - action.mousedX) / width
                    scaleY = (height - action.mousedY) / height
+
+                   //aspect lock
+                   scaleY = scaleX = Math.min(scaleY, scaleX)
+
+                   translateX = width * (1 - scaleX)
+                   translateY = height * (1 - scaleY)
                    break;
                case MouseMode.Rotate:
                    break;
            }
+
            return {...state, groups: state.groups.map(group => {
                    if (group == state.groups[state.selectedGraphicIndex])
                    {
                        return {...group,
-                           translateX: action.mousedX, translateY: action.mousedY,
+                           translateX: translateX, translateY: translateY,
                            scaleX: scaleX, scaleY: scaleY,
                            loadedGraphics: group.loadedGraphics.map(lg => {
                                return {...lg}
@@ -207,25 +220,32 @@ export function CutView (props : CutViewProps) {
         for (const group of state.groups) {
             for (const graphic of group.loadedGraphics) {
 
+                let startX = group.startX + group.translateX
+                let startY = group.startY + group.translateY
+                let width = group.width * group.scaleX
+                let height = group.height * group.scaleY
+
                 if (graphic.image != null) {
-                    console.log("Drawing to " + group.translateX + " " + group.translateY)
-                    ctx.drawImage(graphic.image, group.startX + group.translateX + graphic.translateX, group.startY + group.translateY + graphic.translateY, graphic.width, graphic.height)
+                    ctx.drawImage(graphic.image,
+                        startX + graphic.translateX * group.scaleX,
+                        startY + graphic.translateY * group.scaleY,
+                        graphic.width * group.scaleX,
+                        graphic.height * group.scaleY)
 
                     ctx.beginPath()
                     ctx.lineWidth = 2
                     ctx.strokeStyle = '#7777ff'
-                    ctx.rect(group.startX + group.translateX, group.startY + group.translateY, group.width, group.height)
+                    ctx.rect(startX, startY, width, height)
                     ctx.stroke()
 
                     ctx.beginPath()
                     ctx.fillStyle = "white"
 
                     let halfSize = CutView.resizeHandleWidth / 2
-                    console.log("width: " + group.width + " height: " + group.height)
-                    ctx.rect(group.startX + group.translateX - halfSize, group.startY + group.translateY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
-                    ctx.rect(group.startX + group.translateX + group.width - halfSize, group.startY + group.translateY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
-                    ctx.rect(group.startX + group.translateX - halfSize, group.startY + group.translateY + group.height- halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
-                    ctx.rect(group.startX + group.translateX + group.width - halfSize, group.startY + group.translateY + group.height- halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                    ctx.rect(startX - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                    ctx.rect(startX + width - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                    ctx.rect(startX - halfSize, startY + height - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                    ctx.rect(startX + width - halfSize, startY + height- halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
                     ctx.stroke()
                     ctx.fill()
 
@@ -286,16 +306,16 @@ export function CutView (props : CutViewProps) {
             //Convert back into units
             let translateX = new Dimension((group.startX + group.translateX) / CutView.pxPerUnit, props.boardWidth.unit)
             let translateY = new Dimension((group.startY + group.translateY) / CutView.pxPerUnit, props.boardHeight.unit)
-            let width = new Dimension(group.width / CutView.pxPerUnit, props.boardWidth.unit)
-            let height = new Dimension(group.height / CutView.pxPerUnit, props.boardHeight.unit)
+            let width = new Dimension(group.width * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
+            let height = new Dimension(group.height * group.scaleY / CutView.pxPerUnit, props.boardHeight.unit)
 
             let newGraphic = {...group.group,
                 subGraphics: group.loadedGraphics
                 .map(graphic => {
-                    let transX = new Dimension(graphic.translateX / CutView.pxPerUnit, props.boardWidth.unit)
-                    let transY = new Dimension(graphic.translateY / CutView.pxPerUnit, props.boardHeight.unit)
-                    let w = new Dimension(graphic.width / CutView.pxPerUnit, props.boardWidth.unit)
-                    let h = new Dimension(graphic.height / CutView.pxPerUnit, props.boardHeight.unit)
+                    let transX = new Dimension(graphic.translateX * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
+                    let transY = new Dimension(graphic.translateY * group.scaleY/ CutView.pxPerUnit, props.boardHeight.unit)
+                    let w = new Dimension(graphic.width * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
+                    let h = new Dimension(graphic.height * group.scaleY / CutView.pxPerUnit, props.boardHeight.unit)
                     return {...graphic.subGraphic,
                         posX: ConvertTo(transX, graphic.subGraphic.posX.unit),
                         posY: ConvertTo(transY, graphic.subGraphic.posY.unit),
