@@ -102,11 +102,16 @@ function reduce(state: CutViewState, action: CutViewAction)
                case MouseMode.ScaleBottomRight:
                    scaleX = (width + action.mousedX) / width
                    scaleY = (height + action.mousedY) / height
+                   scaleX = scaleX < .05 ? .05 : scaleX
+                   scaleY = scaleY < .05 ? .05 : scaleY
                    scaleY = scaleX = Math.min(scaleY, scaleX)
                    break;
                case MouseMode.ScaleBottomLeft:
                    scaleX = (width - action.mousedX) / width
                    scaleY = (height + action.mousedY) / height
+
+                   scaleX = scaleX < .05 ? .05 : scaleX
+                   scaleY = scaleY < .05 ? .05 : scaleY
                    //aspect lock
                    scaleY = scaleX = Math.min(scaleY, scaleX)
                    translateX = width * (1 - scaleX)
@@ -115,6 +120,9 @@ function reduce(state: CutViewState, action: CutViewAction)
                case MouseMode.ScaleTopRight:
                    scaleX = (width + action.mousedX) / width
                    scaleY = (height - action.mousedY) / height
+
+                   scaleX = scaleX < .05 ? .05 : scaleX
+                   scaleY = scaleY < .05 ? .05 : scaleY
                    //aspect lock
                    scaleY = scaleX = Math.min(scaleY, scaleX)
 
@@ -124,7 +132,8 @@ function reduce(state: CutViewState, action: CutViewAction)
                case MouseMode.ScaleTopLeft:
                    scaleX = (width - action.mousedX) / width
                    scaleY = (height - action.mousedY) / height
-
+                   scaleX = scaleX < .05 ? .05 : scaleX
+                   scaleY = scaleY < .05 ? .05 : scaleY
                    //aspect lock
                    scaleY = scaleX = Math.min(scaleY, scaleX)
 
@@ -226,21 +235,58 @@ export function CutView (props : CutViewProps) {
                 let height = group.height * group.scaleY
 
                 if (graphic.image != null) {
+                    //draw image
                     ctx.drawImage(graphic.image,
                         startX + graphic.translateX * group.scaleX,
                         startY + graphic.translateY * group.scaleY,
                         graphic.width * group.scaleX,
                         graphic.height * group.scaleY)
 
+                    //draw boundary rectangle
                     ctx.beginPath()
                     ctx.lineWidth = 2
                     ctx.strokeStyle = '#7777ff'
                     ctx.rect(startX, startY, width, height)
                     ctx.stroke()
 
+                    //draw measurements
+                    ctx.beginPath()
+                    ctx.strokeStyle = "black"
+                    ctx.lineWidth = 2
+
+                    ctx.moveTo(startX, startY)
+                    ctx.lineTo(startX, startY - 64)
+                    ctx.moveTo(startX, startY - 32)
+                    ctx.lineTo(startX + width, startY - 32)
+
+                    ctx.moveTo(startX + width, startY)
+                    ctx.lineTo(startX + width, startY - 64)
+
+                    ctx.moveTo(startX, startY)
+                    ctx.lineTo(startX - 64, startY)
+                    ctx.moveTo(startX - 32, startY)
+                    ctx.lineTo(startX - 32, startY + height)
+
+                    ctx.moveTo(startX, startY + height)
+                    ctx.lineTo(startX - 64, startY + height)
+
+                    ctx.stroke()
+
+                    ctx.fillStyle = "black"
+                    ctx.font = "30px Arial"
+
+                    //TODO: Calc real dimension
+                    ctx.fillText("30.0mm", startX + width/2 - 45, startY - 64)
+                    //TODO: fill rect background
+                    //TODO: height dimension
+
+                    //TODO: X/y dimension
+
+                    //draw scale handles
                     ctx.beginPath()
                     ctx.fillStyle = "white"
 
+                    ctx.lineWidth = 4
                     let halfSize = CutView.resizeHandleWidth / 2
                     ctx.rect(startX - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
                     ctx.rect(startX + width - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
@@ -248,7 +294,6 @@ export function CutView (props : CutViewProps) {
                     ctx.rect(startX + width - halfSize, startY + height- halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
                     ctx.stroke()
                     ctx.fill()
-
                 }
             }
         }
@@ -312,6 +357,7 @@ export function CutView (props : CutViewProps) {
             let newGraphic = {...group.group,
                 subGraphics: group.loadedGraphics
                 .map(graphic => {
+                    //Convert the pixels for subgraphics back into dimentions, keeping track of scale
                     let transX = new Dimension(graphic.translateX * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
                     let transY = new Dimension(graphic.translateY * group.scaleY/ CutView.pxPerUnit, props.boardHeight.unit)
                     let w = new Dimension(graphic.width * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
