@@ -1,4 +1,4 @@
-import {Material, MaterialCategory, Project, SvgGraphic} from "./common/data";
+import {Material, MaterialCategory, Project, GraphicGroup} from "./common/data";
 
 export interface AppState {
     fileToUpload: File | null,
@@ -19,7 +19,7 @@ export type AppAction =
     | {type: ActionType.UpdateProject, project: Project}
     | {type: ActionType.UpdateMaterials, materials: MaterialCategory[]}
     | {type: ActionType.SelectMaterial, material: Material}
-    | {type: ActionType.GraphicChanged, graphic: SvgGraphic}
-    | {type: ActionType.GraphicAdded, graphic: SvgGraphic}
-    | {type: ActionType.GraphicDeleted, graphic: SvgGraphic}
+    | {type: ActionType.GraphicChanged, graphic: GraphicGroup}
+    | {type: ActionType.GraphicAdded, graphic: GraphicGroup}
+    | {type: ActionType.GraphicDeleted, graphic: GraphicGroup}
     | {type: ActionType.FileSelected, files: FileList | null}

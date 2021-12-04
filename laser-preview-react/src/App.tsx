@@ -7,7 +7,7 @@ import './App.css';
 import React, {Component, useEffect} from "react";
 import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
-import {SvgGraphic, Material, MaterialCategory, Project} from "./common/data";
+import {GraphicGroup, Material, MaterialCategory, Project} from "./common/data";
 import {PrettyButton} from "./PrettyButton";
 import {Dimension, DimensionUnits} from "./common/Dimension";
 import {ActionType, AppAction, AppState} from "./AppState";
@@ -48,9 +48,11 @@ function reducer(state : AppState, action : AppAction) : AppState
     }
 }
 
-App.defaultProps = {
-    projectId: "", material: {id: "default", category: "", name: ""}, graphics: [],
-    boardHeight: new Dimension(12, DimensionUnits.Inches), boardWidth: new Dimension(18, DimensionUnits.Inches)
+App.defaultProps ={
+    project:  {
+        projectId: "112345", material: {id: "default", category: "", name: ""}, graphics: [],
+        boardHeight: new Dimension(12, DimensionUnits.Inches), boardWidth: new Dimension(18, DimensionUnits.Inches)
+    }
 }
 
 function App (props : AppProps)
@@ -72,10 +74,11 @@ function App (props : AppProps)
 
     },  [])
 
+    //TODO: No idea if this is really going to work
     useEffect(() => {
         axios.post(process.env.REACT_APP_API + "/project/" + project.projectId, project)
             .then(response => {
-                dispatch({type: ActionType.UpdateProject, project: response.data})
+                // dispatch({type: ActionType.UpdateProject, project: response.data})
             }).catch(reason => console.log(reason))
     }, [project])
 
@@ -120,7 +123,7 @@ function App (props : AppProps)
                         <button className={"pretty-button"} onClick={onFileUpload}>Upload</button>
                     </div>
                     {
-                        project.graphics.map((graphic : SvgGraphic) => <GraphicDetail key={graphic.guid} graphic={graphic} dispatch={dispatch}/> )
+                        project.graphics.map((graphic : GraphicGroup) => <GraphicDetail key={graphic.guid} graphic={graphic} dispatch={dispatch}/> )
                     }
                 </div>
             </div>

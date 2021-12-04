@@ -38,7 +38,7 @@ export class SvgSubGraphic {
     ) {}
 }
 
-export class SvgGraphic {
+export class GraphicGroup {
     constructor(
         public guid: string,
         public name: string,
@@ -57,5 +57,5 @@ export class Project {
         public material:Material,
         public boardWidth : Dimension,
         public boardHeight : Dimension,
-        public graphics: SvgGraphic[]) {}
+        public graphics: GraphicGroup[]) {}
 }

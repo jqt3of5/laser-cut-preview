@@ -1,15 +1,13 @@
-import React, {Component, ReactEventHandler, SyntheticEvent} from "react";
-import {SvgSubGraphic, SvgGraphic, LaserMode, Project} from "./common/data";
+import React, {Dispatch, SyntheticEvent} from "react";
+import {GraphicGroup, LaserMode, SvgSubGraphic} from "./common/data";
 
 import Button from 'react-bootstrap/Button';
 import {Dimension, ToUnitName} from "./common/Dimension";
+import {ActionType, AppAction} from "./AppState";
 
 export interface GraphicProps {
-    graphic: SvgGraphic
-    // project: Project,
-    // updateProject: (project:Project) => void
-    onChange: (oldGraphic : SvgGraphic, newGraphic : SvgGraphic) => void
-    onDelete: (graphic : SvgGraphic) => void
+    graphic: GraphicGroup
+    dispatch: Dispatch<AppAction>
 }
 
 interface GraphicColorProps
@@ -37,69 +35,67 @@ function GraphicColor(props : GraphicColorProps)
         </div>)
 }
 
-export class GraphicDetail extends Component<GraphicProps, any> {
-
-    constructor(props: GraphicProps | Readonly<GraphicProps>) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <div className={"graphic-detail"}>
-                {/*<img className="graphic-preview" src={ServerURL + this.props.graphic.url}></img>*/}
-                <div className={"graphic-detail-header"}>
-                    <label>{this.props.graphic.name}</label>
-                    <Button variant={"warning"} onClick={event => this.props.onDelete(this.props.graphic)}>delete</Button>
-                </div>
-                <div className={"graphic-dimensions"}>
-                    <div className={"graphic-dimension"}>
-                        <label>Width</label>
-                        <div className={"fancy-input"}>
-                            <input className={"input-entry"} value={this.props.graphic.width.value} onChange={this.onWidthChange}/><div className={"input-unit"}>{ToUnitName(this.props.graphic.width.unit)}</div>
-                        </div>
-                    </div>
-                    <div className={"graphic-dimension"}>
-                        <label>Height</label>
-                        <div className={"fancy-input"}>
-                            <input className={"input-entry"} value={this.props.graphic.height.value} onChange={this.onHeightChange}/><div className={"input-unit"}>{ToUnitName(this.props.graphic.height.unit)}</div>
-                        </div>
+export function GraphicDetail(props : GraphicProps) {
+    return (
+        <div className={"graphic-detail"}>
+            {/*<img className="graphic-preview" src={ServerURL + this.props.graphic.url}></img>*/}
+            <div className={"graphic-detail-header"}>
+                <label>{props.graphic.name}</label>
+                <Button variant={"warning"} onClick={event => props.dispatch({type:ActionType.GraphicDeleted, graphic: props.graphic})}>delete</Button>
+            </div>
+            <div className={"graphic-dimensions"}>
+                <div className={"graphic-dimension"}>
+                    <label>Width</label>
+                    <div className={"fancy-input"}>
+                        <input className={"input-entry"} value={props.graphic.width.value} onChange={onWidthChange}/><div className={"input-unit"}>{ToUnitName(props.graphic.width.unit)}</div>
                     </div>
                 </div>
-                <div className={"graphic-colors"}>
-                    {
-                        this.props.graphic.subGraphics.map(color => <GraphicColor color={color} onChange={this.onColorChange}/>)
-                    }
+                <div className={"graphic-dimension"}>
+                    <label>Height</label>
+                    <div className={"fancy-input"}>
+                        <input className={"input-entry"} value={props.graphic.height.value} onChange={onHeightChange}/><div className={"input-unit"}>{ToUnitName(props.graphic.height.unit)}</div>
+                    </div>
                 </div>
             </div>
-        )
-    }
-
-    onColorChange = (oldColor : SvgSubGraphic, newColor : SvgSubGraphic) => {
-        this.props.onChange(this.props.graphic, {...this.props.graphic,
-            //Replace the old color with the new color
-            subGraphics:this.props.graphic.subGraphics.map(c => {
-                if (c == oldColor) {
-                    return newColor
+            <div className={"graphic-colors"}>
+                {
+                    props.graphic.subGraphics.map(color => <GraphicColor color={color} onChange={onColorChange}/>)
                 }
-                return c
-            })})
-    }
-    onWidthChange = (event : SyntheticEvent<HTMLInputElement>) => {
-       let width = parseInt(event.currentTarget.value)
-        if (event.currentTarget.value == "")
-        {
-            width = 0
-        }
-       if (isNaN(width))
-       {
-           this.props.onChange(this.props.graphic, this.props.graphic)
-           return
-       }
-       //TODO: Scaling should maintain ratio
-       this.props.onChange(this.props.graphic,{...this.props.graphic, width: new Dimension(width, this.props.graphic.width.unit)})
+            </div>
+        </div>
+    )
+
+    function onColorChange (oldColor : SvgSubGraphic, newColor : SvgSubGraphic) {
+        props.dispatch({
+            type: ActionType.GraphicChanged, graphic: {
+                ...props.graphic,
+                //Replace the old color with the new color
+                subGraphics: props.graphic.subGraphics.map(c => {
+                    if (c == oldColor) {
+                        return newColor
+                    }
+                    return c
+                })
+            }
+        })
     }
 
-    onHeightChange = (event : SyntheticEvent<HTMLInputElement>) => {
+    function onWidthChange (event : SyntheticEvent<HTMLInputElement>) {
+        let width = parseInt(event.currentTarget.value)
+         if (event.currentTarget.value == "")
+         {
+             width = 0
+         }
+        if (isNaN(width))
+        {
+            props.dispatch({type: ActionType.GraphicChanged, graphic:props.graphic})
+            return
+        }
+        //TODO: Scaling should maintain ratio
+        props.dispatch({type: ActionType.GraphicChanged, graphic:{...props.graphic, width: new Dimension(width, props.graphic.width.unit)}})
+    }
+
+    function onHeightChange (event : SyntheticEvent<HTMLInputElement>) {
         let height = parseInt(event.currentTarget.value)
         if (event.currentTarget.value == "")
         {
@@ -107,10 +103,10 @@ export class GraphicDetail extends Component<GraphicProps, any> {
         }
         if (isNaN(height))
         {
-            this.props.onChange(this.props.graphic, this.props.graphic)
+            props.dispatch({type: ActionType.GraphicChanged, graphic:props.graphic})
             return
         }
         //TODO: Scaling should maintain ratio
-        this.props.onChange(this.props.graphic, {...this.props.graphic, height: new Dimension(height, this.props.graphic.height.unit)})
+        props.dispatch({type: ActionType.GraphicChanged, graphic:{...props.graphic, height: new Dimension(height, props.graphic.height.unit)}})
     }
 }

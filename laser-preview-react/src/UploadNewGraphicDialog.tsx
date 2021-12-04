@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {SvgGraphic} from "./common/data";
+import {GraphicGroup} from "./common/data";
 import axios from "axios";
 import {PrettyButton} from "./PrettyButton";
 
@@ -9,14 +9,14 @@ enum Stage {
 }
 export interface UploadNewGraphicState
 {
-    graphic : SvgGraphic | null
+    graphic : GraphicGroup | null
     fileToUpload : File | null
     stage : Stage
 }
 
 export interface UploadNewGraphicProps
 {
-    attachNewGraphic: (graphic: SvgGraphic) => void
+    attachNewGraphic: (graphic: GraphicGroup) => void
 }
 
 export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, UploadNewGraphicState>
