@@ -92,7 +92,10 @@ function reduce(state: CutViewState, action: CutViewAction)
            let hoverGraphicIndex = state.groups.findIndex(group => {
                return IsOnGraphicHandle(action.mouseX, action.mouseY, group) != MouseMode.None
            })
-           return {...state, hoverGraphicIndex: hoverGraphicIndex}
+
+           return {...state, hoverGraphicIndex: hoverGraphicIndex, selectedGraphicIndex: -1}
+       case CutViewActionType.Finish:
+           return {...state, selectedGraphicIndex: -1,  mouseMode: MouseMode.None}
        case CutViewActionType.Transform:
 
            let translateX = 0, translateY = 0, scaleX = 1, scaleY = 1
@@ -165,8 +168,6 @@ function reduce(state: CutViewState, action: CutViewAction)
                    }
                    return group
                })}
-       case CutViewActionType.Finish:
-           return {...state, selectedGraphicIndex: -1, mouseMode: MouseMode.None}
    }
 }
 
@@ -252,54 +253,22 @@ export function CutView (props : CutViewProps) {
                         graphic.width * group.scaleX,
                         graphic.height * group.scaleY)
 
-
-
-                    if (state.selectedGraphicIndex != -1 && group == state.groups[state.selectedGraphicIndex]
-                    || state.hoverGraphicIndex != -1 && group == state.groups[state.hoverGraphicIndex])
+                    if (state.selectedGraphicIndex != -1 && group == state.groups[state.selectedGraphicIndex])
                     {
-                        //draw measurements
-                        //TODO: Show only on hover/select
-                        ctx.beginPath()
-                        ctx.strokeStyle = "black"
-                        ctx.lineWidth = 2
-
-                        ctx.moveTo(startX, startY)
-                        ctx.lineTo(startX, startY - 64)
-                        ctx.moveTo(startX, startY - 32)
-                        ctx.lineTo(startX + width, startY - 32)
-
-                        ctx.moveTo(startX + width, startY)
-                        ctx.lineTo(startX + width, startY - 64)
-
-                        ctx.moveTo(startX, startY)
-                        ctx.lineTo(startX - 64, startY)
-                        ctx.moveTo(startX - 32, startY)
-                        ctx.lineTo(startX - 32, startY + height)
-
-                        ctx.moveTo(startX, startY + height)
-                        ctx.lineTo(startX - 64, startY + height)
-
-                        ctx.stroke()
-
-                        ctx.fillStyle = "black"
-                        ctx.font = "30px Arial"
-
-                        //Draw width
-                        let w = FromPixels(width, CutView.pxPerUnit, props.boardWidth.unit)
-                        ctx.fillText(`${w.value.toFixed(3)}${ToUnitName(w.unit)}`, startX + width/2 - 45, startY - 64)
-
-                        //draw height
-                        let h = FromPixels(height, CutView.pxPerUnit, props.boardHeight.unit)
-                        ctx.save()
-                        ctx.translate(startX, startY + height/2)
-                        ctx.rotate(-Math.PI/2)
-                        ctx.fillText(`${h.value.toFixed(3)}${ToUnitName(h.unit)}`, -45, -64)
-                        ctx.fill()
-                        ctx.restore()
-
-                        //TODO: fill rect background
-                        //TODO: X/y dimension
+                        // if (state.mouseMode == MouseMode.Translate)
+                        // {
+                        //     drawTranslation(ctx, startX, startY, width, height)
+                        // }
+                        // else
+                        {
+                            drawDimensions(ctx, startX, startY, width, height)
+                        }
                     }
+                    else if (state.hoverGraphicIndex != -1 && group == state.groups[state.hoverGraphicIndex]) {
+                        //draw measurements
+                        drawDimensions(ctx, startX, startY, width, height)
+                    }
+
                     //draw boundary rectangle
                     ctx.beginPath()
                     ctx.lineWidth = 2
@@ -321,6 +290,74 @@ export function CutView (props : CutViewProps) {
             }
         }
     }
+
+    function drawTranslation(ctx : CanvasRenderingContext2D, startX : number, startY : number, width: number, height: number)
+    {
+        ctx.beginPath()
+        ctx.fillStyle = "black"
+        ctx.font = "25px Arial"
+        ctx.strokeStyle = "black"
+        ctx.lineWidth = 2
+
+        let y = FromPixels(startY, CutView.pxPerUnit, props.boardHeight.unit)
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(startX, 0)
+        ctx.save()
+        ctx.translate(startX, startY/2)
+        ctx.rotate(-Math.PI/2)
+        ctx.fillText(`${y.value.toFixed(3)}${ToUnitName(y.unit)}`, -45, -8)
+        ctx.fill()
+        ctx.restore()
+
+        let x = FromPixels(startX, CutView.pxPerUnit, props.boardWidth.unit)
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(0, startY)
+        ctx.fillText(`${x.value.toFixed(3)}${ToUnitName(x.unit)}`, startX/2 - 45, startY - 8)
+
+        ctx.stroke()
+    }
+    function drawDimensions(ctx : CanvasRenderingContext2D, startX : number, startY : number, width: number, height: number)
+    {
+        //draw measurements
+        ctx.beginPath()
+        ctx.fillStyle = "black"
+        ctx.font = "25px Arial"
+
+        ctx.strokeStyle = "black"
+        ctx.lineWidth = 2
+
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(startX, startY - 64)
+        ctx.moveTo(startX, startY - 32)
+        ctx.lineTo(startX + width, startY - 32)
+
+        ctx.moveTo(startX + width, startY)
+        ctx.lineTo(startX + width, startY - 64)
+
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(startX - 64, startY)
+        ctx.moveTo(startX - 32, startY)
+        ctx.lineTo(startX - 32, startY + height)
+
+        ctx.moveTo(startX, startY + height)
+        ctx.lineTo(startX - 64, startY + height)
+
+        ctx.stroke()
+
+        //Draw width
+        let w = FromPixels(width, CutView.pxPerUnit, props.boardWidth.unit)
+        ctx.fillText(`${w.value.toFixed(3)}${ToUnitName(w.unit)}`, startX + width / 2 - 45, startY - 38)
+
+        //draw height
+        let h = FromPixels(height, CutView.pxPerUnit, props.boardHeight.unit)
+        ctx.save()
+        ctx.translate(startX, startY + height / 2)
+        ctx.rotate(-Math.PI / 2)
+        ctx.fillText(`${h.value.toFixed(3)}${ToUnitName(h.unit)}`, -45, -38)
+        ctx.fill()
+        ctx.restore()
+    }
+
     function loadGraphics() : Promise<LoadedGraphicGroup[]> {
         //Load all the graphics and groups and convert then into pixels for easy rendering
         let promises = props.graphics.map(group => {
@@ -436,7 +473,7 @@ export function CutView (props : CutViewProps) {
             }
             else
             {
-                dispatch({type: CutViewActionType.Hover, mouseX:state.mouseX, mouseY: state.mouseY})
+                dispatch({type: CutViewActionType.Hover, mouseX:canvasX, mouseY: canvasY})
             }
         }
     }

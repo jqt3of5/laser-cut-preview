@@ -4,13 +4,14 @@ import logo from './Assets/Craft_Closet_Logo.webp'
 import axios from 'axios';
 
 import './App.css';
-import React, {Component, useEffect} from "react";
+import React, {useEffect} from "react";
 import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
-import {GraphicGroup, Material, MaterialCategory, Project} from "./common/data";
+import {GraphicGroup, Project} from "./common/data";
 import {PrettyButton} from "./PrettyButton";
 import {ConvertTo, Dimension, DimensionUnits} from "./common/Dimension";
 import {ActionType, AppAction, AppState} from "./AppState";
+import {UploadNewGraphicDialog} from "./UploadNewGraphicDialog";
 
 interface AppProps {
     project: Project
@@ -46,7 +47,7 @@ function reducer(state : AppState, action : AppAction) : AppState
         case ActionType.UpdateProject:
             return {...state, project: action.project}
         case ActionType.SetUnits:
-            return {...state, project: {...state.project,
+            return {...state, unit: action.unit, project: {...state.project,
                     boardWidth: ConvertTo(state.project.boardWidth, action.unit),
                     boardHeight: ConvertTo(state.project.boardHeight, action.unit),
                     graphics: state.project.graphics.map(g => ConvertGraphicToUnits(g, state.project.boardHeight.unit))}}
@@ -80,10 +81,11 @@ App.defaultProps ={
 
 function App (props : AppProps)
 {
-    const [{fileToUpload, materials, project}, dispatch] = React.useReducer(reducer, {
+    const [{fileToUpload, materials, project, unit}, dispatch] = React.useReducer(reducer, {
         fileToUpload:null,
         materials:[],
-        project: props.project
+        project: props.project,
+        unit: DimensionUnits.Inches
     })
 
     useEffect(() => {
@@ -105,8 +107,13 @@ function App (props : AppProps)
             }).catch(reason => console.log(reason))
     }, [project])
 
+    function attachNewGraphic(graphic : GraphicGroup)
+    {
+
+    }
     return (
         <div className="App">
+            <UploadNewGraphicDialog attachNewGraphic={attachNewGraphic}></UploadNewGraphicDialog>
             <div className="App-header">
                 <div className="logo">
                     <a href="https://CraftCloset.com">

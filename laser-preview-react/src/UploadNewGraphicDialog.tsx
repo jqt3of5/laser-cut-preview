@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import {GraphicGroup} from "./common/data";
 import axios from "axios";
 import {PrettyButton} from "./PrettyButton";
+import './UploadNewGraphicDialog.css'
 
 enum Stage {
     Upload,
@@ -27,20 +28,23 @@ export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, Upl
     }
 
     render() {
-       return <div className={"dialog upload-dialog"}>
-           {this.state.stage == Stage.Upload &&
+       return <div className={"modal"}>
+           <div className={"modal-content  upload-dialog"}>
+               <span className="close">&times;</span>
+               {this.state.stage == Stage.Upload &&
                <div className={"upload-graphic"}>
                    <input type={"file"} accept={".pdf, .svg"} onChange={this.OnFileChanged}/>
-                   <button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>
+                   {/*<button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>*/}
                </div>
-           }
+               }
 
-           {this.state.stage == Stage.Preview &&
-                <div className={"preview-graphic"}>
-                    <img/>
-                    <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Upload</button>
-                </div>
-           }
+               {this.state.stage == Stage.Preview &&
+               <div className={"preview-graphic"}>
+                   <img/>
+                   <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Upload</button>
+               </div>
+               }
+           </div>
        </div>
     }
 

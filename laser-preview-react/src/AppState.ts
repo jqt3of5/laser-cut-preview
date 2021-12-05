@@ -5,6 +5,7 @@ export interface AppState {
     fileToUpload: File | null,
     materials: MaterialCategory[]
     project: Project,
+    unit : DimensionUnits
 }
 export enum ActionType {
     UpdateProject = 'update-project',
