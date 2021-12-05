@@ -1,4 +1,5 @@
 import {Material, MaterialCategory, Project, GraphicGroup} from "./common/data";
+import {DimensionUnits} from "./common/Dimension";
 
 export interface AppState {
     fileToUpload: File | null,
@@ -13,6 +14,7 @@ export enum ActionType {
     GraphicChanged = 'graphic-changed',
     GraphicAdded = 'graphic-added',
     GraphicDeleted = 'graphic-deleted',
+    SetUnits = 'set-project-units'
 }
 
 export type AppAction =
@@ -23,3 +25,4 @@ export type AppAction =
     | {type: ActionType.GraphicAdded, graphic: GraphicGroup}
     | {type: ActionType.GraphicDeleted, graphic: GraphicGroup}
     | {type: ActionType.FileSelected, files: FileList | null}
+    | {type: ActionType.SetUnits, unit: DimensionUnits}

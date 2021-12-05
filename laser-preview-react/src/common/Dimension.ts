@@ -77,6 +77,9 @@ export function ConvertTo(d : Dimension, unit: DimensionUnits ): Dimension
 export function ToPixels(d : Dimension, pxPerUnit : number, unit : DimensionUnits) : number {
     return ConvertTo(d, unit).value * pxPerUnit
 }
+export function FromPixels(pixels: number, pxPerUnit : number, unit : DimensionUnits) : Dimension {
+    return new Dimension(pixels / pxPerUnit, unit)
+}
 
 export function ToUnitName(unit : DimensionUnits) : string
 {

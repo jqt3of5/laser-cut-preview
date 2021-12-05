@@ -9,7 +9,7 @@ import {CutView} from "./CutView";
 import {GraphicDetail} from "./GraphicDetail";
 import {GraphicGroup, Material, MaterialCategory, Project} from "./common/data";
 import {PrettyButton} from "./PrettyButton";
-import {Dimension, DimensionUnits} from "./common/Dimension";
+import {ConvertTo, Dimension, DimensionUnits} from "./common/Dimension";
 import {ActionType, AppAction, AppState} from "./AppState";
 
 interface AppProps {
@@ -33,8 +33,10 @@ function reducer(state : AppState, action : AppAction) : AppState
             }}
         case ActionType.GraphicDeleted:
             return {...state, project:{...state.project, graphics:state.project.graphics.filter(g => g.guid != action.graphic.guid)}}
+
         case ActionType.GraphicAdded:
-            return {...state, project:{...state.project, graphics: state.project.graphics.concat(action.graphic)}}
+            //Ensure the graphic units are the same as the board's
+            return {...state, project:{...state.project, graphics: state.project.graphics.concat(ConvertGraphicToUnits(action.graphic, state.project.boardHeight.unit))}}
         case ActionType.FileSelected:
             if (action.files != null)
                 return {...state, fileToUpload: action.files[0]}
@@ -43,9 +45,30 @@ function reducer(state : AppState, action : AppAction) : AppState
             return {...state, materials: action.materials}
         case ActionType.UpdateProject:
             return {...state, project: action.project}
+        case ActionType.SetUnits:
+            return {...state, project: {...state.project,
+                    boardWidth: ConvertTo(state.project.boardWidth, action.unit),
+                    boardHeight: ConvertTo(state.project.boardHeight, action.unit),
+                    graphics: state.project.graphics.map(g => ConvertGraphicToUnits(g, state.project.boardHeight.unit))}}
         default:
             return state
     }
+}
+
+function ConvertGraphicToUnits(graphic : GraphicGroup, unit: DimensionUnits) : GraphicGroup
+{
+    return {...graphic,
+        width: ConvertTo(graphic.width, unit),
+        height: ConvertTo(graphic.height, unit),
+        posX: ConvertTo(graphic.posX, unit),
+        posY: ConvertTo(graphic.posY, unit),
+        subGraphics: graphic.subGraphics.map(sub => {
+        return {...sub,
+            width: ConvertTo(sub.width, unit),
+            height: ConvertTo(sub.height, unit),
+            posX: ConvertTo(sub.posX, unit),
+            posY: ConvertTo(sub.posY, unit)}
+    })}
 }
 
 App.defaultProps ={
@@ -74,10 +97,10 @@ function App (props : AppProps)
 
     },  [])
 
-    //TODO: No idea if this is really going to work
     useEffect(() => {
         axios.post(process.env.REACT_APP_API + "/project/" + project.projectId, project)
             .then(response => {
+                //TODO: I want the server to be able to make decisions and modify the project on the way back.
                 // dispatch({type: ActionType.UpdateProject, project: response.data})
             }).catch(reason => console.log(reason))
     }, [project])
