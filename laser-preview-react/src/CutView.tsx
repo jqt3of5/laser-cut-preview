@@ -101,7 +101,6 @@ function reduce(state: CutViewState, action: CutViewAction)
            let translateX = 0, translateY = 0, scaleX = 1, scaleY = 1
            let width = state.groups[state.selectedGraphicIndex].width
            let height = state.groups[state.selectedGraphicIndex].height
-           let aspect = width/height
 
            switch(state.mouseMode)
            {

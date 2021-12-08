@@ -5,15 +5,17 @@ export interface AppState {
     fileToUpload: File | null,
     materials: MaterialCategory[]
     project: Project,
-    unit : DimensionUnits
+    unit : DimensionUnits,
+    isUploadingNewGraphic: boolean,
+    isSubmittingOrder: boolean
 }
 export enum ActionType {
     UpdateProject = 'update-project',
     UpdateMaterials = 'update-materials',
     SelectMaterial = 'select-material',
-    FileSelected = 'file-selected',
+    StartAddingNewGraphic = 'add-new-graphic',
     GraphicChanged = 'graphic-changed',
-    GraphicAdded = 'graphic-added',
+    GraphicAddFinished = 'graphic-added',
     GraphicDeleted = 'graphic-deleted',
     SetUnits = 'set-project-units'
 }
@@ -23,7 +25,7 @@ export type AppAction =
     | {type: ActionType.UpdateMaterials, materials: MaterialCategory[]}
     | {type: ActionType.SelectMaterial, material: Material}
     | {type: ActionType.GraphicChanged, graphic: GraphicGroup}
-    | {type: ActionType.GraphicAdded, graphic: GraphicGroup}
+    | {type: ActionType.GraphicAddFinished, graphic: GraphicGroup | null}
     | {type: ActionType.GraphicDeleted, graphic: GraphicGroup}
-    | {type: ActionType.FileSelected, files: FileList | null}
+    | {type: ActionType.StartAddingNewGraphic}
     | {type: ActionType.SetUnits, unit: DimensionUnits}

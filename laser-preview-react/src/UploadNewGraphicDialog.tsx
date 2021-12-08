@@ -1,12 +1,15 @@
-import React, {Component} from "react";
+import React, {Component, Dispatch} from "react";
 import {GraphicGroup} from "./common/data";
 import axios from "axios";
 import {PrettyButton} from "./PrettyButton";
 import './UploadNewGraphicDialog.css'
+import {ActionType, AppAction, AppState} from "./AppState";
+import {GraphicGroupDetail, SubGraphicListDetails} from "./SubGraphicListDetails";
 
 enum Stage {
     Upload,
-    Preview
+    Preview,
+    LaserMode
 }
 export interface UploadNewGraphicState
 {
@@ -17,7 +20,8 @@ export interface UploadNewGraphicState
 
 export interface UploadNewGraphicProps
 {
-    attachNewGraphic: (graphic: GraphicGroup) => void
+    isShowing : boolean
+    dispatch : Dispatch<AppAction>
 }
 
 export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, UploadNewGraphicState>
@@ -28,31 +32,42 @@ export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, Upl
     }
 
     render() {
+        if (!this.props.isShowing)
+        {
+            return null
+        }
        return <div className={"modal"}>
-           <div className={"modal-content  upload-dialog"}>
-               <span className="close">&times;</span>
-               {this.state.stage == Stage.Upload &&
-               <div className={"upload-graphic"}>
-                   <input type={"file"} accept={".pdf, .svg"} onChange={this.OnFileChanged}/>
-                   {/*<button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>*/}
-               </div>
-               }
+           <div className={"modal-dialog upload-dialog"}>
+               <span className="close" onClick={this.OnGraphicCancelled}>&times;</span>
+               <div className={"modal-content-container"}>
+                   {this.state.stage == Stage.Upload &&
+                       <div className={"upload-graphic-content"}>
+                           <div className={"upload-graphic-input-container"}>
+                               <input type={"file"} accept={".pdf, .svg"} onChange={this.OnFileChanged}/>
+                           </div>
+                           <button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>
+                       </div>
+                   }
 
-               {this.state.stage == Stage.Preview &&
-               <div className={"preview-graphic"}>
-                   <img/>
-                   <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Upload</button>
+                   {this.state.stage == Stage.Preview && this.state.graphic != null &&
+                       <div className={"preview-graphic-content"}>
+                           <GraphicGroupDetail group={this.state.graphic} onChange={(old, group) => this.setState({graphic: group})}></GraphicGroupDetail>
+                           <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Confirm</button>
+                       </div>
+                   }
                </div>
-               }
            </div>
        </div>
     }
 
     OnGraphicConfirmed = (event: React.MouseEvent<HTMLButtonElement>) => {
-        if (this.state.graphic != null)
-        {
-            this.props.attachNewGraphic(this.state.graphic)
-        }
+        this.setState({stage: Stage.Upload})
+        this.props.dispatch({type: ActionType.GraphicAddFinished, graphic:this.state.graphic})
+    }
+
+    OnGraphicCancelled = (event: React.MouseEvent<HTMLButtonElement>) => {
+        this.setState({stage: Stage.Upload})
+        this.props.dispatch({type: ActionType.GraphicAddFinished, graphic: null})
     }
 
     OnFileUpload = (event: React.MouseEvent<HTMLButtonElement>) => {

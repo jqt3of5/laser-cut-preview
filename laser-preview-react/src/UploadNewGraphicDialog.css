@@ -12,12 +12,16 @@
 }
 
 /* Modal Content/Box */
-.modal-content {
+.modal-dialog {
     background-color: #fefefe;
     margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
+    padding: 16px;
     border: 1px solid #888;
     /*width: 80%; !* Could be more or less, depending on screen size *!*/
+}
+.modal-content-container {
+    height: 100%;
+    width: 100%;
 }
 
 /* The Close Button */
@@ -39,11 +43,36 @@
     width: 400px;
     height: 400px;
 }
-
-.upload-graphic {
-    display: flex;
+.upload-graphic-content {
+    display:flex;
+    flex-direction: column;
+    height: 100%;
 }
-
-.preview-graphic {
-
+.upload-graphic-input-container {
+    align-self: center;
+    flex-grow: 1;
+    display:flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+}
+.upload-graphic-content input{
+}
+.upload-graphic-content button {
+    width: 100px;
+    align-self: end;
+}
+.preview-graphic-content {
+    display:flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: auto;
+}
+.preview-graphic-content img {
+    flex-grow: 1;
+    height:100%;
+}
+.preview-graphic-content button {
+    width: 100px;
+    align-self: end;
 }

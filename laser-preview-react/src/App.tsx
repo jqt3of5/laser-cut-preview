@@ -6,7 +6,7 @@ import axios from 'axios';
 import './App.css';
 import React, {useEffect} from "react";
 import {CutView} from "./CutView";
-import {GraphicDetail} from "./GraphicDetail";
+import {SubGraphicListDetails} from "./SubGraphicListDetails";
 import {GraphicGroup, Project} from "./common/data";
 import {PrettyButton} from "./PrettyButton";
 import {ConvertTo, Dimension, DimensionUnits} from "./common/Dimension";
@@ -35,13 +35,16 @@ function reducer(state : AppState, action : AppAction) : AppState
         case ActionType.GraphicDeleted:
             return {...state, project:{...state.project, graphics:state.project.graphics.filter(g => g.guid != action.graphic.guid)}}
 
-        case ActionType.GraphicAdded:
+        case ActionType.GraphicAddFinished:
+            if (action.graphic == null)
+            {
+                return {...state, isUploadingNewGraphic: false}
+            }
+
             //Ensure the graphic units are the same as the board's
-            return {...state, project:{...state.project, graphics: state.project.graphics.concat(ConvertGraphicToUnits(action.graphic, state.project.boardHeight.unit))}}
-        case ActionType.FileSelected:
-            if (action.files != null)
-                return {...state, fileToUpload: action.files[0]}
-            return state
+            return {...state,isUploadingNewGraphic: false, project:{...state.project, graphics: state.project.graphics.concat(ConvertGraphicToUnits(action.graphic, state.project.boardHeight.unit))}}
+        case ActionType.StartAddingNewGraphic:
+            return {...state, isUploadingNewGraphic: true}
         case ActionType.UpdateMaterials:
             return {...state, materials: action.materials}
         case ActionType.UpdateProject:
@@ -81,11 +84,13 @@ App.defaultProps ={
 
 function App (props : AppProps)
 {
-    const [{fileToUpload, materials, project, unit}, dispatch] = React.useReducer(reducer, {
+    const [{fileToUpload, materials, project, unit, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
         fileToUpload:null,
         materials:[],
         project: props.project,
-        unit: DimensionUnits.Inches
+        unit: DimensionUnits.Inches,
+        isSubmittingOrder: false,
+        isUploadingNewGraphic: false
     })
 
     useEffect(() => {
@@ -107,17 +112,14 @@ function App (props : AppProps)
             }).catch(reason => console.log(reason))
     }, [project])
 
-    function attachNewGraphic(graphic : GraphicGroup)
-    {
-
-    }
     return (
         <div className="App">
-            <UploadNewGraphicDialog attachNewGraphic={attachNewGraphic}></UploadNewGraphicDialog>
+            <UploadNewGraphicDialog dispatch={dispatch} isShowing={isUploadingNewGraphic}/>
+
             <div className="App-header">
                 <div className="logo">
                     <a href="https://CraftCloset.com">
-                        <img src={logo}></img>
+                        <img src={logo}/>
                     </a>
                 </div>
                 <PrettyButton className={"save-and-order-button"}>Save and Order</PrettyButton>
@@ -149,30 +151,24 @@ function App (props : AppProps)
                     </div>
 
                     <div className={"add-graphic-detail bottom-separator"}>
-                        <input type={"file"} accept={".pdf, .svg"} onChange={(e) => dispatch({type: ActionType.FileSelected, files: e.target.files})}/>
-                        <button className={"pretty-button"} onClick={onFileUpload}>Upload</button>
+                        <button className={"pretty-button"} onClick={e => dispatch({type: ActionType.StartAddingNewGraphic})}>Upload</button>
                     </div>
                     {
-                        project.graphics.map((graphic : GraphicGroup) => <GraphicDetail key={graphic.guid} graphic={graphic} dispatch={dispatch}/> )
+                        project.graphics.map((graphic : GraphicGroup) => <SubGraphicListDetails key={graphic.guid} group={graphic} onChange={(old, group) => {
+                            if (group == null)
+                            {
+                                dispatch({type: ActionType.GraphicDeleted, graphic: old})
+                            }
+                            else
+                            {
+                                dispatch({type: ActionType.GraphicChanged, graphic: group})
+                            }
+                        }}/> )
                     }
                 </div>
             </div>
         </div>
     );
-
-    function onFileUpload (event: React.MouseEvent<HTMLButtonElement>) {
-        const formData = new FormData();
-        if (fileToUpload != null)
-        {
-            // Update the formData object
-            formData.append(
-                "file",
-                fileToUpload,
-                fileToUpload.name
-            );
-            axios.post(`${process.env.REACT_APP_API}/graphic`, formData).then(response => dispatch({type:ActionType.GraphicAdded, graphic:response.data}))
-        }
-    }
 }
 
 export default App;
