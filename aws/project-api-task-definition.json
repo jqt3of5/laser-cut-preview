@@ -17,14 +17,9 @@
       "entryPoint": null,
       "portMappings": [
         {
-          "hostPort": 5001,
+          "hostPort": 80,
           "protocol": "tcp",
-          "containerPort": 5001 
-        },
-        {
-          "hostPort": 5000,
-          "protocol": "tcp",
-          "containerPort": 5000
+          "containerPort": 80 
         }
       ],
       "command": null,
