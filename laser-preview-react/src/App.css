@@ -88,7 +88,8 @@
   flex-grow: 1;
 }
 .graphic-detail {
-  /*display: flex;*/
+  display: flex;
+  flex-direction: column;
   padding: 8px;
 }
 .graphic-detail-header {
@@ -120,7 +121,7 @@
 .graphic-color-img img{
   border: lightgray 1px solid;
   border-radius: 4px;
-  width: 250px;
+  width: 100%;
 }
 .graphic-color-select {
   display: flex;

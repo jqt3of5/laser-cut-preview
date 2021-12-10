@@ -16,7 +16,7 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subGraphics = processor.ExtractSubGraphics();
+            var subGraphics = processor.ExtractSubGraphicsFromSVG();
             
             Assert.That(subGraphics, Is.Empty);
             Assert.That(subGraphics, Is.Not.Null);
@@ -28,7 +28,7 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var graphic = processor.CreateGraphicFromSubGraphics("12345", filename);
+            var (doc, graphic) = processor.CreateGraphicGroupFromSubGraphics("12345", filename);
             
             Assert.That(graphic, Is.Not.Null);
             Assert.That(graphic.name, Is.EqualTo(filename));
@@ -51,7 +51,7 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subgraphics = processor.ExtractSubGraphics();
+            var subgraphics = processor.ExtractSubGraphicsFromSVG();
            
             Assert.That(subgraphics, Is.Not.Null.And.Not.Empty);
         } 
@@ -68,7 +68,7 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subgraphics = processor.ExtractSubGraphics();
+            var subgraphics = processor.ExtractSubGraphicsFromSVG();
 
             IEnumerable<SvgElement> ChildElements(SvgElement element)
             {
@@ -137,7 +137,7 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subgraphics = processor.ExtractSubGraphics();
+            var subgraphics = processor.ExtractSubGraphicsFromSVG();
            
             Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
             
@@ -160,7 +160,7 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subgraphics = processor.ExtractSubGraphics();
+            var subgraphics = processor.ExtractSubGraphicsFromSVG();
            
             Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
             
@@ -190,11 +190,11 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subgraphics = processor.ExtractSubGraphics();
+            var subgraphics = processor.ExtractSubGraphicsFromSVG();
 
             Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
             
-            var graphic = processor.CreateGraphicFromSubGraphics("1234", "test");
+            var (doc, graphic) = processor.CreateGraphicGroupFromSubGraphics("1234", "test");
 
             var width = subgraphics.Max(tuple => tuple.subGraphic.posX.value + tuple.subGraphic.width.value) - subgraphics.Min(tuple => tuple.subGraphic.posX.value);
             var height = subgraphics.Max(tuple => tuple.subGraphic.posY.value + tuple.subGraphic.height.value) - subgraphics.Min(tuple => tuple.subGraphic.posY.value);

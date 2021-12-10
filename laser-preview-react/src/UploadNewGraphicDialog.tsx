@@ -14,7 +14,7 @@ enum Stage {
 export interface UploadNewGraphicState
 {
     graphic : GraphicGroup | null
-    fileToUpload : File | null
+    // fileToUpload : File | null
     stage : Stage
 }
 
@@ -28,7 +28,7 @@ export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, Upl
 {
     constructor(props: UploadNewGraphicProps | Readonly<UploadNewGraphicProps>) {
         super(props);
-        this.state = {stage:Stage.Upload, fileToUpload: null, graphic: null}
+        this.state = {stage:Stage.Upload, graphic: null}
     }
 
     render() {
@@ -45,14 +45,14 @@ export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, Upl
                            <div className={"upload-graphic-input-container"}>
                                <input type={"file"} accept={".pdf, .svg"} onChange={this.OnFileChanged}/>
                            </div>
-                           <button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>
+                           {/*<button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>*/}
                        </div>
                    }
 
                    {this.state.stage == Stage.Preview && this.state.graphic != null &&
                        <div className={"preview-graphic-content"}>
                            <GraphicGroupDetail group={this.state.graphic} onChange={(old, group) => this.setState({graphic: group})}></GraphicGroupDetail>
-                           <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Confirm</button>
+                           <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Next</button>
                        </div>
                    }
                </div>
@@ -70,25 +70,38 @@ export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, Upl
         this.props.dispatch({type: ActionType.GraphicAddFinished, graphic: null})
     }
 
-    OnFileUpload = (event: React.MouseEvent<HTMLButtonElement>) => {
-        const formData = new FormData();
-        if (this.state.fileToUpload != null)
-        {
-            // Update the formData object
-            formData.append(
-                "file",
-                this.state.fileToUpload,
-                this.state.fileToUpload.name
-            );
-            axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
-                .then(response => this.setState({stage: Stage.Preview, graphic: response.data}))
-        }
-    }
+    // OnFileUpload = (event: React.MouseEvent<HTMLButtonElement>) => {
+    //     const formData = new FormData();
+    //     if (this.state.fileToUpload != null)
+    //     {
+    //         // Update the formData object
+    //         formData.append(
+    //             "file",
+    //             this.state.fileToUpload,
+    //             this.state.fileToUpload.name
+    //         );
+    //         axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
+    //             .then(response => this.setState({stage: Stage.Preview, graphic: response.data}))
+    //     }
+    // }
 
     OnFileChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files == null)
             return
 
-        this.setState({fileToUpload: event.target.files[0]})
+        // this.setState({fileToUpload: event.target.files[0]})
+
+        const formData = new FormData();
+        if (event.target.files[0] != null)
+        {
+            // Update the formData object
+            formData.append(
+                "file",
+                event.target.files[0],
+                event.target.files[0].name
+            );
+            axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
+                .then(response => this.setState({stage: Stage.Preview, graphic: response.data}))
+        }
     }
 }

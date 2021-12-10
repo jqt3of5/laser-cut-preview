@@ -23,6 +23,7 @@ namespace LaserPreview.Controllers
             _model = model;
         }
 
+        
         [HttpGet("{projectId}")]
         public Project GetProject(string projectId)
         {

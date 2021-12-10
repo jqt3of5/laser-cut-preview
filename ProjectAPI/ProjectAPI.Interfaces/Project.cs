@@ -54,7 +54,7 @@ namespace ProjectAPI.Interfaces
     /// <param name="height"></param>
     /// <param name="originalFileName"></param>
     /// <param name="subGraphics"></param>
-    public record SvgGraphic(
+    public record SvgGraphicGroup(
         string guid,
         string url,
         string name,
@@ -174,7 +174,7 @@ namespace ProjectAPI.Interfaces
         Material material,
         Dimension boardWidth,
         Dimension boardHeight,
-        SvgGraphic[] graphics,
+        SvgGraphicGroup[] graphics,
         DimensionUnits DimensionUnits)
     {
         public bool readOnly = false;

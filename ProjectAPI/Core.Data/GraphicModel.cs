@@ -10,30 +10,19 @@ namespace Core.Data
     public class GraphicModel
     {
         public string UploadDir = "uploads";
-        private ConcurrentDictionary<string, SvgGraphic> _graphics = new ConcurrentDictionary<string, SvgGraphic>();
+        private ConcurrentDictionary<string, SvgGraphicGroup> _graphics = new ConcurrentDictionary<string, SvgGraphicGroup>();
         private ConcurrentDictionary<string, Image> _images = new ConcurrentDictionary<string, Image>();
 
         private string ImagePath(string imageId, string ext = ".svg")
         {
             return Path.Combine(UploadDir, imageId + ext);
         }
-        public Stream GetSubGraphicImageBytes(string graphicId)
+        public Stream GetImageBytes(string graphicId)
         {
             return File.OpenRead(ImagePath(graphicId));
         }
-
-        public Stream GetGraphicImageBytes(string graphicId)
-        {
-            if (_graphics.TryGetValue(graphicId, out var graphic))
-            {
-                //TODO: Read all the subgraphic files for the graphic, and 
-                //combine them into a single svg to send
-            }
-            
-            return Stream.Null;
-        }
         
-        public Image? GetSubGraphicImage(string imageId)
+        public Image? GetImageObject(string imageId)
         {
             if (!_images.ContainsKey(imageId))
             {
@@ -43,7 +32,7 @@ namespace Core.Data
             return _images[imageId]; 
         }
         
-        public SvgGraphic? GetGraphic(string graphicId)
+        public SvgGraphicGroup? GetGraphicGroup(string graphicId)
         {
             if (!_graphics.ContainsKey(graphicId))
             {
@@ -64,7 +53,7 @@ namespace Core.Data
         }
      
         
-        public SvgGraphic? ProcessGraphic(string originalFileName, long streamByteCount, Stream stream)
+        public SvgGraphicGroup? ProcessGraphic(string originalFileName, long streamByteCount, Stream stream)
         {
             if (!Directory.Exists(UploadDir))
             {
@@ -79,22 +68,26 @@ namespace Core.Data
 
             var processor = new SvgProcessor(originalSvg);
 
-            var modes = processor.ExtractSubGraphics();
+            var modes = processor.ExtractSubGraphicsFromSVG();
            
             //Save each sub graphic separately
-            foreach (var (doc, colorMode) in modes)
+            foreach (var (subDoc, colorMode) in modes)
             {
                 var modeFilePath = ImagePath(colorMode.guid);
-                doc.Write(modeFilePath); 
+                subDoc.Write(modeFilePath); 
                 
                 //TODO: Store in DB
                 _images[colorMode.guid] = colorMode;
             }
 
-            var graphic = processor.CreateGraphicFromSubGraphics(guid, originalFileName);
+            var (doc, graphic) = processor.CreateGraphicGroupFromSubGraphics(guid, originalFileName);
+            
+            var groupFilePath = ImagePath(graphic.guid);
+            doc.Write(groupFilePath); 
             
             //TODO: Store in DB
             _graphics[guid] = graphic; 
+            _images[guid] = graphic;
              
             return graphic;
         }

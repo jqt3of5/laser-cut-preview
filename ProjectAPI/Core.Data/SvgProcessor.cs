@@ -66,7 +66,7 @@ namespace Core.Data
             _orignalDoc = orignalDoc;
         }
 
-        public IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)> ExtractSubGraphics()
+        public IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)> ExtractSubGraphicsFromSVG()
         {
             var svg = _orignalDoc;
             if (!HasRealUnits(_orignalDoc))
@@ -95,11 +95,11 @@ namespace Core.Data
             return _subgraphicList;
         }
 
-        public SvgGraphic? CreateGraphicFromSubGraphics(string guid, string name)
+        public (SvgDocument, SvgGraphicGroup) CreateGraphicGroupFromSubGraphics(string guid, string name)
         {
             if (_subgraphicList == null)
             {
-                ExtractSubGraphics();
+                ExtractSubGraphicsFromSVG();
             }
             
             //Create the overall graphic object for all the sub graphics. The height/width should contain all child graphics
@@ -107,19 +107,29 @@ namespace Core.Data
             var height = _subgraphicList.Select(m => m.subGraphic).Max(mode => mode.posY.Add(mode.height));
             var width = _subgraphicList.Select(m => m.subGraphic).Max(mode => mode.posX.Add(mode.width));
            
-            
-            
-            
             var widthUnit = _orignalDoc.Width.Type.ToUnits(); 
             var heightUnit = _orignalDoc.Height.Type.ToUnits();
 
             //TODO: Generate the URL in a smarter way
-            var graphic = new SvgGraphic(guid,   $"/graphic/{guid}/image", name,
+            var graphic = new SvgGraphicGroup(guid,   $"/graphic/{guid}/image", name,
                 new Dimension(0, widthUnit), new Dimension(0, heightUnit), 
                 width ?? new Dimension(0, widthUnit), height?? new Dimension(0, heightUnit),0,
                 _subgraphicList.Select(m => m.subGraphic).ToArray());
 
-            return graphic; 
+            SvgDocument groupDoc = new SvgDocument();
+            foreach (var (subDoc, subGraphic) in _subgraphicList)
+            {
+                foreach (var child in subDoc.Children)
+                {
+                    groupDoc.Children.Add(child);
+                }
+            }
+
+            groupDoc.ViewBox = new SvgViewBox(groupDoc.Bounds.X, groupDoc.Bounds.Y, groupDoc.Bounds.Width, groupDoc.Bounds.Height);
+            groupDoc.Width = new SvgUnit(_orignalDoc.Width.Type, (float)width.value);
+            groupDoc.Height = new SvgUnit(_orignalDoc.Height.Type, (float)height.value);
+            
+            return (groupDoc, graphic); 
         }
         private SvgSubGraphic CreateSubGraphicFromSvg(float offsetX, float offsetY, Color color, SvgDocument doc, LaserMode defaultLaserMode = LaserMode.Cut)
         {

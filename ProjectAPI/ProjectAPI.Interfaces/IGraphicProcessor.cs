@@ -5,7 +5,7 @@ namespace ProjectAPI.Interfaces
 {
     public interface IGraphicProcessor
     {
-        public IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)> ExtractSubGraphics();
-        public SvgGraphic? CreateGraphicFromSubGraphics(string guid, string name);
+        public IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)> ExtractSubGraphicsFromSVG();
+        public (SvgDocument, SvgGraphicGroup) CreateGraphicGroupFromSubGraphics(string guid, string name);
     }
 }
