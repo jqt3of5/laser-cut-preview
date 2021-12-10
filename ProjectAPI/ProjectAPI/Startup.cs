@@ -25,9 +25,6 @@ namespace LaserPreview
         {
             services.AddControllersWithViews();
 
-            // In production, the React files will be served from this directory
-            // services.AddSpaStaticFiles(configuration => { configuration.RootPath = "../laser-preview-react/build"; });
-
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProjectAPI", Version = "v1" });
@@ -35,6 +32,7 @@ namespace LaserPreview
             
             services.AddSingleton<ProjectModel>();
             services.AddSingleton<GraphicModel>();
+            services.AddSingleton<MaterialsModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

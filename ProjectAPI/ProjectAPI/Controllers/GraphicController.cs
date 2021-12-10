@@ -27,7 +27,7 @@ namespace LaserPreview.Controllers
                 return null;
             }
             
-            var stream = _model.GetImageBytes(graphicId);
+            var stream = _model.GetImageStream(graphicId);
 
             HttpContext.Response.Headers["Content-Type"] = image.mimetype;
             return stream;

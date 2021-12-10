@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using Core.Data;
 using LaserPreview.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using ProjectAPI.Interfaces;
@@ -13,32 +14,24 @@ namespace LaserPreview.Controllers
     [Route("[controller]")]
     public class MaterialsController : Controller
     {
-        private MaterialCategory[] _categories;
-        public MaterialsController()
+        private readonly MaterialsModel _model;
+
+        public MaterialsController(MaterialsModel model)
         {
-            var json = System.IO.File.ReadAllText("Models/Assets/materials.json");
-            _categories = JsonSerializer.Deserialize<MaterialCategory[]>(json);  
+            _model = model;
         }
         
         [HttpGet]
         public MaterialCategory [] GetMaterials()
         {
-            return _categories;
+            return _model.Categories;
         }
 
         [HttpGet("{materialId}")]
         public ActionResult<Stream> GetMaterialImage(string materialId)
         {
-            var material = _categories.SelectMany(cat => cat.materials).FirstOrDefault(mat => materialId == "default" || mat.id == materialId);
-            if (material == null)
-            {
-                return NotFound($"Could not find material with Id: {materialId}");
-            }
-            
-            var stream = System.IO.File.OpenRead($"Models/Assets/{material.fileName}");
-
-            //TODO: Maybe determine this from the file name?
-            HttpContext.Response.Headers["Content-Type"] = "image/jpg";
+            var stream = _model.GetMaterialImage(materialId, out var mimeType);
+            HttpContext.Response.Headers["Content-Type"] = mimeType;
             return Ok(stream);
         }
     }

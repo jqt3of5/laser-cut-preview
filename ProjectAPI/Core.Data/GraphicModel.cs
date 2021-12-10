@@ -17,7 +17,7 @@ namespace Core.Data
         {
             return Path.Combine(UploadDir, imageId + ext);
         }
-        public Stream GetImageBytes(string graphicId)
+        public Stream GetImageStream(string graphicId)
         {
             return File.OpenRead(ImagePath(graphicId));
         }

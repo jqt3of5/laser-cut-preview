@@ -23,6 +23,7 @@ namespace Core.Data
     }
     public record Order(
         Customer customer,     
+        string orderGuid,
         string projectGuid,
         DateTime orderedDate,
         OrderStatus status,
