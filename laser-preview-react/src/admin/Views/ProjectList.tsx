@@ -1,28 +1,10 @@
 import React from 'react';
 import {Column, useRowSelect, useTable} from "react-table";
-import '../common.css'
+import '../../common/common.css'
 import './ProjectList.css'
+import {Order} from "../../common/data";
 
-enum OrderStatus
-{
-   Pending,
-   Ordered,
-   Paid,
-   Cut,
-   Shipped,
-   Closed
-}
-interface Order {
-    name : string
-    email : string
-    address : string
-    phoneNumber : string
-    cost: number
-    orderid : string
-    status : OrderStatus
-    projectGuid : string,
-    projectUrl : string
-}
+
 export interface ProjectListProps{
     orders : Order[]
     onOrderSelected : (order:Order) => void

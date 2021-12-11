@@ -1,0 +1,47 @@
+.upload-dialog {
+    /*width: 400px;*/
+
+    /*height: 400px;*/
+}
+.upload-graphic-content {
+    display:flex;
+    flex-direction: column;
+    height: 400px;
+    width: 400px;
+}
+.upload-graphic-input-container {
+    align-self: center;
+    flex-grow: 1;
+    display:flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+}
+.upload-graphic-content input{
+}
+.upload-graphic-content button {
+    width: 100px;
+    align-self: end;
+}
+.preview-graphic-content {
+    display:flex;
+    flex-direction: column;
+}
+
+.preview-graphic-content button {
+    width: 100px;
+    align-self: end;
+}
+
+.laser-mode-select-content {
+    display:flex;
+    flex-direction: column;
+}
+.laser-mode-list {
+   display: flex;
+    align-items: center;
+}
+.laser-mode-select-content button {
+    width: 100px;
+    align-self: end;
+}

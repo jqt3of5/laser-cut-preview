@@ -1,9 +1,9 @@
 import React, {Dispatch, SyntheticEvent} from "react";
-import {GraphicGroup, LaserMode, SvgSubGraphic} from "./common/data";
+import {GraphicGroup, LaserMode, SvgSubGraphic} from "../../common/data";
 
 import Button from 'react-bootstrap/Button';
-import {Dimension, ToUnitName} from "./common/Dimension";
-import {ActionType, AppAction} from "./AppState";
+import {Dimension, ToUnitName} from "../../common/Dimension";
+import './GraphicDetails.css'
 
 export interface SubGraphicDetailProps
 {
@@ -98,7 +98,7 @@ export interface GraphicProps {
     onChange: (oldGroup:GraphicGroup, newGroup: GraphicGroup | null) => void
 }
 
-export function SubGraphicListDetails(props : GraphicProps) {
+export function GraphicDetails(props : GraphicProps) {
     return (
         <div className={"graphic-detail"}>
             <div className={"graphic-detail-header"}>

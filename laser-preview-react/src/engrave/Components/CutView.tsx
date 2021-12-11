@@ -1,7 +1,7 @@
 import React, {Dispatch, MouseEvent, useEffect, useReducer} from "react";
-import {GraphicGroup, Material, SvgSubGraphic,} from "./common/data";
-import {AddDimensions, ConvertTo, Dimension, FromPixels, MultScaler, ToPixels, ToUnitName} from "./common/Dimension";
-import {ActionType, AppAction} from "./AppState";
+import {GraphicGroup, Material, SvgSubGraphic,} from "../../common/data";
+import {AddDimensions, ConvertTo, Dimension, FromPixels, MultScaler, ToPixels, ToUnitName} from "../../common/Dimension";
+import {EngraveActionType, EngraveAppAction} from "../Views/EngraveAppState";
 
 interface LoadedGraphicGroup {
     group: GraphicGroup
@@ -33,7 +33,7 @@ export interface CutViewProps {
     boardHeight: Dimension
     material: Material
     graphics: GraphicGroup[]
-    dispatch: Dispatch<AppAction>
+    dispatch: Dispatch<EngraveAppAction>
 }
 enum MouseMode {
     Translate,
@@ -435,7 +435,7 @@ export function CutView (props : CutViewProps) {
             }
 
             //TODO: All the prior logic shold really be in the reducer function, but unfortunately I need a way to pass the parent dispatcher into it.
-            props.dispatch({type: ActionType.GraphicChanged, graphic: newGraphic})
+            props.dispatch({type: EngraveActionType.GraphicChanged, graphic: newGraphic})
         }
         dispatch({type: CutViewActionType.Finish})
     }

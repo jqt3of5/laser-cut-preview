@@ -1,11 +1,17 @@
 import React, {useState} from 'react';
-import './App.css';
+import './Admin.css';
 import SideBarMenu from "./Components/SideBarMenu";
 import ProjectDetailView from "./Views/ProjectDetailView";
 import ProjectList from "./Views/ProjectList";
 import MaterialsList from "./Views/MaterialsList";
+import {Order} from "../common/data";
 
-function App() {
+function Admin() {
+    function onOrderSelected(order : Order)
+    {
+
+    }
+
     const data = React.useMemo(() => [
         {
             name: "John Todd",
@@ -19,13 +25,14 @@ function App() {
             projectUrl: "http://asdfasdf/1234qwerty"
         }
         ],[])
+
     const [selected, setSelected] = useState("Projects")
 
     let currentView = null
     switch(selected)
     {
         case "Projects":
-            currentView = <ProjectList orders={data}></ProjectList>
+            currentView = <ProjectList orders={data} onOrderSelected={onOrderSelected}></ProjectList>
             break;
         case "Materials":
             currentView = <MaterialsList></MaterialsList>
@@ -56,4 +63,4 @@ function App() {
   );
 }
 
-export default App;
+export default Admin;

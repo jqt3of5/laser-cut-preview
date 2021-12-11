@@ -94,6 +94,21 @@
   align-content: center;
 }
 
+.dialog {
+  position: absolute;
+  top: 35%;
+  left: 35%;
+  /*border-style: solid;*/
+  border-color: lightgray;
+  border-radius: 5px;
+  box-shadow: 0 0 5px 5px darkgray;
+  background-color: white;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
 .pretty-select {
   display: inline-block;
   /*width: 100%;*/

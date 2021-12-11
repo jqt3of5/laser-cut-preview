@@ -1,10 +1,11 @@
 import React, {Component, Dispatch} from "react";
-import {GraphicGroup} from "./common/data";
+import {GraphicGroup, SvgSubGraphic} from "../../common/data";
 import axios from "axios";
-import {PrettyButton} from "./PrettyButton";
+import {PrettyButton} from "../../common/PrettyButton";
 import './UploadNewGraphicDialog.css'
-import {ActionType, AppAction, AppState} from "./AppState";
-import {GraphicGroupDetail, SubGraphicListDetails} from "./SubGraphicListDetails";
+import '../../common/common.css'
+import {EngraveActionType, EngraveAppAction, EngraveAppState} from "../Views/EngraveAppState";
+import {GraphicGroupDetail, SubGraphicDetail, GraphicDetails} from "./GraphicDetails";
 
 enum Stage {
     Upload,
@@ -14,14 +15,13 @@ enum Stage {
 export interface UploadNewGraphicState
 {
     graphic : GraphicGroup | null
-    // fileToUpload : File | null
     stage : Stage
 }
 
 export interface UploadNewGraphicProps
 {
     isShowing : boolean
-    dispatch : Dispatch<AppAction>
+    dispatch : Dispatch<EngraveAppAction>
 }
 
 export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, UploadNewGraphicState>
@@ -45,7 +45,6 @@ export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, Upl
                            <div className={"upload-graphic-input-container"}>
                                <input type={"file"} accept={".pdf, .svg"} onChange={this.OnFileChanged}/>
                            </div>
-                           {/*<button className={"pretty-button"} onClick={this.OnFileUpload}>Upload</button>*/}
                        </div>
                    }
 
@@ -55,41 +54,58 @@ export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, Upl
                            <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Next</button>
                        </div>
                    }
+
+                   {this.state.stage == Stage.LaserMode && this.state.graphic != null &&
+                       <div className={"laser-mode-select-content"}>
+                           <label>Set the correct modes for each color</label>
+                           <div className={"laser-mode-list"}>
+                               <span>a</span>
+                               <SubGraphicDetail subGraphic={this.state.graphic.subGraphics[0]} onChange={this.OnSubGraphicChanged}/>
+                               <span>b</span>
+                           </div>
+                           <button className={"pretty-button"} onClick={this.OnModesConfirmed}>Next</button>
+                       </div>
+                   }
                </div>
            </div>
        </div>
     }
 
-    OnGraphicConfirmed = (event: React.MouseEvent<HTMLButtonElement>) => {
+    OnSubGraphicChanged = (old: SvgSubGraphic, newGraphic: SvgSubGraphic) =>
+    {
+        this.setState(state => {
+            if (state.graphic == null)
+            {
+                return state
+            }
+            return {...state, graphic:{...state.graphic, subGraphics: state.graphic.subGraphics.map(sub => {
+                        if (sub == old)
+                        {
+                            return newGraphic
+                        }
+                        return sub
+                    })
+            }}
+        })
+    }
+
+    OnModesConfirmed = (event: React.MouseEvent<HTMLButtonElement>) => {
         this.setState({stage: Stage.Upload})
-        this.props.dispatch({type: ActionType.GraphicAddFinished, graphic:this.state.graphic})
+        this.props.dispatch({type: EngraveActionType.GraphicAddFinished, graphic:this.state.graphic})
+    }
+
+    OnGraphicConfirmed = (event: React.MouseEvent<HTMLButtonElement>) => {
+        this.setState({stage: Stage.LaserMode})
     }
 
     OnGraphicCancelled = (event: React.MouseEvent<HTMLButtonElement>) => {
         this.setState({stage: Stage.Upload})
-        this.props.dispatch({type: ActionType.GraphicAddFinished, graphic: null})
+        this.props.dispatch({type: EngraveActionType.GraphicAddFinished, graphic: null})
     }
-
-    // OnFileUpload = (event: React.MouseEvent<HTMLButtonElement>) => {
-    //     const formData = new FormData();
-    //     if (this.state.fileToUpload != null)
-    //     {
-    //         // Update the formData object
-    //         formData.append(
-    //             "file",
-    //             this.state.fileToUpload,
-    //             this.state.fileToUpload.name
-    //         );
-    //         axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
-    //             .then(response => this.setState({stage: Stage.Preview, graphic: response.data}))
-    //     }
-    // }
 
     OnFileChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files == null)
             return
-
-        // this.setState({fileToUpload: event.target.files[0]})
 
         const formData = new FormData();
         if (event.target.files[0] != null)

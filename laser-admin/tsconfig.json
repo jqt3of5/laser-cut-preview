@@ -22,7 +22,7 @@
   },
   "include": [
     "src",
-    "src/Components",
-    "src/Views"
+    "../laser-preview-react/src/admin/Components",
+    "../laser-preview-react/src/admin/Views"
   ]
 }

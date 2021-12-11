@@ -59,3 +59,24 @@ export class Project {
         public boardHeight : Dimension,
         public graphics: GraphicGroup[]) {}
 }
+
+export enum OrderStatus
+{
+    Pending,
+    Ordered,
+    Paid,
+    Cut,
+    Shipped,
+    Closed
+}
+export interface Order {
+    name : string
+    email : string
+    address : string
+    phoneNumber : string
+    cost: number
+    orderid : string
+    status : OrderStatus
+    projectGuid : string,
+    projectUrl : string
+}
