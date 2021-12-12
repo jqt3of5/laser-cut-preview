@@ -22,22 +22,25 @@
 .graphic-colors {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
 .graphic-color-item {
     padding: 8px;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.graphic-color-img img{
+.graphic-color-img img {
     border: lightgray 1px solid;
     border-radius: 4px;
-    width: 100%;
-    max-height: 500px;
-    max-width: 500px;
+    min-width: 200px;
+    max-height: 1000px !important;
+    max-width: 300px !important;
 }
+
 .graphic-color-select {
+    align-self: stretch;
     display: flex;
     align-items: center;
 }

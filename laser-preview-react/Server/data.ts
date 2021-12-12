@@ -1,4 +1,4 @@
-import {Project, GraphicGroup, SvgSubGraphic, MaterialCategory, Material, UploadedFile} from "../src/common/data";
+import {Project, GraphicGroup, SvgSubGraphic, MaterialCategory, Material, UploadedFile} from "../src/common/dto";
 
 var fs = require("fs")
 var uuid = require("uuid")

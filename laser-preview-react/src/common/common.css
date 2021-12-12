@@ -25,19 +25,31 @@
     border: 1px solid #888;
     /*width: 80%; !* Could be more or less, depending on screen size *!*/
 }
+.modal-dialog-header {
+    display: flex;
+    align-items: center;
+    padding-bottom: 8px;
+}
+.modal-dialog-header label {
+   flex-grow: 1;
+    font-size: 28px;
+}
+.modal-dialog-header .close {
+    /*align-self: end;*/
+}
+
 .modal-content-container {
 }
 
 /* The Close Button */
-.close {
+.textButton {
     color: #aaa;
-    float: right;
     font-size: 28px;
     font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
+.textButton:hover,
+.textButton:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;

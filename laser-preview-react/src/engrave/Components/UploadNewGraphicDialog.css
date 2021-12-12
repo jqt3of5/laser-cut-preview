@@ -24,6 +24,7 @@
     align-self: end;
 }
 .preview-graphic-content {
+    width: 100%;
     display:flex;
     flex-direction: column;
 }
@@ -34,6 +35,7 @@
 }
 
 .laser-mode-select-content {
+    width: 100%;
     display:flex;
     flex-direction: column;
 }

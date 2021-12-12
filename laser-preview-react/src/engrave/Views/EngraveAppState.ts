@@ -1,4 +1,4 @@
-import {Material, MaterialCategory, Project, GraphicGroup} from "../../common/data";
+import {Material, MaterialCategory, Project, GraphicGroup} from "../../common/dto";
 import {DimensionUnits} from "../../common/Dimension";
 
 export interface EngraveAppState {

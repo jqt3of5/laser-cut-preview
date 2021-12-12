@@ -8,12 +8,13 @@ import { useCookies } from 'react-cookie';
 import React, {useEffect} from "react";
 import {CutView} from "../Components/CutView";
 import {GraphicDetails} from "../Components/GraphicDetails";
-import {GraphicGroup, Project} from "../../common/data";
+import {GraphicGroup, Project} from "../../common/dto";
 import {PrettyButton} from "../../common/PrettyButton";
 import {ConvertTo, Dimension, DimensionUnits} from "../../common/Dimension";
 import {EngraveActionType, EngraveAppAction, EngraveAppState} from "./EngraveAppState";
 import {UploadNewGraphicDialog} from "../Components/UploadNewGraphicDialog";
 import {v4 as uuidv4} from 'uuid';
+import {ConvertGraphicToUnits} from "../../common/busi";
 
 interface AppProps {
 }
@@ -80,22 +81,6 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
     }
 }
 
-function ConvertGraphicToUnits(graphic : GraphicGroup, unit: DimensionUnits) : GraphicGroup
-{
-    return {...graphic,
-        width: ConvertTo(graphic.width, unit),
-        height: ConvertTo(graphic.height, unit),
-        posX: ConvertTo(graphic.posX, unit),
-        posY: ConvertTo(graphic.posY, unit),
-        subGraphics: graphic.subGraphics.map(sub => {
-        return {...sub,
-            width: ConvertTo(sub.width, unit),
-            height: ConvertTo(sub.height, unit),
-            posX: ConvertTo(sub.posX, unit),
-            posY: ConvertTo(sub.posY, unit)}
-    })}
-}
-
 function Engrave (props : AppProps)
 {
     const [{fileToUpload, materials, project, unit, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
@@ -139,7 +124,7 @@ function Engrave (props : AppProps)
 
     return (
         <div className="App">
-            <UploadNewGraphicDialog dispatch={dispatch} isShowing={isUploadingNewGraphic}/>
+            <UploadNewGraphicDialog dispatch={dispatch} isShowing={isUploadingNewGraphic} units={unit}/>
 
             <div className="App-header">
                 <div className="logo">
@@ -179,8 +164,10 @@ function Engrave (props : AppProps)
                     </div>
 
                     <div className={"add-graphic-detail bottom-separator"}>
-                        <button className={"pretty-button"} onClick={e => dispatch({type: EngraveActionType.StartAddingNewGraphic})}>Upload</button>
+                        <span onClick={e => dispatch({type: EngraveActionType.StartAddingNewGraphic})}>Click to upload a new SVG</span>
+                        <button className={"pretty-button"} onClick={e => dispatch({type: EngraveActionType.StartAddingNewGraphic})}>&#43;</button>
                     </div>
+
                     {project != null &&
                         project.graphics.map((graphic : GraphicGroup) => <GraphicDetails key={graphic.guid} group={graphic} onChange={(old, group) => {
                             if (group == null)

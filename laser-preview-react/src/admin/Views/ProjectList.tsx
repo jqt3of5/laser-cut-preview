@@ -2,7 +2,7 @@ import React from 'react';
 import {Column, useRowSelect, useTable} from "react-table";
 import '../../common/common.css'
 import './ProjectList.css'
-import {Order} from "../../common/data";
+import {Order} from "../../common/dto";
 
 
 export interface ProjectListProps{

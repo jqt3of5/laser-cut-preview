@@ -4,7 +4,7 @@ import SideBarMenu from "./Components/SideBarMenu";
 import ProjectDetailView from "./Views/ProjectDetailView";
 import ProjectList from "./Views/ProjectList";
 import MaterialsList from "./Views/MaterialsList";
-import {Order} from "../common/data";
+import {Order} from "../common/dto";
 
 function Admin() {
     function onOrderSelected(order : Order)
