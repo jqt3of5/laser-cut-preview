@@ -1,7 +1,19 @@
-.upload-dialog{
-
+.customer-address {
+    display: flex;
+    flex-direction: column;
 }
 
-.upload-graphic {
+.customer-address input {
+    padding:4px;
+    margin: 4px;
+    border: 1px solid lightgray;
+    border-radius: 4px;
+}
 
+.footer-label {
+   font-size: 14px;
+}
+
+.cost-label {
+    align-self: end;
 }

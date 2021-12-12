@@ -7,8 +7,7 @@ namespace Core.Data
         string name,
         string email,
         string phone,
-        string address1,
-        string address2,
+        string streetAddress,
         string city,
         string state,
         string country,
@@ -17,9 +16,10 @@ namespace Core.Data
     public enum OrderStatus
     {
         Ordered,
+        Paid,
         Processing,
-        Processed,
-        Shipped
+        Shipped,
+        Closed
     }
     public record Order(
         Customer customer,     
