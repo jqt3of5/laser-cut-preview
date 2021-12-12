@@ -80,10 +80,10 @@ type CutViewAction =
     | {type: CutViewActionType.Transform, mousedX: number, mousedY: number}
     | {type: CutViewActionType.Finish}
 
-export function ConvertLoadedGraphicGroupToUnitsFromPixels(group : LoadedGraphicGroup, pxPerUnit : number, unit: DimensionUnits) : GraphicGroup
+export function ConvertLoadedGraphicGroupToUnitsFromPixels(loadedGroup : LoadedGraphicGroup, pxPerUnit : number, unit: DimensionUnits) : GraphicGroup
 {
-    return {...group.group,
-        subGraphics: group.loadedGraphics
+    return {...loadedGroup.group,
+        subGraphics: loadedGroup.loadedGraphics
             .map(graphic => {
                 return {...graphic.subGraphic,
                     posX: new Dimension(graphic.translateX / pxPerUnit, unit),
@@ -92,10 +92,10 @@ export function ConvertLoadedGraphicGroupToUnitsFromPixels(group : LoadedGraphic
                     height: new Dimension(graphic.height / pxPerUnit, unit),
                 }
             }),
-        posX: new Dimension((group.startX + group.translateX) / pxPerUnit, unit),
-        posY: new Dimension((group.startY + group.translateY) / pxPerUnit, unit),
-        width: new Dimension(group.width / pxPerUnit, unit),
-        height:  new Dimension(group.height / pxPerUnit, unit)
+        posX: new Dimension((loadedGroup.startX + loadedGroup.translateX) / pxPerUnit, unit),
+        posY: new Dimension((loadedGroup.startY + loadedGroup.translateY) / pxPerUnit, unit),
+        width: new Dimension(loadedGroup.width / pxPerUnit, unit),
+        height:  new Dimension(loadedGroup.height / pxPerUnit, unit)
     }
 }
 
@@ -215,7 +215,6 @@ export function CutView (props : CutViewProps) {
     })
 
     let canvasRef = React.createRef<HTMLCanvasElement>()
-    //In canvas pixels, not client pixels
 
     useEffect(() => {
 
@@ -438,33 +437,6 @@ export function CutView (props : CutViewProps) {
 
             let newGraphic = ConvertLoadedGraphicGroupToUnitsFromPixels(group, CutView.pxPerUnit, props.boardWidth.unit)
             newGraphic = ScaleGraphicGroup(newGraphic, group.scaleX, group.scaleY)
-
-            //Convert back into units
-            // let translateX = new Dimension((group.startX + group.translateX) / CutView.pxPerUnit, props.boardWidth.unit)
-            // let translateY = new Dimension((group.startY + group.translateY) / CutView.pxPerUnit, props.boardHeight.unit)
-            // let width = new Dimension(group.width * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
-            // let height = new Dimension(group.height * group.scaleY / CutView.pxPerUnit, props.boardHeight.unit)
-            //
-            // let newGraphic = {...group.group,
-            //     subGraphics: group.loadedGraphics
-            //     .map(graphic => {
-            //         //Convert the pixels for subgraphics back into dimentions, keeping track of scale
-            //         let transX = new Dimension(graphic.translateX * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
-            //         let transY = new Dimension(graphic.translateY * group.scaleY/ CutView.pxPerUnit, props.boardHeight.unit)
-            //         let w = new Dimension(graphic.width * group.scaleX / CutView.pxPerUnit, props.boardWidth.unit)
-            //         let h = new Dimension(graphic.height * group.scaleY / CutView.pxPerUnit, props.boardHeight.unit)
-            //         return {...graphic.subGraphic,
-            //             posX: ConvertTo(transX, graphic.subGraphic.posX.unit),
-            //             posY: ConvertTo(transY, graphic.subGraphic.posY.unit),
-            //             width: ConvertTo(w, graphic.subGraphic.width.unit),
-            //             height: ConvertTo(h, graphic.subGraphic.height.unit),
-            //         }
-            //     }),
-            //     posX: ConvertTo(translateX, group.group.posX.unit),
-            //     posY: ConvertTo(translateY, group.group.posY.unit),
-            //     width: ConvertTo(width, group.group.width.unit),
-            //     height: ConvertTo(height, group.group.height.unit)
-            // }
 
             //TODO: All the prior logic shold really be in the reducer function, but unfortunately I need a way to pass the parent dispatcher into it.
             props.dispatch({type: EngraveActionType.GraphicChanged, graphic: newGraphic})
