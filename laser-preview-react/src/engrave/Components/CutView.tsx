@@ -38,7 +38,17 @@ interface LoadedGraphic {
     translateY : number
 }
 
+export enum SnapTo {
+    Continuous,
+    OneHalf,
+    OneQuarter,
+    OneEighth,
+    OneSixteenth,
+    OneCentimeter,
+    OneMillimeter
+}
 export interface CutViewProps {
+    snapTo : SnapTo
     boardWidth: Dimension
     boardHeight: Dimension
     material: Material

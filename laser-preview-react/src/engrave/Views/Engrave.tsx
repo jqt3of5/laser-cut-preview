@@ -4,13 +4,13 @@ import logo from '../../Assets/Craft_Closet_Logo.webp'
 import axios from 'axios';
 
 import './Engrave.css';
-import { useCookies } from 'react-cookie';
+import {useCookies} from 'react-cookie';
 import React, {useEffect} from "react";
-import {CutView} from "../Components/CutView";
+import {CutView, SnapTo} from "../Components/CutView";
 import {GraphicDetails} from "../Components/GraphicDetails";
-import {GraphicGroup, Project} from "../../common/dto";
+import {GraphicGroup} from "../../common/dto";
 import {PrettyButton} from "../../common/PrettyButton";
-import {ConvertTo, Dimension, DimensionUnits} from "../../common/Dimension";
+import {ConvertTo, DimensionUnits} from "../../common/Dimension";
 import {EngraveActionType, EngraveAppAction, EngraveAppState} from "./EngraveAppState";
 import {UploadNewGraphicDialog} from "../Components/UploadNewGraphicDialog";
 import {v4 as uuidv4} from 'uuid';
@@ -83,11 +83,12 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
 
 function Engrave (props : AppProps)
 {
-    const [{fileToUpload, materials, project, unit, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
+    const [{fileToUpload, materials, project, unit, snapTo, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
         fileToUpload:null,
         materials:[],
         project: null,
         unit: DimensionUnits.Inches,
+        snapTo: SnapTo.Continuous,
         isSubmittingOrder: false,
         isUploadingNewGraphic: false
     })
@@ -138,7 +139,7 @@ function Engrave (props : AppProps)
             <div className={"App-content"}>
                 {project != null &&
                     <CutView material={project.material} graphics={project.graphics} boardHeight={project.boardHeight}
-                         boardWidth={project.boardWidth} dispatch={dispatch}/>
+                         boardWidth={project.boardWidth} snapTo={snapTo} dispatch={dispatch}/>
                 }
 
                 <div className="detailBar">

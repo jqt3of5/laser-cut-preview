@@ -1,11 +1,13 @@
 import {Material, MaterialCategory, Project, GraphicGroup} from "../../common/dto";
 import {DimensionUnits} from "../../common/Dimension";
+import {SnapTo} from "../Components/CutView";
 
 export interface EngraveAppState {
     fileToUpload: File | null,
     materials: MaterialCategory[]
     project: Project | null,
     unit : DimensionUnits,
+    snapTo: SnapTo,
     isUploadingNewGraphic: boolean,
     isSubmittingOrder: boolean
 }
