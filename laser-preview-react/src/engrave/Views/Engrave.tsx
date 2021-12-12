@@ -16,6 +16,7 @@ import {UploadNewGraphicDialog} from "../Components/UploadNewGraphicDialog";
 import {v4 as uuidv4} from 'uuid';
 import {ConvertGraphicToUnits} from "../../common/busi";
 import {SubmitAndOrderDialog} from "../Components/SubmitAndOrderDialog";
+import {Button} from "react-bootstrap";
 
 function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAppState
 {
@@ -74,6 +75,10 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
                     boardWidth: ConvertTo(state.project.boardWidth, action.unit),
                     boardHeight: ConvertTo(state.project.boardHeight, action.unit),
                     graphics: state.project.graphics.map(g => ConvertGraphicToUnits(g, proj.boardHeight.unit))}}
+        case EngraveActionType.StartSubmitingOrder:
+            return {...state, isSubmittingOrder: true}
+        case EngraveActionType.OrderSubmited:
+            return {...state, isSubmittingOrder: false}
         default:
             return state
     }
@@ -84,7 +89,7 @@ interface AppProps {
 
 function Engrave (props : AppProps)
 {
-    const [{fileToUpload, materials, project, addingGraphic, unit, snapTo, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
+    const [{fileToUpload, materials, project,addingGraphic, unit, snapTo, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
         fileToUpload:null,
         materials:[],
         project: null,
@@ -120,8 +125,7 @@ function Engrave (props : AppProps)
         }
         axios.post(process.env.REACT_APP_API + "/project/" + project.projectId, project)
             .then(response => {
-                //TODO: I want the server to be able to make decisions and modify the project on the way back.
-                // dispatch({type: ActionType.UpdateProject, project: response.data})
+                // dispatch({type: EngraveActionType.UpdateProject, project: response.data, shouldSave: false})
             }).catch(reason => console.log(reason))
     }, [project])
 
@@ -129,7 +133,7 @@ function Engrave (props : AppProps)
     return (
         <div className="App">
             <UploadNewGraphicDialog dispatch={dispatch} isShowing={isUploadingNewGraphic} units={unit} graphic={addingGraphic}/>
-            <SubmitAndOrderDialog isShowing={isSubmittingOrder}/>
+            <SubmitAndOrderDialog dispatch={dispatch} projectGuid={project?.projectId ?? ""} isShowing={isSubmittingOrder}/>
 
             <div className="App-header">
                 <div className="logo">
@@ -137,7 +141,7 @@ function Engrave (props : AppProps)
                         <img src={logo}/>
                     </a>
                 </div>
-                <PrettyButton className={"save-and-order-button"}>Save and Order</PrettyButton>
+                <Button variant={"primary"} className={"save-and-order-button"} onClick={e => dispatch({type: EngraveActionType.StartSubmitingOrder})}>Save and Order</Button>
             </div>
 
             <div className={"App-content"}>

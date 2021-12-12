@@ -62,21 +62,29 @@ export class Project {
 
 export enum OrderStatus
 {
-    Pending,
-    Ordered,
-    Paid,
-    Cut,
-    Shipped,
-    Closed
+    Ordered= 'Ordered',
+    Paid ='Paid',
+    Processing ='Processing',
+    Shipped ='Shipped',
+    Closed = 'Closed'
 }
+
+export interface Customer {
+    name: string
+    email: string
+    streetAddress: string
+    city: string
+    state: string
+    country: string
+    zipcode: string
+    phoneNumber: string
+}
+
 export interface Order {
-    name : string
-    email : string
-    address : string
-    phoneNumber : string
-    cost: number
-    orderid : string
-    status : OrderStatus
+    customer : Customer
     projectGuid : string,
-    projectUrl : string
+    cost: number
+    orderedDate : number | null
+    orderGuid : string | null
+    status : OrderStatus | null
 }

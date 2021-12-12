@@ -20,7 +20,9 @@ export enum EngraveActionType {
     GraphicChanged = 'graphic-changed',
     GraphicAddFinished = 'graphic-added',
     GraphicDeleted = 'graphic-deleted',
-    SetUnits = 'set-project-units'
+    SetUnits = 'set-project-units',
+    StartSubmitingOrder = 'submit-order',
+    OrderSubmited = 'order-submited'
 }
 
 export type EngraveAppAction =
@@ -32,3 +34,5 @@ export type EngraveAppAction =
     | {type: EngraveActionType.GraphicDeleted, graphic: GraphicGroup}
     | {type: EngraveActionType.StartAddingNewGraphic, graphic: GraphicGroup}
     | {type: EngraveActionType.SetUnits, unit: DimensionUnits}
+    | {type: EngraveActionType.StartSubmitingOrder}
+    | {type: EngraveActionType.OrderSubmited}

@@ -2,8 +2,7 @@ import React from 'react';
 import {Column, useRowSelect, useTable} from "react-table";
 import '../../common/common.css'
 import './ProjectList.css'
-import {Order} from "../../common/dto";
-
+import {Order, OrderStatus} from "../../common/dto";
 
 export interface ProjectListProps{
     orders : Order[]
@@ -14,19 +13,19 @@ export default function ProjectList(props: ProjectListProps) {
         () => [
             {
                 Header: "Name",
-                accessor: "name",
+                accessor: row => row.customer.name
             },
             {
                 Header: "Project Value",
-                accessor: "cost"
+                accessor: row => row.cost
             },
             {
                 Header:"Order Number",
-                accessor:"orderid"
+                accessor: row => row.orderGuid
             },
             {
                 Header: "Status",
-                accessor:"status"
+                accessor: row => row.status
             },
             // {
             //     Header: "Open Project",

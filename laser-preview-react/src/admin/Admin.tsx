@@ -4,7 +4,7 @@ import SideBarMenu from "./Components/SideBarMenu";
 import ProjectDetailView from "./Views/ProjectDetailView";
 import ProjectList from "./Views/ProjectList";
 import MaterialsList from "./Views/MaterialsList";
-import {Order} from "../common/dto";
+import {Order, OrderStatus} from "../common/dto";
 
 function Admin() {
     function onOrderSelected(order : Order)
@@ -12,17 +12,23 @@ function Admin() {
 
     }
 
-    const data = React.useMemo(() => [
+    const data = React.useMemo<Order[]>(() => [
         {
-            name: "John Todd",
-            email: "jqt3of5@gmail.com",
-            address: "3423 woodhouse",
-            phoneNumber: "234-234-23423",
+            customer: {
+                name: "John Todd",
+                email: "jqt3of5@gmail.com",
+                streetAddress: "33423 woodhouse",
+                city: "Saratoga springs",
+                state: "UT",
+                country: "USA",
+                zipcode: "84045",
+                phoneNumber: "234-234-23423",
+            },
             cost: 123.34,
-            orderid: "1234567",
-            status: 0,
+            orderGuid: "1234567",
+            status: OrderStatus.Ordered,
             projectGuid: "1234qwerty",
-            projectUrl: "http://asdfasdf/1234qwerty"
+            orderedDate: Date.now()
         }
         ],[])
 
