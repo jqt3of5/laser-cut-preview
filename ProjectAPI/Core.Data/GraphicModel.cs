@@ -51,27 +51,29 @@ namespace Core.Data
 
             return true;
         }
-     
-        
-        public SvgGraphicGroup? ProcessGraphic(string originalFileName, long streamByteCount, Stream stream)
+
+        public string SaveNewSvg(string guid, long streamByteCount, Stream stream)
         {
             if (!Directory.Exists(UploadDir))
             {
                 Directory.CreateDirectory(UploadDir);
             }
-            var guid = Guid.NewGuid().ToString();
             //Save the original graphic for future use.
             var originalFilePath = ImagePath(guid, ".original.svg");
             SaveStream(stream, (int)streamByteCount, originalFilePath);
-            
+
+            return originalFilePath;
+        }
+        public SvgGraphicGroup? ProcessGraphic(string originalFileName, long streamByteCount, Stream stream)
+        {
+            var guid = Guid.NewGuid().ToString();
+            var originalFilePath = SaveNewSvg(guid, streamByteCount, stream);
             var originalSvg  = SvgDocument.Open(originalFilePath);
 
             var processor = new SvgProcessor(originalSvg);
 
-            var modes = processor.ExtractSubGraphicsFromSVG();
-           
             //Save each sub graphic separately
-            foreach (var (subDoc, colorMode) in modes)
+            foreach (var (subDoc, colorMode) in processor.ExtractSubGraphicsFromSVG())
             {
                 var modeFilePath = ImagePath(colorMode.guid);
                 subDoc.Write(modeFilePath); 
@@ -80,10 +82,13 @@ namespace Core.Data
                 _images[colorMode.guid] = colorMode;
             }
 
+            //TODO: Passing the guid and the original file name here feels really weird. I know the object needs it
+            //but it's really not the place for the processor I think...
             var (doc, graphic) = processor.CreateGraphicGroupFromSubGraphics(guid, originalFileName);
             
             var groupFilePath = ImagePath(graphic.guid);
             doc.Write(groupFilePath); 
+            
             
             //TODO: Store in DB
             _graphics[guid] = graphic; 

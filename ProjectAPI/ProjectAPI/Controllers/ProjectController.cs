@@ -23,7 +23,6 @@ namespace LaserPreview.Controllers
             _model = model;
         }
 
-        
         [HttpGet("{projectId}")]
         public Project GetProject(string projectId)
         {
@@ -36,7 +35,7 @@ namespace LaserPreview.Controllers
             if (_model.IsProjectReadonly(project.projectId))
             {
                 //Not Modified
-                return StatusCode(304, _model.GetProject(project.projectId));
+                return Ok(_model.GetProject(project.projectId));
             }
             return Ok(_model.SaveProject(project));
         }
@@ -46,14 +45,20 @@ namespace LaserPreview.Controllers
         {
             if (_model.IsProjectReadonly(projectId))
             {
-                return StatusCode(304, "Project already ordered");
+                return Ok(new OrderResponse("This project has already been ordered", string.Empty));
             }
 
             if (!_model.OrderProject(projectId, customer, out var reason))
             {
-                return StatusCode(304, $"Order failed. reason: {reason}");
+                return Ok(new OrderResponse(reason, string.Empty));
             }
-            return Ok();
+
+            if (_model.GetOrder(projectId, out var order))
+            {
+                return Ok(new OrderResponse(string.Empty, order.orderId));
+            }
+
+            return Ok(new OrderResponse("Unknown error", ""));
         }
     }
 }

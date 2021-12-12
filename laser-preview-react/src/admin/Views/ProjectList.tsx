@@ -21,7 +21,7 @@ export default function ProjectList(props: ProjectListProps) {
             },
             {
                 Header:"Order Number",
-                accessor: row => row.orderGuid
+                accessor: row => row.orderId
             },
             {
                 Header: "Status",

@@ -25,7 +25,7 @@ function Admin() {
                 phoneNumber: "234-234-23423",
             },
             cost: 123.34,
-            orderGuid: "1234567",
+            orderId: "1234567",
             status: OrderStatus.Ordered,
             projectGuid: "1234qwerty",
             orderedDate: Date.now()

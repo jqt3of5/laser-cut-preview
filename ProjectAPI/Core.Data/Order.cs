@@ -23,11 +23,15 @@ namespace Core.Data
     }
     public record Order(
         Customer customer,     
-        string orderGuid,
+        string orderId,
         string projectGuid,
         DateTime orderedDate,
         OrderStatus status,
-        float cost,
-        bool paid
+        float cost
         );
+
+    public record OrderResponse(
+        string error, 
+        string orderId
+    ); 
 }

@@ -46,7 +46,7 @@ namespace LaserPreview
                 app.UseCors(builder =>
                 {
                     builder.WithOrigins("*");
-                    // builder.WithMethods("*");
+                    builder.WithMethods("*");
                     builder.WithHeaders("*");
                 }); 
             }

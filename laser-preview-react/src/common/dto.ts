@@ -85,6 +85,6 @@ export interface Order {
     projectGuid : string,
     cost: number
     orderedDate : number | null
-    orderGuid : string | null
+    orderId : string | null
     status : OrderStatus | null
 }
