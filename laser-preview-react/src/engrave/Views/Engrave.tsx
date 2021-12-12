@@ -5,7 +5,7 @@ import axios from 'axios';
 
 import './Engrave.css';
 import {useCookies} from 'react-cookie';
-import React, {useEffect} from "react";
+import React, {useEffect, useRef} from "react";
 import {CutView, SnapTo} from "../Components/CutView";
 import {GraphicDetails} from "../Components/GraphicDetails";
 import {GraphicGroup} from "../../common/dto";
@@ -15,9 +15,7 @@ import {EngraveActionType, EngraveAppAction, EngraveAppState} from "./EngraveApp
 import {UploadNewGraphicDialog} from "../Components/UploadNewGraphicDialog";
 import {v4 as uuidv4} from 'uuid';
 import {ConvertGraphicToUnits} from "../../common/busi";
-
-interface AppProps {
-}
+import {SubmitAndOrderDialog} from "../Components/SubmitAndOrderDialog";
 
 function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAppState
 {
@@ -61,7 +59,7 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
             //Ensure the graphic units are the same as the board's
             return {...state,isUploadingNewGraphic: false, project:{...state.project, graphics: state.project.graphics.concat(ConvertGraphicToUnits(action.graphic, state.project.boardHeight.unit))}}
         case EngraveActionType.StartAddingNewGraphic:
-            return {...state, isUploadingNewGraphic: true}
+            return {...state, isUploadingNewGraphic: true, addingGraphic: action.graphic}
         case EngraveActionType.UpdateMaterials:
             return {...state, materials: action.materials}
         case EngraveActionType.UpdateProject:
@@ -81,12 +79,16 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
     }
 }
 
+interface AppProps {
+}
+
 function Engrave (props : AppProps)
 {
-    const [{fileToUpload, materials, project, unit, snapTo, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
+    const [{fileToUpload, materials, project, addingGraphic, unit, snapTo, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
         fileToUpload:null,
         materials:[],
         project: null,
+        addingGraphic: null,
         unit: DimensionUnits.Inches,
         snapTo: SnapTo.Continuous,
         isSubmittingOrder: false,
@@ -123,9 +125,11 @@ function Engrave (props : AppProps)
             }).catch(reason => console.log(reason))
     }, [project])
 
+    let fileInputRef = useRef<HTMLInputElement>(null)
     return (
         <div className="App">
-            <UploadNewGraphicDialog dispatch={dispatch} isShowing={isUploadingNewGraphic} units={unit}/>
+            <UploadNewGraphicDialog dispatch={dispatch} isShowing={isUploadingNewGraphic} units={unit} graphic={addingGraphic}/>
+            <SubmitAndOrderDialog isShowing={isSubmittingOrder}/>
 
             <div className="App-header">
                 <div className="logo">
@@ -146,6 +150,8 @@ function Engrave (props : AppProps)
                     <div className={"configuration-view bottom-separator"}>
                         <div className={"configuration-header"}>
                             <h2>Details</h2>
+                            <span className={"textButton"} onClick={e => {fileInputRef.current?.click()}}>&#43;</span>
+                            <input ref={fileInputRef} style={{display: "none"}} type={"file"} accept={".pdf, .svg"} onChange={onFileChanged}/>
                         </div>
                         <select className={"pretty-select"} value={project?.material.id}>
                             <option>Choose your material...</option>
@@ -164,11 +170,6 @@ function Engrave (props : AppProps)
                         </select>
                     </div>
 
-                    <div className={"add-graphic-detail bottom-separator"}>
-                        <span onClick={e => dispatch({type: EngraveActionType.StartAddingNewGraphic})}>Click to upload a new SVG</span>
-                        <button className={"pretty-button"} onClick={e => dispatch({type: EngraveActionType.StartAddingNewGraphic})}>&#43;</button>
-                    </div>
-
                     {project != null &&
                         project.graphics.map((graphic : GraphicGroup) => <GraphicDetails key={graphic.guid} group={graphic} onChange={(old, group) => {
                             if (group == null)
@@ -185,6 +186,28 @@ function Engrave (props : AppProps)
             </div>
         </div>
     );
+
+    function onFileChanged (event: React.ChangeEvent<HTMLInputElement>) {
+        if (event.target.files == null)
+            return
+
+        const formData = new FormData();
+        if (event.target.files[0] != null)
+        {
+            // Update the formData object
+            formData.append(
+                "file",
+                event.target.files[0],
+                event.target.files[0].name
+            );
+            axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
+                .then(response => {
+                    var graphic = response.data as GraphicGroup
+                    graphic =  ConvertGraphicToUnits(graphic, unit)
+                    dispatch({type: EngraveActionType.StartAddingNewGraphic, graphic: graphic})
+                })
+        }
+    }
 }
 
 export default Engrave;

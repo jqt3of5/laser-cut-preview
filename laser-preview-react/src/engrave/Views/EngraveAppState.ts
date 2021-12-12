@@ -6,6 +6,7 @@ export interface EngraveAppState {
     fileToUpload: File | null,
     materials: MaterialCategory[]
     project: Project | null,
+    addingGraphic : GraphicGroup | null
     unit : DimensionUnits,
     snapTo: SnapTo,
     isUploadingNewGraphic: boolean,
@@ -29,5 +30,5 @@ export type EngraveAppAction =
     | {type: EngraveActionType.GraphicChanged, graphic: GraphicGroup}
     | {type: EngraveActionType.GraphicAddFinished, graphic: GraphicGroup | null}
     | {type: EngraveActionType.GraphicDeleted, graphic: GraphicGroup}
-    | {type: EngraveActionType.StartAddingNewGraphic}
+    | {type: EngraveActionType.StartAddingNewGraphic, graphic: GraphicGroup}
     | {type: EngraveActionType.SetUnits, unit: DimensionUnits}

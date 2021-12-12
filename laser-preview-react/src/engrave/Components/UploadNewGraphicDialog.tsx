@@ -1,23 +1,19 @@
-import React, {Component, Dispatch} from "react";
+import React, {Component, Dispatch, useEffect, useState} from "react";
 import {GraphicGroup, SvgSubGraphic} from "../../common/dto";
-import axios from "axios";
-import {PrettyButton} from "../../common/PrettyButton";
 import './UploadNewGraphicDialog.css'
 import '../../common/common.css'
 import {EngraveActionType, EngraveAppAction, EngraveAppState} from "../Views/EngraveAppState";
 import {GraphicGroupDetail, SubGraphicDetail, GraphicDetails} from "./GraphicDetails";
 import {DimensionUnits} from "../../common/Dimension";
-import {ConvertGraphicToUnits} from "../../common/busi";
 
 enum Stage {
-    Upload,
     Preview,
     LaserMode
 }
 export interface UploadNewGraphicState
 {
     subGraphicIndex : number
-    graphic : GraphicGroup | null
+    graphic : GraphicGroup| null
     stage : Stage
 }
 
@@ -26,6 +22,7 @@ export interface UploadNewGraphicProps
     //TODO: Units could belong to a context
     units: DimensionUnits
     isShowing : boolean
+    graphic : GraphicGroup | null
     dispatch : Dispatch<EngraveAppAction>
 }
 
@@ -37,134 +34,99 @@ function titleForStage(stage : Stage) : string
            return "Modes for each color"
        case Stage.Preview:
            return "Your SVG"
-       case Stage.Upload:
-           return "Upload an SVG"
    }
 }
 
-export class UploadNewGraphicDialog extends Component<UploadNewGraphicProps, UploadNewGraphicState>
+export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
 {
-    constructor(props: UploadNewGraphicProps | Readonly<UploadNewGraphicProps>) {
-        super(props);
-        this.state = {stage:Stage.Upload, graphic: null, subGraphicIndex: 0}
+    let [{subGraphicIndex, graphic, stage}, setState] = useState({
+        subGraphicIndex: 0,
+        graphic: props.graphic,
+        stage: Stage.Preview
+    })
+
+    useEffect(() => {
+       setState({subGraphicIndex: 0, graphic: props.graphic, stage: Stage.Preview})
+    },[props.graphic, props.isShowing])
+
+    if (!props.isShowing)
+    {
+        return null
     }
 
-    resetState () {
-        this.setState({stage:Stage.Upload, graphic: null, subGraphicIndex: 0})
-    }
+   return <div className={"modal"}>
+       <div className={"modal-dialog"}>
+           <div className={"modal-dialog-header bottom-separator"}>
+               <label>{titleForStage(stage)}</label>
+               <span className="close textButton" onClick={onGraphicCancelled}>&times;</span>
+           </div>
+           <div className={"modal-content-container"}>
 
-    render() {
-        if (!this.props.isShowing)
-        {
-            return null
-        }
-       return <div className={"modal"}>
-           <div className={"modal-dialog upload-dialog"}>
-               <div className={"modal-dialog-header bottom-separator"}>
-                   <label>{titleForStage(this.state.stage)}</label>
-                   <span className="close textButton" onClick={this.OnGraphicCancelled}>&times;</span>
-               </div>
-               <div className={"modal-content-container"}>
-                   {this.state.stage == Stage.Upload &&
-                       <div className={"upload-graphic-content"}>
-                           <div className={"upload-graphic-input-container"}>
-                               <input type={"file"} accept={".pdf, .svg"} onChange={this.OnFileChanged}/>
-                           </div>
-                       </div>
-                   }
+               {stage == Stage.Preview && graphic != null &&
+                   <div className={"preview-graphic-content"}>
+                       <GraphicGroupDetail group={graphic} onChange={(old, group) => setState({stage: stage, subGraphicIndex: subGraphicIndex, graphic: group})}/>
+                       <button className={"pretty-button"} onClick={onGraphicConfirmed}>Next</button>
+                   </div>
+               }
 
-                   {this.state.stage == Stage.Preview && this.state.graphic != null &&
-                       <div className={"preview-graphic-content"}>
-                           <GraphicGroupDetail group={this.state.graphic} onChange={(old, group) => this.setState({graphic: group})}/>
-                           <button className={"pretty-button"} onClick={this.OnGraphicConfirmed}>Next</button>
+               {stage == Stage.LaserMode && graphic != null &&
+                   <div className={"laser-mode-select-content"}>
+                       <div className={"laser-mode-list"}>
+                           <span className={"textButton"} onClick={onPrevious}>&#8249;</span>
+                           <SubGraphicDetail subGraphic={graphic.subGraphics[subGraphicIndex]} onChange={onSubGraphicChanged}/>
+                           <span className={"textButton"} onClick={onNext}>&#8250;</span>
                        </div>
-                   }
-
-                   {this.state.stage == Stage.LaserMode && this.state.graphic != null &&
-                       <div className={"laser-mode-select-content"}>
-                           <div className={"laser-mode-list"}>
-                               <span className={"textButton"} onClick={this.OnPrevious}>&#8249;</span>
-                               <SubGraphicDetail subGraphic={this.state.graphic.subGraphics[this.state.subGraphicIndex]} onChange={this.OnSubGraphicChanged}/>
-                               <span className={"textButton"} onClick={this.OnNext}>&#8250;</span>
-                           </div>
-                           <span>{this.state.subGraphicIndex + 1}/{this.state.graphic.subGraphics.length}</span>
-                           <button className={"pretty-button"} onClick={this.OnModesConfirmed}>Next</button>
-                       </div>
-                   }
-               </div>
+                       <span>{subGraphicIndex + 1}/{graphic.subGraphics.length}</span>
+                       <button className={"pretty-button"} onClick={onModesConfirmed}>Next</button>
+                   </div>
+               }
            </div>
        </div>
-    }
-
-    OnNext = () => {
-        if( this.state.graphic != null)
+   </div>
+    function onNext () {
+        if( graphic != null)
         {
-            if (this.state.subGraphicIndex < (this.state.graphic.subGraphics.length - 1))
+            if (subGraphicIndex < (graphic.subGraphics.length - 1))
             {
-               this.setState(state => {return {subGraphicIndex: state.subGraphicIndex+1}})
+               setState({graphic: graphic, stage: stage, subGraphicIndex: subGraphicIndex+1})
             }
         }
     }
-    OnPrevious = () => {
-        if( this.state.graphic != null)
+    function onPrevious()  {
+        if( graphic != null)
         {
-            if (this.state.subGraphicIndex > 0)
+            if (subGraphicIndex > 0)
             {
-                this.setState(state => {return {subGraphicIndex: state.subGraphicIndex-1}})
+                setState({graphic: graphic, stage: stage, subGraphicIndex: subGraphicIndex-1})
             }
         }
     }
-    OnSubGraphicChanged = (old: SvgSubGraphic, newGraphic: SvgSubGraphic) =>
+    function onSubGraphicChanged (old: SvgSubGraphic, newGraphic: SvgSubGraphic)
     {
-        this.setState(state => {
-            if (state.graphic == null)
-            {
-                return state
-            }
-            return {...state, graphic:{...state.graphic, subGraphics: state.graphic.subGraphics.map(sub => {
+        if (graphic == null)
+        {
+            return {subGraphicIndex: subGraphicIndex, graphic: graphic, stage: stage}
+        }
+
+        setState({subGraphicIndex: subGraphicIndex, stage: stage, graphic:{...graphic, subGraphics: graphic.subGraphics.map(sub => {
                         if (sub == old)
                         {
                             return newGraphic
                         }
                         return sub
                     })
-            }}
-        })
+            }})
     }
 
-    OnModesConfirmed = (event: React.MouseEvent<HTMLButtonElement>) => {
-        this.resetState()
-        this.props.dispatch({type: EngraveActionType.GraphicAddFinished, graphic:this.state.graphic})
+    function onModesConfirmed (event: React.MouseEvent<HTMLButtonElement>) {
+        props.dispatch({type: EngraveActionType.GraphicAddFinished, graphic:graphic})
     }
 
-    OnGraphicConfirmed = (event: React.MouseEvent<HTMLButtonElement>) => {
-        this.setState({stage: Stage.LaserMode})
+    function onGraphicConfirmed (event: React.MouseEvent<HTMLButtonElement>) {
+        setState({subGraphicIndex: subGraphicIndex, graphic: graphic, stage: Stage.LaserMode})
     }
 
-    OnGraphicCancelled = (event: React.MouseEvent<HTMLButtonElement>) => {
-        this.resetState()
-        this.props.dispatch({type: EngraveActionType.GraphicAddFinished, graphic: null})
-    }
-
-    OnFileChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files == null)
-            return
-
-        const formData = new FormData();
-        if (event.target.files[0] != null)
-        {
-            // Update the formData object
-            formData.append(
-                "file",
-                event.target.files[0],
-                event.target.files[0].name
-            );
-            axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
-                .then(response => {
-                    var graphic = response.data as GraphicGroup
-                    graphic =  ConvertGraphicToUnits(graphic, this.props.units)
-                    this.setState({stage: Stage.Preview, graphic: graphic})
-                })
-        }
+    function onGraphicCancelled (event: React.MouseEvent<HTMLButtonElement>) {
+        props.dispatch({type: EngraveActionType.GraphicAddFinished, graphic: null})
     }
 }

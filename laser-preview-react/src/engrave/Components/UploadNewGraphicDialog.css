@@ -1,8 +1,3 @@
-.upload-dialog {
-    /*width: 400px;*/
-
-    /*height: 400px;*/
-}
 .upload-graphic-content {
     display:flex;
     flex-direction: column;

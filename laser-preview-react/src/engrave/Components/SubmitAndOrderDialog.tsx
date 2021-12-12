@@ -7,10 +7,17 @@ export interface SubmitAndOrderState
 
 export interface SubmitAndOrderProps
 {
-
+    isShowing : boolean
 }
 
-export class SubmitAndOrderDialog extends Component<SubmitAndOrderProps, SubmitAndOrderState>
+export function SubmitAndOrderDialog (props: SubmitAndOrderProps)
 {
+    if (!props.isShowing)
+    {
+        return null
+    }
 
+    return <div>
+
+    </div>
 }
