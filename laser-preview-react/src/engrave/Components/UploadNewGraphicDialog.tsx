@@ -5,6 +5,8 @@ import '../../common/common.css'
 import {EngraveActionType, EngraveAppAction, EngraveAppState} from "../Views/EngraveAppState";
 import {GraphicGroupDetail, SubGraphicDetail, GraphicDetails} from "./GraphicDetails";
 import {DimensionUnits} from "../../common/Dimension";
+import {Button, Modal, ModalDialog} from "react-bootstrap";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 enum Stage {
     Preview,
@@ -54,35 +56,41 @@ export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
         return null
     }
 
-   return <div className={"modal"}>
-       <div className={"modal-dialog"}>
-           <div className={"modal-dialog-header bottom-separator"}>
-               <label>{titleForStage(stage)}</label>
-               <span className="close textButton" onClick={onGraphicCancelled}>&times;</span>
-           </div>
-           <div className={"modal-content-container"}>
+   return <Modal show={props.isShowing} onHide={onGraphicCancelled}>
+      <Modal.Header closeButton>
+          <Modal.Title>
+              {titleForStage(stage)}
+          </Modal.Title>
+      </Modal.Header>
+       <Modal.Body>
+           {stage == Stage.Preview && graphic != null &&
+               <div className={"preview-graphic-content"}>
+                   <GraphicGroupDetail group={graphic} onChange={(old, group) => setState({stage: stage, subGraphicIndex: subGraphicIndex, graphic: group})}/>
+               </div>
+           }
 
-               {stage == Stage.Preview && graphic != null &&
-                   <div className={"preview-graphic-content"}>
-                       <GraphicGroupDetail group={graphic} onChange={(old, group) => setState({stage: stage, subGraphicIndex: subGraphicIndex, graphic: group})}/>
-                       <button className={"pretty-button"} onClick={onGraphicConfirmed}>Next</button>
+           {stage == Stage.LaserMode && graphic != null &&
+               <div className={"laser-mode-select-content"}>
+                   <div className={"laser-mode-list"}>
+                       <span className={"textButton"} onClick={onPrevious}>&#8249;</span>
+                       <SubGraphicDetail subGraphic={graphic.subGraphics[subGraphicIndex]} onChange={onSubGraphicChanged}/>
+                       <span className={"textButton"} onClick={onNext}>&#8250;</span>
                    </div>
-               }
+                   <span>{subGraphicIndex + 1}/{graphic.subGraphics.length}</span>
+               </div>
+           }
+       </Modal.Body>
+       <Modal.Footer>
 
-               {stage == Stage.LaserMode && graphic != null &&
-                   <div className={"laser-mode-select-content"}>
-                       <div className={"laser-mode-list"}>
-                           <span className={"textButton"} onClick={onPrevious}>&#8249;</span>
-                           <SubGraphicDetail subGraphic={graphic.subGraphics[subGraphicIndex]} onChange={onSubGraphicChanged}/>
-                           <span className={"textButton"} onClick={onNext}>&#8250;</span>
-                       </div>
-                       <span>{subGraphicIndex + 1}/{graphic.subGraphics.length}</span>
-                       <button className={"pretty-button"} onClick={onModesConfirmed}>Next</button>
-                   </div>
-               }
-           </div>
-       </div>
-   </div>
+           {stage == Stage.LaserMode && graphic != null &&
+               <Button variant={"primary"} onClick={onModesConfirmed}>Finish</Button>
+           }
+           {stage == Stage.Preview && graphic != null &&
+               <Button variant={"primary"} onClick={onGraphicConfirmed}>Next</Button>
+           }
+       </Modal.Footer>
+   </Modal>
+
     function onNext () {
         if( graphic != null)
         {
@@ -126,7 +134,7 @@ export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
         setState({subGraphicIndex: subGraphicIndex, graphic: graphic, stage: Stage.LaserMode})
     }
 
-    function onGraphicCancelled (event: React.MouseEvent<HTMLButtonElement>) {
+    function onGraphicCancelled () {
         props.dispatch({type: EngraveActionType.GraphicAddFinished, graphic: null})
     }
 }

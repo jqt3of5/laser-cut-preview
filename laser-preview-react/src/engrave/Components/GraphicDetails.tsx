@@ -102,9 +102,6 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
 
     return (
         <div className={"graphic-detail"}>
-            <div className={"graphic-detail-header"}>
-                <label>{props.group.name}</label>
-            </div>
             <div className={"graphic-dimensions"}>
                 <div className={"graphic-dimension"}>
                     <label>Width</label>
@@ -121,6 +118,9 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
             </div>
             <div className={"graphic-color-img"}>
                 <img src={process.env.REACT_APP_API + props.group.url}/>
+            </div>
+            <div className={"graphic-detail-header"}>
+                <label>{props.group.name}</label>
             </div>
         </div>)
 }

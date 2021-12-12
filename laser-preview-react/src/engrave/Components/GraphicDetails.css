@@ -1,7 +1,7 @@
 .graphic-detail {
     display: flex;
     flex-direction: column;
-    padding: 8px;
+    /*padding: 8px;*/
 }
 .graphic-detail-header {
     display:flex;
@@ -25,12 +25,16 @@
 }
 
 .graphic-color-item {
+    flex-grow: 1;
     padding: 8px;
     display:flex;
     flex-direction: column;
     align-items: center;
 }
 
+.graphic-color-img {
+   align-self: center;
+}
 .graphic-color-img img {
     border: lightgray 1px solid;
     border-radius: 4px;

@@ -1,7 +1,6 @@
 .App {
 }
 
-
 .cut-graphic{
   padding: 10px;
   margin: auto;
@@ -12,7 +11,7 @@
   display: inline-block;
   padding: 10px;
   padding-left: 20px;
-  height: 6vh;
+  height: 80px;
   /*width: 80px;*/
 }
 .submit-button {
@@ -49,6 +48,7 @@
   border-left: 1px solid rgba(0,0,0,.15);
   box-shadow: -5px 0px 10px 1px whitesmoke;
   overflow: auto;
+  padding: 12px;
 }
 .footerBar {
   min-height: 5vh;
@@ -66,8 +66,10 @@
 }
 
 .configuration-view {
-  padding: 10px;
-  margin: 10px;
+  /*padding: 10px;*/
+  /*margin: 8px;*/
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 }
 
 .configuration-header{
@@ -94,21 +96,6 @@
   align-content: center;
 }
 
-.dialog {
-  position: absolute;
-  top: 35%;
-  left: 35%;
-  /*border-style: solid;*/
-  border-color: lightgray;
-  border-radius: 5px;
-  box-shadow: 0 0 5px 5px darkgray;
-  background-color: white;
-}
-
-.hidden {
-  visibility: hidden;
-}
-
 .pretty-select {
   display: inline-block;
   /*width: 100%;*/
@@ -128,19 +115,18 @@
 }
 .graphic-dimensions {
   display:flex;
-  padding:4px;
+  padding-bottom:4px;
 }
 
 .graphic-dimension {
   display: inline;
-  /*margin-left: 8px;*/
   margin:4px;
 }
 .fancy-input {
   display: flex;
 }
 .input-entry {
-  width: 40px;
+  width: 60px;
   border-radius: 4px 0 0 4px;
   border: 1px solid #bbb;
   border-right-width: 0;
