@@ -20,3 +20,6 @@
 .hidden {
     visibility: hidden;
 }
+.footer-label {
+    font-size: 14px;
+}

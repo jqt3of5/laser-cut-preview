@@ -46,7 +46,7 @@ namespace LaserPreview.Controllers
         }
 
         [HttpPost]
-        public SvgGraphicGroup ProcessGraphic(IFormFile file)
+        public SvgGraphicGroup UploadNewVectorGraphic(IFormFile file)
         {
             //TODO: validate mimetype is a vector graphic
             return _model.ProcessGraphic(file.FileName, file.Length, file.OpenReadStream());

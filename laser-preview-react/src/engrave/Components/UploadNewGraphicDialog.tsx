@@ -83,6 +83,9 @@ export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
        <Modal.Footer>
 
            {stage == Stage.LaserMode && graphic != null &&
+               <label className={"footer-label"}>For each color detected in your SVG, please select the laser mode, then click finish.</label>
+           }
+           {stage == Stage.LaserMode && graphic != null &&
                <Button variant={"primary"} onClick={onModesConfirmed}>Finish</Button>
            }
            {stage == Stage.Preview && graphic != null &&
