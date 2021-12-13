@@ -44,7 +44,7 @@ jobs:
           node-version: '14'
       - run: npm install
         working-directory: laser-preview-react/
-      - run: npm build
+      - run: npm run-script build
         working-directory: laser-preview-react/
       - uses: shallwefootball/s3-upload-action@master
         with:
