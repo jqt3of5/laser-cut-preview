@@ -1,4 +1,4 @@
-import React, {Dispatch, SyntheticEvent, useEffect, useState} from "react";
+import React, {SyntheticEvent, useEffect, useState} from "react";
 import {GraphicGroup, LaserMode, SvgSubGraphic} from "../../common/dto";
 
 import Button from 'react-bootstrap/Button';
@@ -28,7 +28,7 @@ export function SubGraphicDetail(props : SubGraphicDetailProps)
                 </select>
             </div>
             <div className={"graphic-color-img"}>
-                <img src={process.env.REACT_APP_API + props.subGraphic.url}/>
+                <img alt={props.subGraphic.url} src={process.env.REACT_APP_API + props.subGraphic.url}/>
             </div>
         </div>)
 }
@@ -49,12 +49,12 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
     function onWidthChange (event : SyntheticEvent<HTMLInputElement>) {
         let w = parseFloat(event.currentTarget.value)
 
-        if (event.currentTarget.value == "")
+        if (event.currentTarget.value==="")
         {
             w = 0
         }
 
-        if (w == 0)
+        if (w===0)
         {
             setState({height: height, aspect: aspect, width: "0"})
             return
@@ -71,12 +71,12 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
 
     function onHeightChange (event : SyntheticEvent<HTMLInputElement>) {
         let h = parseFloat(event.currentTarget.value)
-        if (event.currentTarget.value == "")
+        if (event.currentTarget.value==="")
         {
             h = 0
         }
 
-        if (h == 0)
+        if (h===0)
         {
             setState({height: "0", aspect: aspect, width: width})
         }
@@ -117,7 +117,7 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
                 </div>
             </div>
             <div className={"graphic-color-img"}>
-                <img src={process.env.REACT_APP_API + props.group.url}/>
+                <img alt={props.group.url} src={process.env.REACT_APP_API + props.group.url}/>
             </div>
             <div className={"graphic-detail-header"}>
                 <label>{props.group.name}</label>
@@ -178,7 +178,7 @@ export function GraphicDetails(props : GraphicProps) {
                 ...props.group,
                 //Replace the old color with the new color
                 subGraphics: props.group.subGraphics.map(c => {
-                    if (c == oldColor) {
+                    if (c===oldColor) {
                         return newColor
                     }
                     return c
@@ -194,12 +194,12 @@ export function GraphicDetails(props : GraphicProps) {
     function onWidthChange (event : SyntheticEvent<HTMLInputElement>) {
         let w = parseFloat(event.currentTarget.value)
 
-        if (event.currentTarget.value == "")
+        if (event.currentTarget.value==="")
         {
             w = 0
         }
 
-        if (w == 0)
+        if (w===0)
         {
             setState({height: height, aspect: aspect, width: "0"})
             return
@@ -216,12 +216,12 @@ export function GraphicDetails(props : GraphicProps) {
 
     function onHeightChange (event : SyntheticEvent<HTMLInputElement>) {
         let h = parseFloat(event.currentTarget.value)
-        if (event.currentTarget.value == "")
+        if (event.currentTarget.value==="")
         {
             h = 0
         }
 
-        if (h == 0)
+        if (h===0)
         {
             setState({height: "0", aspect: aspect, width: width})
         }

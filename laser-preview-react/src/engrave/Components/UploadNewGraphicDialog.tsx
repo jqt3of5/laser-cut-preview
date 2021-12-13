@@ -1,11 +1,11 @@
-import React, {Component, Dispatch, useEffect, useState} from "react";
+import React, {Dispatch, useEffect, useState} from "react";
 import {GraphicGroup, SvgSubGraphic} from "../../common/dto";
 import './UploadNewGraphicDialog.css'
 import '../../common/common.css'
-import {EngraveActionType, EngraveAppAction, EngraveAppState} from "../Views/EngraveAppState";
-import {GraphicGroupDetail, SubGraphicDetail, GraphicDetails} from "./GraphicDetails";
+import {EngraveActionType, EngraveAppAction} from "../Views/EngraveAppState";
+import {GraphicGroupDetail, SubGraphicDetail} from "./GraphicDetails";
 import {DimensionUnits} from "../../common/Dimension";
-import {Button, Modal, ModalDialog} from "react-bootstrap";
+import {Button, Modal} from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 enum Stage {
@@ -63,13 +63,13 @@ export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
           </Modal.Title>
       </Modal.Header>
        <Modal.Body>
-           {stage == Stage.Preview && graphic != null &&
+           {stage===Stage.Preview && graphic !==null &&
                <div className={"preview-graphic-content"}>
                    <GraphicGroupDetail group={graphic} onChange={(old, group) => setState({stage: stage, subGraphicIndex: subGraphicIndex, graphic: group})}/>
                </div>
            }
 
-           {stage == Stage.LaserMode && graphic != null &&
+           {stage===Stage.LaserMode && graphic !==null &&
                <div className={"laser-mode-select-content"}>
                    <div className={"laser-mode-list"}>
                        <span className={"textButton"} onClick={onPrevious}>&#8249;</span>
@@ -82,20 +82,20 @@ export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
        </Modal.Body>
        <Modal.Footer>
 
-           {stage == Stage.LaserMode && graphic != null &&
+           {stage===Stage.LaserMode && graphic !==null &&
                <label className={"footer-label"}>For each color detected in your SVG, please select the laser mode, then click finish.</label>
            }
-           {stage == Stage.LaserMode && graphic != null &&
+           {stage===Stage.LaserMode && graphic !==null &&
                <Button variant={"primary"} onClick={onModesConfirmed}>Finish</Button>
            }
-           {stage == Stage.Preview && graphic != null &&
+           {stage===Stage.Preview && graphic !==null &&
                <Button variant={"primary"} onClick={onGraphicConfirmed}>Next</Button>
            }
        </Modal.Footer>
    </Modal>
 
     function onNext () {
-        if( graphic != null)
+        if( graphic !==null)
         {
             if (subGraphicIndex < (graphic.subGraphics.length - 1))
             {
@@ -104,7 +104,7 @@ export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
         }
     }
     function onPrevious()  {
-        if( graphic != null)
+        if( graphic !==null)
         {
             if (subGraphicIndex > 0)
             {
@@ -114,13 +114,13 @@ export function UploadNewGraphicDialog(props: UploadNewGraphicProps)
     }
     function onSubGraphicChanged (old: SvgSubGraphic, newGraphic: SvgSubGraphic)
     {
-        if (graphic == null)
+        if (graphic===null)
         {
             return {subGraphicIndex: subGraphicIndex, graphic: graphic, stage: stage}
         }
 
         setState({subGraphicIndex: subGraphicIndex, stage: stage, graphic:{...graphic, subGraphics: graphic.subGraphics.map(sub => {
-                        if (sub == old)
+                        if (sub===old)
                         {
                             return newGraphic
                         }

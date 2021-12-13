@@ -9,7 +9,6 @@ import React, {useEffect, useRef} from "react";
 import {CutView, SnapTo} from "../Components/CutView";
 import {GraphicDetails} from "../Components/GraphicDetails";
 import {GraphicGroup} from "../../common/dto";
-import {PrettyButton} from "../../common/PrettyButton";
 import {ConvertTo, DimensionUnits} from "../../common/Dimension";
 import {EngraveActionType, EngraveAppAction, EngraveAppState} from "./EngraveAppState";
 import {UploadNewGraphicDialog} from "../Components/UploadNewGraphicDialog";
@@ -23,18 +22,18 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
     switch(action.type)
     {
         case EngraveActionType.SelectMaterial:
-            if (state.project == null)
+            if (state.project===null)
             {
                 return state;
             }
             return {...state, project:{...state.project, material:action.material}}
         case EngraveActionType.GraphicChanged:
-            if (state.project == null)
+            if (state.project===null)
             {
                 return state;
             }
             return {...state, project:{...state.project, graphics:state.project.graphics.map(g => {
-                       if (g.guid == action.graphic.guid)
+                       if (g.guid===action.graphic.guid)
                        {
                            return action.graphic
                        }
@@ -42,18 +41,18 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
                     })
             }}
         case EngraveActionType.GraphicDeleted:
-            if (state.project == null)
+            if (state.project===null)
             {
                 return state;
             }
-            return {...state, project:{...state.project, graphics:state.project.graphics.filter(g => g.guid != action.graphic.guid)}}
+            return {...state, project:{...state.project, graphics:state.project.graphics.filter(g => g.guid !==action.graphic.guid)}}
 
         case EngraveActionType.GraphicAddFinished:
-            if (action.graphic == null)
+            if (action.graphic===null)
             {
                 return {...state, isUploadingNewGraphic: false}
             }
-            if (state.project == null)
+            if (state.project===null)
             {
                 return state;
             }
@@ -66,7 +65,7 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
         case EngraveActionType.UpdateProject:
             return {...state, project: action.project}
         case EngraveActionType.SetUnits:
-            if (state.project == null)
+            if (state.project===null)
             {
                 return state;
             }
@@ -89,8 +88,7 @@ interface AppProps {
 
 function Engrave (props : AppProps)
 {
-    const [{fileToUpload, materials, project,addingGraphic, unit, snapTo, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
-        fileToUpload:null,
+    const [{materials, project,addingGraphic, unit, snapTo, isSubmittingOrder, isUploadingNewGraphic}, dispatch] = React.useReducer(reducer, {
         materials:[],
         project: null,
         addingGraphic: null,
@@ -102,7 +100,7 @@ function Engrave (props : AppProps)
 
     const [cookies, setCookie] = useCookies(['projectId'])
 
-    if (cookies.projectId == null)
+    if (cookies.projectId===null)
     {
         setCookie('projectId', uuidv4())
     }
@@ -116,10 +114,10 @@ function Engrave (props : AppProps)
                 dispatch({type:EngraveActionType.UpdateMaterials,  materials: response.data})
             }).catch(reason => console.log(reason))
 
-    },  [])
+    },  [cookies.projectId])
 
     useEffect(() => {
-        if (project == null)
+        if (project===null)
         {
             return;
         }
@@ -138,14 +136,14 @@ function Engrave (props : AppProps)
             <div className="App-header">
                 <div className="logo">
                     <a href="https://CraftCloset.com">
-                        <img src={logo}/>
+                        <img alt={"https://CraftCloset.com"} src={logo}/>
                     </a>
                 </div>
                 <Button variant={"primary"} className={"save-and-order-button"} onClick={e => dispatch({type: EngraveActionType.StartSubmitingOrder})}>Save and Order</Button>
             </div>
-
             <div className={"App-content"}>
-                {project != null &&
+                {/*If the backend is down, this looks terrible*/}
+                {project !==null &&
                     <CutView material={project.material} graphics={project.graphics} boardHeight={project.boardHeight}
                          boardWidth={project.boardWidth} snapTo={snapTo} dispatch={dispatch}/>
                 }
@@ -174,9 +172,9 @@ function Engrave (props : AppProps)
                         </select>
                     </div>
 
-                    {project != null &&
+                    {project !==null &&
                         project.graphics.map((graphic : GraphicGroup) => <GraphicDetails key={graphic.guid} group={graphic} onChange={(old, group) => {
-                            if (group == null)
+                            if (group===null)
                             {
                                 dispatch({type: EngraveActionType.GraphicDeleted, graphic: old})
                             }
@@ -192,11 +190,11 @@ function Engrave (props : AppProps)
     );
 
     function onFileChanged (event: React.ChangeEvent<HTMLInputElement>) {
-        if (event.target.files == null)
+        if (event.target.files===null)
             return
 
         const formData = new FormData();
-        if (event.target.files[0] != null)
+        if (event.target.files[0] !==null)
         {
             // Update the formData object
             formData.append(

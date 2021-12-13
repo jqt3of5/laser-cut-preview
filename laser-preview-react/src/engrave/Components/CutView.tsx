@@ -1,17 +1,14 @@
 import React, {Dispatch, MouseEvent, useEffect, useReducer} from "react";
 import {GraphicGroup, Material, SvgSubGraphic,} from "../../common/dto";
 import {
-    AddDimensions,
-    ConvertTo,
     Dimension,
     DimensionUnits,
     FromPixels,
-    MultScaler,
     ToPixels,
     ToUnitName
 } from "../../common/Dimension";
 import {EngraveActionType, EngraveAppAction} from "../Views/EngraveAppState";
-import {ResizeGraphicGroup, ScaleGraphicGroup} from "../../common/busi";
+import {ScaleGraphicGroup} from "../../common/busi";
 
 interface LoadedGraphicGroup {
     group: GraphicGroup
@@ -121,15 +118,15 @@ function reduce(state: CutViewState, action: CutViewAction)
        case CutViewActionType.Select:
            //Locate the first graphic that surrounds the cursor
            let selectedGraphicIndex = state.groups.findIndex(group => {
-               return IsOnGraphicHandle(action.mouseX, action.mouseY, group) != MouseMode.None
+               return IsOnGraphicHandle(action.mouseX, action.mouseY, group) !==MouseMode.None
            })
 
-           let mouseMode = selectedGraphicIndex == -1 ? MouseMode.None : IsOnGraphicHandle(action.mouseX, action.mouseY, state.groups[selectedGraphicIndex])
+           let mouseMode = selectedGraphicIndex===-1 ? MouseMode.None : IsOnGraphicHandle(action.mouseX, action.mouseY, state.groups[selectedGraphicIndex])
 
            return {...state, selectedGraphicIndex: selectedGraphicIndex, mouseX: action.mouseX, mouseY: action.mouseY, mouseMode: mouseMode}
        case CutViewActionType.Hover:
            let hoverGraphicIndex = state.groups.findIndex(group => {
-               return IsOnGraphicHandle(action.mouseX, action.mouseY, group) != MouseMode.None
+               return IsOnGraphicHandle(action.mouseX, action.mouseY, group) !==MouseMode.None
            })
 
            return {...state, hoverGraphicIndex: hoverGraphicIndex, selectedGraphicIndex: -1}
@@ -195,7 +192,7 @@ function reduce(state: CutViewState, action: CutViewAction)
            }
 
            return {...state, groups: state.groups.map(group => {
-                   if (group == state.groups[state.selectedGraphicIndex])
+                   if (group === state.groups[state.selectedGraphicIndex])
                    {
                        return {...group,
                            translateX: translateX, translateY: translateY,
@@ -229,41 +226,72 @@ export function CutView (props : CutViewProps) {
     useEffect(() => {
 
     }, [])
-
     useEffect(() => {
-        if (canvasRef.current != null) {
+        if (canvasRef.current !==null) {
             canvasRef.current.width = props.boardWidth.value * CutView.pxPerUnit
             canvasRef.current.height = props.boardHeight.value * CutView.pxPerUnit
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.boardWidth, props.boardHeight])
 
     useEffect(() => {
-        loadGraphics().then(groups => {
+        let promises = props.graphics.map(group => {
+
+            let promises = group.subGraphics.map(graphic => {
+                return loadImage(graphic.url).then<LoadedGraphic>(image => {
+                    return {
+                        image: image, subGraphic: graphic,
+                        height: ToPixels(graphic.height, CutView.pxPerUnit, props.boardHeight.unit),
+                        width: ToPixels(graphic.width, CutView.pxPerUnit, props.boardWidth.unit),
+                        translateX: ToPixels(graphic.posX, CutView.pxPerUnit, props.boardHeight.unit),
+                        translateY: ToPixels(graphic.posY, CutView.pxPerUnit, props.boardWidth.unit),
+                    }
+                })
+            })
+
+            return Promise.all(promises).then<LoadedGraphicGroup>(loadedGraphics => {
+                return {
+                    loadedGraphics: loadedGraphics, group: group,
+                    height: ToPixels(group.height, CutView.pxPerUnit, props.boardHeight.unit),
+                    width: ToPixels(group.width, CutView.pxPerUnit, props.boardWidth.unit),
+                    startX: ToPixels(group.posX, CutView.pxPerUnit, props.boardHeight.unit),
+                    startY: ToPixels(group.posY, CutView.pxPerUnit, props.boardWidth.unit),
+                    translateX: 0,
+                    translateY: 0,
+                    scaleX: 1,
+                    scaleY: 1
+
+                }
+            })
+        })
+        Promise.all(promises).then(groups => {
             dispatch({type: CutViewActionType.GraphicsLoaded, groups:groups})
         })
-    }, [props.graphics])
+    }, [props.graphics, props.boardWidth, props.boardHeight])
 
     useEffect(() => {
         loadImage(`/materials/${props.material.id}`).then(background => {
             //TODO: Does setstate do a diff on the state? Or will this change the whole thing?
             dispatch({type: CutViewActionType.BackgroundLoaded, background:background})
         })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.material])
 
     useEffect(() => {
-        if (canvasRef.current != null)
+        if (canvasRef.current !== null)
         {
             let ctx = canvasRef.current.getContext("2d")
-            if (ctx != null) {
+            if (ctx !==null) {
                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height )
 
-                if (state.background != null) {
+                if (state.background !== null) {
                     ctx.drawImage(state.background, 0, 0)
                 }
                 drawGraphics(ctx)
             }
         }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.background, state.groups, state.hoverGraphicIndex, state.selectedGraphicIndex])
 
     return (
@@ -282,7 +310,7 @@ export function CutView (props : CutViewProps) {
                 let width = group.width * group.scaleX
                 let height = group.height * group.scaleY
 
-                if (graphic.image != null) {
+                if (graphic.image !==null) {
                     //draw image
                     ctx.drawImage(graphic.image,
                         startX + graphic.translateX * group.scaleX,
@@ -290,18 +318,18 @@ export function CutView (props : CutViewProps) {
                         graphic.width * group.scaleX,
                         graphic.height * group.scaleY)
 
-                    if (state.selectedGraphicIndex != -1 && group == state.groups[state.selectedGraphicIndex])
+                    if (state.selectedGraphicIndex !==-1 && group===state.groups[state.selectedGraphicIndex])
                     {
-                        // if (state.mouseMode == MouseMode.Translate)
+                        // if (state.mouseMode===MouseMode.Translate)
                         // {
                         //     drawTranslation(ctx, startX, startY, width, height)
                         // }
                         // else
-                        {
+                        // {
                             drawDimensions(ctx, startX, startY, width, height)
-                        }
+                        // }
                     }
-                    else if (state.hoverGraphicIndex != -1 && group == state.groups[state.hoverGraphicIndex]) {
+                    else if (state.hoverGraphicIndex !==-1 && group===state.groups[state.hoverGraphicIndex]) {
                         //draw measurements
                         drawDimensions(ctx, startX, startY, width, height)
                     }
@@ -328,31 +356,31 @@ export function CutView (props : CutViewProps) {
         }
     }
 
-    function drawTranslation(ctx : CanvasRenderingContext2D, startX : number, startY : number, width: number, height: number)
-    {
-        ctx.beginPath()
-        ctx.fillStyle = "black"
-        ctx.font = "25px Arial"
-        ctx.strokeStyle = "black"
-        ctx.lineWidth = 2
-
-        let y = FromPixels(startY, CutView.pxPerUnit, props.boardHeight.unit)
-        ctx.moveTo(startX, startY)
-        ctx.lineTo(startX, 0)
-        ctx.save()
-        ctx.translate(startX, startY/2)
-        ctx.rotate(-Math.PI/2)
-        ctx.fillText(`${y.value.toFixed(3)}${ToUnitName(y.unit)}`, -45, -8)
-        ctx.fill()
-        ctx.restore()
-
-        let x = FromPixels(startX, CutView.pxPerUnit, props.boardWidth.unit)
-        ctx.moveTo(startX, startY)
-        ctx.lineTo(0, startY)
-        ctx.fillText(`${x.value.toFixed(3)}${ToUnitName(x.unit)}`, startX/2 - 45, startY - 8)
-
-        ctx.stroke()
-    }
+    // function drawTranslation(ctx : CanvasRenderingContext2D, startX : number, startY : number, width: number, height: number)
+    // {
+    //     ctx.beginPath()
+    //     ctx.fillStyle = "black"
+    //     ctx.font = "25px Arial"
+    //     ctx.strokeStyle = "black"
+    //     ctx.lineWidth = 2
+    //
+    //     let y = FromPixels(startY, CutView.pxPerUnit, props.boardHeight.unit)
+    //     ctx.moveTo(startX, startY)
+    //     ctx.lineTo(startX, 0)
+    //     ctx.save()
+    //     ctx.translate(startX, startY/2)
+    //     ctx.rotate(-Math.PI/2)
+    //     ctx.fillText(`${y.value.toFixed(3)}${ToUnitName(y.unit)}`, -45, -8)
+    //     ctx.fill()
+    //     ctx.restore()
+    //
+    //     let x = FromPixels(startX, CutView.pxPerUnit, props.boardWidth.unit)
+    //     ctx.moveTo(startX, startY)
+    //     ctx.lineTo(0, startY)
+    //     ctx.fillText(`${x.value.toFixed(3)}${ToUnitName(x.unit)}`, startX/2 - 45, startY - 8)
+    //
+    //     ctx.stroke()
+    // }
     function drawDimensions(ctx : CanvasRenderingContext2D, startX : number, startY : number, width: number, height: number)
     {
         //draw measurements
@@ -395,42 +423,8 @@ export function CutView (props : CutViewProps) {
         ctx.restore()
     }
 
-    function loadGraphics() : Promise<LoadedGraphicGroup[]> {
-        //Load all the graphics and groups and convert then into pixels for easy rendering
-        let promises = props.graphics.map(group => {
-
-            let promises = group.subGraphics.map(graphic => {
-                return loadImage(graphic.url).then<LoadedGraphic>(image => {
-                    return {
-                        image: image, subGraphic: graphic,
-                        height: ToPixels(graphic.height, CutView.pxPerUnit, props.boardHeight.unit),
-                        width: ToPixels(graphic.width, CutView.pxPerUnit, props.boardWidth.unit),
-                        translateX: ToPixels(graphic.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                        translateY: ToPixels(graphic.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                    }
-                })
-            })
-
-            return Promise.all(promises).then<LoadedGraphicGroup>(loadedGraphics => {
-                return {
-                    loadedGraphics: loadedGraphics, group: group,
-                    height: ToPixels(group.height, CutView.pxPerUnit, props.boardHeight.unit),
-                    width: ToPixels(group.width, CutView.pxPerUnit, props.boardWidth.unit),
-                    startX: ToPixels(group.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                    startY: ToPixels(group.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                    translateX: 0,
-                    translateY: 0,
-                    scaleX: 1,
-                    scaleY: 1
-
-                }
-            })
-        })
-        return Promise.all(promises)
-    }
-
     function onMouseDown (event : MouseEvent<HTMLCanvasElement>) {
-        if (canvasRef.current != null)
+        if (canvasRef.current !==null)
         {
             let rect = canvasRef.current.getBoundingClientRect()
             let canvasX = (event.clientX - rect.x) / rect.width * canvasRef.current.width
@@ -441,7 +435,7 @@ export function CutView (props : CutViewProps) {
     }
 
     function onMouseUp (event : MouseEvent<HTMLCanvasElement>) {
-        if (state.selectedGraphicIndex != -1)
+        if (state.selectedGraphicIndex !==-1)
         {
             let group = state.groups[state.selectedGraphicIndex]
 
@@ -455,13 +449,13 @@ export function CutView (props : CutViewProps) {
     }
 
     function onMouseMove (event : MouseEvent<HTMLCanvasElement>) {
-        if (canvasRef.current != null)
+        if (canvasRef.current !==null)
         {
             let rect = canvasRef.current.getBoundingClientRect()
             let canvasX = (event.clientX - rect.x) / rect.width * canvasRef.current.width
             let canvasY = (event.clientY - rect.y) / rect.height * canvasRef.current.height
 
-            if (state.mouseMode == MouseMode.None)
+            if (state.mouseMode===MouseMode.None)
             {
                 canvasRef.current.style.cursor = state.groups.map(group => {
                     let mode = IsOnGraphicHandle(canvasX, canvasY, group)
@@ -477,10 +471,10 @@ export function CutView (props : CutViewProps) {
                             return "nw-resize"
                     }
                     return null
-                }).find(c => c != null) ?? "default"
+                }).find(c => c !==null) ?? "default"
             }
 
-            if (state.mouseMode != MouseMode.None)
+            if (state.mouseMode !==MouseMode.None)
             {
                 dispatch({type: CutViewActionType.Transform, mousedX:canvasX - state.mouseX, mousedY: canvasY - state.mouseY})
             }

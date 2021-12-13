@@ -1,5 +1,4 @@
-﻿
-export enum DimensionUnits {
+﻿export enum DimensionUnits {
     Inches,
     Millimeters,
     Centimeters,
@@ -26,7 +25,7 @@ export function AddDimensions(a : Dimension, b: Dimension) : Dimension
 
 export function ConvertTo(d : Dimension, unit: DimensionUnits ): Dimension
 {
-    if (unit == d.unit)
+    if (unit === d.unit)
     {
         return d
     }

@@ -66,7 +66,7 @@ app.get("/graphic/:imageId/image", (req, res) => {
 //upload a new graphic and perform the processing
 app.post('/graphic', (req, res) => {
 
-    if (req.file.mimetype != "image/svg+xml" && req.file.mimetype != "image/pdf")
+    if (req.file.mimetype !=="image/svg+xml" && req.file.mimetype !=="image/pdf")
     {
         res.statusCode = 402
         res.send("File type " + req.file.mimetype + " not supported")

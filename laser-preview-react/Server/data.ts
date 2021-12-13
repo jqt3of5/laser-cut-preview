@@ -19,7 +19,7 @@ export class Repo {
 
     getProject(projectId) : Promise<Project> {
         return new Promise((resolve, reject) => {
-            if (documentDB.projects[projectId] == undefined)
+            if (documentDB.projects[projectId]===undefined)
             {
                 this.createProject(projectId)
             }
@@ -39,13 +39,13 @@ export class Repo {
     //     return this.getProject(projectId).then(project => {
     //        return new Promise((resolve, reject) => {
     //            var graphic = project.graphics.find((value, index, obj) => {
-    //               if (value.guid == graphicId)
+    //               if (value.guid===graphicId)
     //               {
     //                   return value
     //               }
     //            })
     //
-    //            if (graphic != undefined)
+    //            if (graphic !==undefined)
     //            {
     //                resolve(graphic)
     //            }
@@ -89,7 +89,7 @@ export class Repo {
     getGraphic(imageId : string) : Promise<GraphicGroup> {
         return new Promise<GraphicGroup>((resolve, reject)=> {
             let graphic = documentDB.graphics[imageId]
-            if (graphic == undefined)
+            if (graphic===undefined)
             {
                 reject(`graphic with Id ${imageId} not found`)
                 return
@@ -129,7 +129,7 @@ export class Repo {
     //         this.getMaterialCategories().then(categories => {
     //             for (var category of categories) {
     //                 for (var material of category.materials) {
-    //                     if (material.id == materialId) {
+    //                     if (material.id===materialId) {
     //                         resolve(material)
     //                     }
     //                 }

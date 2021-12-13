@@ -3,7 +3,6 @@ import {DimensionUnits} from "../../common/Dimension";
 import {SnapTo} from "../Components/CutView";
 
 export interface EngraveAppState {
-    fileToUpload: File | null,
     materials: MaterialCategory[]
     project: Project | null,
     addingGraphic : GraphicGroup | null

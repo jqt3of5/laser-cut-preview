@@ -1,7 +1,7 @@
-import React, {Component, Dispatch, SyntheticEvent, useEffect, useState} from "react";
+import React, {Dispatch, SyntheticEvent, useEffect, useState} from "react";
 import {Button, Modal} from "react-bootstrap";
 import {EngraveActionType, EngraveAppAction} from "../Views/EngraveAppState";
-import {Customer, Order} from "../../common/dto";
+import {Customer} from "../../common/dto";
 import axios from "axios";
 import './SubmitandOrderDialog.css'
 
@@ -41,7 +41,7 @@ export function SubmitAndOrderDialog (props: SubmitAndOrderProps)
     function submitOrder() {
         axios.post(process.env.REACT_APP_API + "/project/" + props.projectGuid + "/order", state.customer).then(response => {
             //TODO: We might get an error from the server
-            if (response.data.error != "")
+            if (response.data.error !=="")
             {
                 return
             }
@@ -66,7 +66,7 @@ export function SubmitAndOrderDialog (props: SubmitAndOrderProps)
     })
 
     useEffect(() => {
-       setState({...state, stage: Stage.Info})
+       setState(state => { return {...state, stage: Stage.Info}})
     }, [props.isShowing])
 
     if (!props.isShowing)
@@ -81,13 +81,13 @@ export function SubmitAndOrderDialog (props: SubmitAndOrderProps)
            </Modal.Title>
        </Modal.Header>
        <Modal.Body>
-           {state.stage == Stage.Info &&
+           {state.stage===Stage.Info &&
                <div className={"customer-address"}>
                    <input onChange={handleChange} name={"name"} value={state.customer.name} placeholder={"Name*"}/>
                    <input onChange={handleChange} name={"email"} value={state.customer.email} placeholder={"Email*"}/>
                    <label className={"cost-label"}>Estimated cost: {"$12.34"}</label>
                </div> }
-           {state.stage == Stage.Confirmed &&
+           {state.stage===Stage.Confirmed &&
                 <div>
                     <label>Order confirmed. Order# {state.orderId}</label>
                 </div>
@@ -95,8 +95,8 @@ export function SubmitAndOrderDialog (props: SubmitAndOrderProps)
        </Modal.Body>
        <Modal.Footer>
            <label className={"footer-label"}>Payment and shipping instructions will be sent to your email. Order will be fulfilled upon reciept of payment.</label>
-           {state.stage == Stage.Info && <Button variant={"primary"} onClick={submitOrder}>Submit</Button>}
-           {state.stage == Stage.Confirmed && <Button variant={"primary"} onClick={() => props.dispatch({type: EngraveActionType.OrderSubmited})}>Finish</Button>}
+           {state.stage===Stage.Info && <Button variant={"primary"} onClick={submitOrder}>Submit</Button>}
+           {state.stage===Stage.Confirmed && <Button variant={"primary"} onClick={() => props.dispatch({type: EngraveActionType.OrderSubmited})}>Finish</Button>}
        </Modal.Footer>
     </Modal>
 }
