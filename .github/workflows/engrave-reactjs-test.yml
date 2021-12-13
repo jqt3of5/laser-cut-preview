@@ -47,9 +47,8 @@ jobs:
       - run: npm build
         working-directory: laser-preview-react/
       - uses: shallwefootball/s3-upload-action@master
-        working-directory: laser-preview-react/
         with:
           aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
           aws_bucket: s3://engrave-preview-reactjs-deploys
-          source_dir: 'build'
+          source_dir: 'laser-preview-react/build'
