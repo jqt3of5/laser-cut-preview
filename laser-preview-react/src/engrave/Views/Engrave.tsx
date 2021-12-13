@@ -99,22 +99,26 @@ function Engrave (props : AppProps)
     })
 
     const [cookies, setCookie] = useCookies(['projectId'])
-
-    if (cookies.projectId===null)
+    if (cookies.projectId===undefined)
     {
         setCookie('projectId', uuidv4())
     }
-
     useEffect(() => {
-        axios.get(process.env.REACT_APP_API + "/project/" + cookies.projectId).then(response => {
-                dispatch({type:EngraveActionType.UpdateProject,  project: response.data})
-            }).catch(reason => console.log(reason))
 
         axios.get(process.env.REACT_APP_API + "/materials").then(response => {
-                dispatch({type:EngraveActionType.UpdateMaterials,  materials: response.data})
-            }).catch(reason => console.log(reason))
+            dispatch({type: EngraveActionType.UpdateMaterials, materials: response.data})
+        }).catch(reason => console.log(reason))
+    }, [])
 
-    },  [cookies.projectId])
+    useEffect(() => {
+        if (cookies.projectId !== undefined)
+        {
+            axios.get(process.env.REACT_APP_API + "/project/" + cookies.projectId).then(response => {
+                dispatch({type:EngraveActionType.UpdateProject,  project: response.data})
+            }).catch(reason => console.log(reason))
+        }
+
+    }, [cookies.projectId])
 
     useEffect(() => {
         if (project===null)
