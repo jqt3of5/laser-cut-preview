@@ -50,5 +50,5 @@ jobs:
         with:
           aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_bucket: s3://engrave-preview-reactjs-deploys
+          aws_bucket: engrave-preview-reactjs-deploys
           source_dir: 'laser-preview-react/build'
