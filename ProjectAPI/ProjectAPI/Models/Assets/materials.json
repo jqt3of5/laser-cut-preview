@@ -5,7 +5,7 @@
       {
         "id": "wood_ash_1_8_double",
         "name": "Ash (1/8\" Double Sided)",
-        "fileName": "Ash.jpeg"
+        "fileName": "ash.jpeg"
       },
       {
         "id": "wood_bamboo_1_4_double",
@@ -20,17 +20,17 @@
       {
         "id": "wood_cherry_1_4_double",
         "name": "Cherry (1/4\" Double Sided)",
-        "fileName": "Cherry.jpeg"
+        "fileName": "cherry.jpeg"
       },
       {
         "id": "wood_walnut_1_8_double",
         "name": "Walnut (1/8\" Double Sided)",
-        "fileName": "Walnut.jpeg"
+        "fileName": "walnut.jpeg"
       },
       {
         "id": "wood_walnut_1_4_double",
         "name": "Walnut (1/4\" Double Sided)",
-        "fileName": "Walnut.jpeg"
+        "fileName": "walnut.jpeg"
       }
     ]
   },
@@ -60,7 +60,7 @@
       {
         "id": "red_acrylic_1_4_double",
         "name": "Red (Acrylic)",
-        "fileName": "Hickory.webp"
+        "fileName": "hickory.webp"
       }
     ]
   }
