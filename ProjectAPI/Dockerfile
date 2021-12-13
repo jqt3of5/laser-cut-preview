@@ -14,5 +14,6 @@ RUN dotnet publish "LaserPreview.sln" -c Release -o /app/publish
 
 FROM publish AS final
 WORKDIR /app
+RUN apt-get -f install libgdiplus
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ProjectAPI.dll"]
