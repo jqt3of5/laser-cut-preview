@@ -28,6 +28,9 @@
         <None Update="appsettings.Development.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="Models\Assets\materials.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <None Update="Models\Assets\alabama cherry melamine.jpeg">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
