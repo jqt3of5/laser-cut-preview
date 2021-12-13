@@ -1,4 +1,4 @@
-﻿export enum DimensionUnits {
+export enum DimensionUnits {
     Inches,
     Millimeters,
     Centimeters,
