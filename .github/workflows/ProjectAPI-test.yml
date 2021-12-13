@@ -89,3 +89,15 @@ jobs:
         service: ${{ env.ECS_SERVICE }}
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
+        
+    - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+    - run: npm install
+    - run: npm build
+    - uses: shallwefootball/s3-upload-action@master
+      with:
+        aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+        aws_bucket: s3://engrave-preview-reactjs-deploys
+        source_dir: './laser-preview-react/build'

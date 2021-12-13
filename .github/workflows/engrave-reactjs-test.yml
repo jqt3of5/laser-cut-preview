@@ -23,31 +23,31 @@
 # 4. Store an IAM user access key in GitHub Actions secrets named `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
 #    See the documentation for each action used below for the recommended IAM policies for this IAM user,
 #    and best practices on handling the access key credentials.
-
-name: Deploy laser engrave react to s3 
-
-on:
-  push:
-    branches:
-      - beta
-
-env:
-  AWS_REGION: us-west-1                   # set this to your preferred AWS region, e.g. us-west-1
-
-jobs:
-  upload:
-    runs-on: ubuntu-latest
-    steps:
+#
+#name: Deploy laser engrave react to s3 
+#
+#on:
+#  push:
+#    branches:
+#      - beta
+#
+#env:
+#  AWS_REGION: us-west-1                   # set this to your preferred AWS region, e.g. us-west-1
+#
+#jobs:
+#  upload:
+#    runs-on: ubuntu-latest
+#    steps:
 #      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - run: npm install
-      - run: npm build 
-      - uses: shallwefootball/s3-upload-action@master
-        with:
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_bucket: s3://engrave-preview-reactjs-deploys
-
-          source_dir: './laser-preview-react/build'
+#      - uses: actions/setup-node@v2
+#        with:
+#          node-version: '14'
+#      - run: npm install
+#      - run: npm build 
+#      - uses: shallwefootball/s3-upload-action@master
+#        with:
+#          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+#          aws_bucket: s3://engrave-preview-reactjs-deploys
+#
+#          source_dir: './laser-preview-react/build'
