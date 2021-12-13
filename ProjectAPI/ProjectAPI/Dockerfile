@@ -5,6 +5,7 @@ EXPOSE 5001
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
+
 COPY ["Core.Data/Core.Data.csproj", "Core.Data/"]
 RUN dotnet restore "Core.Data/Core.Data.csproj"
 
@@ -23,5 +24,6 @@ RUN dotnet publish "ProjectAPI.csproj" -c Release -o /app/publish
 
 FROM publish AS final
 WORKDIR /app
+RUN apt-get -f install libgdiplus
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ProjectAPI.dll"]
