@@ -7,13 +7,13 @@ import './Engrave.css';
 import {useCookies} from 'react-cookie';
 import React, {useEffect, useRef} from "react";
 import {CutView, SnapTo} from "../Components/CutView";
-import {GraphicDetails} from "../Components/GraphicDetails";
-import {GraphicGroup} from "../../common/dto";
-import {ConvertTo, DimensionUnits} from "../../common/Dimension";
+import {GraphicDetails, SubGraphicDetail, TextDetail} from "../Components/GraphicDetails";
+import {DrawableObject, DrawableObjectType, LaserMode, SvgGraphicGroup, TextObject} from "../../common/dto";
+import {ConvertTo, Dimension, DimensionUnits} from "../../common/Dimension";
 import {EngraveActionType, EngraveAppAction, EngraveAppState} from "./EngraveAppState";
 import {UploadNewGraphicDialog} from "../Components/UploadNewGraphicDialog";
 import {v4 as uuidv4} from 'uuid';
-import {ConvertGraphicToUnits} from "../../common/busi";
+import {ConvertObjectUnits} from "../../common/busi";
 import {SubmitAndOrderDialog} from "../Components/SubmitAndOrderDialog";
 import {Button} from "react-bootstrap";
 
@@ -27,26 +27,43 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
                 return state;
             }
             return {...state, project:{...state.project, material:action.material}}
-        case EngraveActionType.GraphicChanged:
+        case EngraveActionType.ObjectChanged:
             if (state.project===null)
             {
                 return state;
             }
-            return {...state, project:{...state.project, graphics:state.project.graphics.map(g => {
-                       if (g.guid===action.graphic.guid)
+            return {...state, project:{...state.project, objects:state.project.objects.map(object => {
+                       if (object === action.oldObject)
                        {
-                           return action.graphic
+                           return action.object
                        }
-                       return g
+                       return object
                     })
             }}
-        case EngraveActionType.GraphicDeleted:
+        case EngraveActionType.ObjectDeleted:
             if (state.project===null)
             {
                 return state;
             }
-            return {...state, project:{...state.project, graphics:state.project.graphics.filter(g => g.guid !==action.graphic.guid)}}
+            return {...state, project:{...state.project, objects:state.project.objects.filter(g => g !== action.object)}}
 
+        case EngraveActionType.TextObjectAdded:
+            if (state.project === null)
+            {
+                return state
+            }
+            let textObject = {type: DrawableObjectType.TextObject,
+                text: "Testing text",
+                font : "Helvetica",
+                fontSize: "96",
+                textAlign: "center",
+                mode: LaserMode.Engrave,
+                posX : new Dimension(1, DimensionUnits.Inches),
+                posY : new Dimension(1, DimensionUnits.Inches),
+                width : new Dimension(1, DimensionUnits.Inches),
+                height : new Dimension(1, DimensionUnits.Inches)} as TextObject
+
+            return {...state, project:{...state.project, objects:state.project.objects.concat(textObject)}}
         case EngraveActionType.GraphicAddFinished:
             if (action.graphic===null)
             {
@@ -56,10 +73,11 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
             {
                 return state;
             }
-            //Ensure the graphic units are the same as the board's
-            return {...state,isUploadingNewGraphic: false, project:{...state.project, graphics: state.project.graphics.concat(ConvertGraphicToUnits(action.graphic, state.project.boardHeight.unit))}}
+            //The graphic should already be in the correct units
+            return {...state,isUploadingNewGraphic: false, project:{...state.project, objects: state.project.objects.concat(action.graphic)}}
         case EngraveActionType.StartAddingNewGraphic:
-            return {...state, isUploadingNewGraphic: true, addingGraphic: action.graphic}
+            let graphic =  ConvertObjectUnits(action.graphic, state.unit) as SvgGraphicGroup
+            return {...state, isUploadingNewGraphic: true, addingGraphic: graphic}
         case EngraveActionType.UpdateMaterials:
             return {...state, materials: action.materials}
         case EngraveActionType.UpdateProject:
@@ -73,7 +91,7 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
             return {...state, unit: action.unit, project: {...state.project,
                     boardWidth: ConvertTo(state.project.boardWidth, action.unit),
                     boardHeight: ConvertTo(state.project.boardHeight, action.unit),
-                    graphics: state.project.graphics.map(g => ConvertGraphicToUnits(g, proj.boardHeight.unit))}}
+                    objects: state.project.objects.map(g => ConvertObjectUnits(g, proj.boardHeight.unit))}}
         case EngraveActionType.StartSubmitingOrder:
             return {...state, isSubmittingOrder: true}
         case EngraveActionType.OrderSubmited:
@@ -125,10 +143,10 @@ function Engrave (props : AppProps)
         {
             return;
         }
-        axios.post(process.env.REACT_APP_API + "/project/" + project.projectId, project)
-            .then(response => {
-                // dispatch({type: EngraveActionType.UpdateProject, project: response.data, shouldSave: false})
-            }).catch(reason => console.log(reason))
+        // axios.post(process.env.REACT_APP_API + "/project/" + project.projectId, project)
+        //     .then(response => {
+        //         dispatch({type: EngraveActionType.UpdateProject, project: response.data, shouldSave: false})
+            // }).catch(reason => console.log(reason))
     }, [project])
 
     let fileInputRef = useRef<HTMLInputElement>(null)
@@ -148,15 +166,19 @@ function Engrave (props : AppProps)
             <div className={"App-content"}>
                 {/*If the backend is down, this looks terrible*/}
                 {project !==null &&
-                    <CutView material={project.material} graphics={project.graphics} boardHeight={project.boardHeight}
-                         boardWidth={project.boardWidth} snapTo={snapTo} dispatch={dispatch}/>
+                    <CutView material={project.material} objects={project.objects} boardHeight={project.boardHeight}
+                             boardWidth={project.boardWidth} snapTo={snapTo} dispatch={dispatch}/>
                 }
 
                 <div className="detailBar">
                     <div className={"configuration-view bottom-separator"}>
                         <div className={"configuration-header"}>
                             <h2>Details</h2>
-                            <span className={"textButton"} onClick={e => {fileInputRef.current?.click()}}>&#43;</span>
+                            <span className={"textButton"} onClick={e => {
+                                // fileInputRef.current?.click()
+                                //TODO: select object type
+                                dispatch({type: EngraveActionType.TextObjectAdded})
+                            }}>&#43;</span>
                             <input ref={fileInputRef} style={{display: "none"}} type={"file"} accept={".pdf, .svg"} onChange={onFileChanged}/>
                         </div>
                         <select className={"pretty-select"} value={project?.material.id}>
@@ -177,16 +199,32 @@ function Engrave (props : AppProps)
                     </div>
 
                     {project !==null &&
-                        project.graphics.map((graphic : GraphicGroup) => <GraphicDetails key={graphic.guid} group={graphic} onChange={(old, group) => {
-                            if (group===null)
+                        project.objects.map((object: DrawableObject) => {
+                            switch(object.type)
                             {
-                                dispatch({type: EngraveActionType.GraphicDeleted, graphic: old})
+                                case DrawableObjectType.GraphicGroup:
+                                    return <GraphicDetails key={object.guid} group={object} onChange={(old, group) => {
+                                        if (group === null)
+                                            dispatch({type: EngraveActionType.ObjectDeleted, object: old})
+                                        else
+                                            dispatch({type: EngraveActionType.ObjectChanged, oldObject: old, object: group})
+                                    }}/>
+                                case DrawableObjectType.SubGraphic:
+                                    return <SubGraphicDetail subGraphic={object} onChange={(old, graphic) => {
+                                        if (graphic === null)
+                                            dispatch({type: EngraveActionType.ObjectDeleted, object: old})
+                                        else
+                                            dispatch({type: EngraveActionType.ObjectChanged, oldObject: old, object: graphic})
+                                    }}></SubGraphicDetail>
+                                case DrawableObjectType.TextObject:
+                                    return <TextDetail textObject={object} onChange={(old, graphic) => {
+                                        if (graphic === null)
+                                            dispatch({type: EngraveActionType.ObjectDeleted, object: old})
+                                        else
+                                            dispatch({type: EngraveActionType.ObjectChanged, oldObject: old, object: graphic})
+                                    }}></TextDetail>
                             }
-                            else
-                            {
-                                dispatch({type: EngraveActionType.GraphicChanged, graphic: group})
-                            }
-                        }}/> )
+                        })
                     }
                 </div>
             </div>
@@ -208,8 +246,7 @@ function Engrave (props : AppProps)
             );
             axios.post(`${process.env.REACT_APP_API}/graphic`, formData)
                 .then(response => {
-                    var graphic = response.data as GraphicGroup
-                    graphic =  ConvertGraphicToUnits(graphic, unit)
+                    var graphic = response.data as SvgGraphicGroup
                     dispatch({type: EngraveActionType.StartAddingNewGraphic, graphic: graphic})
                 })
         }

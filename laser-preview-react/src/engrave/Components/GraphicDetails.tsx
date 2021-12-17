@@ -1,10 +1,69 @@
 import React, {SyntheticEvent, useEffect, useState} from "react";
-import {GraphicGroup, LaserMode, SvgSubGraphic} from "../../common/dto";
+import {LaserMode, SvgGraphicGroup, SvgSubGraphic, TextObject} from "../../common/dto";
 
 import Button from 'react-bootstrap/Button';
-import {Dimension, ToUnitName} from "../../common/Dimension";
+import {Dimension, DimensionUnits, ToUnitName} from "../../common/Dimension";
 import './GraphicDetails.css'
 import {ResizeGraphicGroup} from "../../common/busi";
+
+export interface TextDetailProps
+{
+    textObject : TextObject
+    onChange: (oldTextObject:TextObject, newTextObject: TextObject | null) => void
+}
+interface TextDetailState {
+}
+export function TextDetail(props : TextDetailProps)
+{
+    let fonts = ["Arial", "Verdana", "Tahoma", "Trebuchet MS"]
+   let [state, setState] = useState<TextDetailState>({
+   })
+
+    return <div className={"text-object-item bottom-separator"}>
+        <div className={"graphic-detail-header"}>
+            <select className={"pretty-select"} value={props.textObject.font}>
+                {
+                    fonts.map(font => {
+                        return <option style={{"fontFamily": font}} onClick={fontSelected}>{font}</option>
+                    })
+                }
+            </select>
+
+            <div className={"fancy-input"}>
+                <input className={"input-entry"} value={props.textObject.fontSize} onChange={fontSizeSelected}/>
+                <div className={"input-unit"}>{ToUnitName(DimensionUnits.Pixels)}</div>
+            </div>
+            <Button variant={"warning"} onClick={event => props.onChange(props.textObject, null)}>delete</Button>
+        </div>
+
+        <div className={"graphic-color-select"}>
+            <label>Select laser mode: </label>
+            <select className={"graphic-line-color-mode pretty-select"}
+                    value={LaserMode[props.textObject.mode]}
+                    onChange={e => props.onChange(props.textObject, {...props.textObject, mode:e.currentTarget.selectedIndex})}>
+                <option value={"Cut"}>Cut</option>
+                <option value={"Score"}>Score</option>
+                <option value={"Engrave"}>Engrave</option>
+            </select>
+        </div>
+        <textarea onChange={textchanged} value={props.textObject.text} rows={2} cols={20}></textarea>
+    </div>
+
+    function fontSelected(event : SyntheticEvent<HTMLOptionElement>)
+    {
+        props.onChange(props.textObject, {...props.textObject, font: event.currentTarget.value})
+    }
+
+    function fontSizeSelected(event : SyntheticEvent<HTMLInputElement>)
+    {
+        props.onChange(props.textObject, {...props.textObject, fontSize: event.currentTarget.value})
+    }
+
+    function textchanged(event : SyntheticEvent<HTMLTextAreaElement>)
+    {
+       props.onChange(props.textObject, {...props.textObject, text: event.currentTarget.value})
+    }
+}
 
 export interface SubGraphicDetailProps
 {
@@ -35,8 +94,8 @@ export function SubGraphicDetail(props : SubGraphicDetailProps)
 
 export interface GraphicGroupDetailProps
 {
-    group: GraphicGroup
-    onChange: (oldGroup:GraphicGroup, newGroup: GraphicGroup) => void
+    group: SvgGraphicGroup
+    onChange: (oldGroup:SvgGraphicGroup, newGroup: SvgGraphicGroup) => void
 }
 interface GraphicGroupState {
     width: string,
@@ -90,8 +149,8 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
     }
 
     function onFieldLostFocus(event : SyntheticEvent<HTMLInputElement>) {
-
-        props.onChange(props.group, ResizeGraphicGroup(props.group, new Dimension(parseFloat(width), props.group.width.unit), new Dimension(parseFloat(height), props.group.height.unit)))
+        let group = ResizeGraphicGroup(props.group, new Dimension(parseFloat(width), props.group.width.unit), new Dimension(parseFloat(height), props.group.height.unit)) as SvgGraphicGroup
+        props.onChange(props.group, group)
     }
 
     let [{width, height, aspect}, setState] = useState<GraphicGroupState>({width: props.group.width.value.toFixed(3), height: props.group.height.value.toFixed(3), aspect: props.group.width.value/props.group.height.value})
@@ -126,8 +185,8 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
 }
 
 export interface GraphicProps {
-    group: GraphicGroup
-    onChange: (oldGroup:GraphicGroup, newGroup: GraphicGroup | null) => void
+    group: SvgGraphicGroup
+    onChange: (oldGroup:SvgGraphicGroup, newGroup: SvgGraphicGroup | null) => void
 }
 
 interface GraphicState {
@@ -187,8 +246,8 @@ export function GraphicDetails(props : GraphicProps) {
     }
 
     function onFieldLostFocus(event : SyntheticEvent<HTMLInputElement>) {
-
-        props.onChange(props.group, ResizeGraphicGroup(props.group, new Dimension(parseFloat(width), props.group.width.unit), new Dimension(parseFloat(height), props.group.height.unit)))
+        let group = ResizeGraphicGroup(props.group, new Dimension(parseFloat(width), props.group.width.unit), new Dimension(parseFloat(height), props.group.height.unit)) as SvgGraphicGroup
+        props.onChange(props.group, group)
     }
 
     function onWidthChange (event : SyntheticEvent<HTMLInputElement>) {

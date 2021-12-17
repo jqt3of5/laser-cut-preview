@@ -1,43 +1,79 @@
-import {GraphicGroup} from "./dto";
+import {DrawableObject, DrawableObjectType, SvgGraphicGroup, SvgSubGraphic} from "./dto";
 import {ConvertTo, Dimension, DimensionUnits, MultScaler} from "./Dimension";
 
-export function ConvertGraphicToUnits(graphic : GraphicGroup, unit: DimensionUnits) : GraphicGroup
+export function ConvertObjectUnits(object : DrawableObject, unit: DimensionUnits) : DrawableObject
 {
-    return {...graphic,
-        width: ConvertTo(graphic.width, unit),
-        height: ConvertTo(graphic.height, unit),
-        posX: ConvertTo(graphic.posX, unit),
-        posY: ConvertTo(graphic.posY, unit),
-        subGraphics: graphic.subGraphics.map(sub => {
-            return {...sub,
-                width: ConvertTo(sub.width, unit),
-                height: ConvertTo(sub.height, unit),
-                posX: ConvertTo(sub.posX, unit),
-                posY: ConvertTo(sub.posY, unit)}
-        })}
+    switch(object.type)
+    {
+        case DrawableObjectType.TextObject:
+            return {...object,
+                posX: ConvertTo(object.posX, unit),
+                posY: ConvertTo(object.posY, unit)}
+        case DrawableObjectType.GraphicGroup:
+            return {...object,
+                width: ConvertTo(object.width, unit),
+                height: ConvertTo(object.height, unit),
+                posX: ConvertTo(object.posX, unit),
+                posY: ConvertTo(object.posY, unit),
+                subGraphics: object.subGraphics.map(sub => {
+                    return {...sub,
+                        width: ConvertTo(sub.width, unit),
+                        height: ConvertTo(sub.height, unit),
+                        posX: ConvertTo(sub.posX, unit),
+                        posY: ConvertTo(sub.posY, unit)}
+                })}
+        case DrawableObjectType.SubGraphic:
+            return {...object,
+                width: ConvertTo(object.width, unit),
+                height: ConvertTo(object.height, unit),
+                posX: ConvertTo(object.posX, unit),
+                posY: ConvertTo(object.posY, unit)}
+    }
 }
 
-export function ResizeGraphicGroup(group : GraphicGroup, newWidth : Dimension, newHeight : Dimension) : GraphicGroup
+export function ResizeGraphicGroup<Graphic extends DrawableObject>(group : Graphic, newWidth : Dimension, newHeight : Dimension) : Graphic
 {
-    let scaleX = newWidth.value/group.width.value
-    let scaleY = newHeight.value/group.height.value
+    switch(group.type)
+    {
+        case DrawableObjectType.SubGraphic:
+        case DrawableObjectType.GraphicGroup:
+            let scaleX = newWidth.value/group.width.value
+            let scaleY = newHeight.value/group.height.value
 
-    return ScaleGraphicGroup(group, scaleX, scaleY)
+            return ScaleGraphicGroup(group, scaleX, scaleY)
+        case DrawableObjectType.TextObject:
+            //TextObjects don't scale
+            return group
+    }
 }
 
-export function ScaleGraphicGroup(group : GraphicGroup, scaleX : number, scaleY : number) : GraphicGroup
+export function ScaleGraphicGroup<Graphic extends DrawableObject>(object: Graphic, scaleX : number, scaleY : number) : Graphic
 {
-    return {...group,
-        subGraphics: group.subGraphics
-            .map(graphic => {
-                return {...graphic,
-                    posX: MultScaler(graphic.posX, scaleX),
-                    posY: MultScaler(graphic.posY,scaleY),
-                    width: MultScaler(graphic.width, scaleX),
-                    height: MultScaler(graphic.height, scaleY),
-                }
-            }),
-        width: MultScaler(group.width, scaleX),
-        height: MultScaler(group.height, scaleY)
+    switch(object.type)
+    {
+        case DrawableObjectType.TextObject:
+            //TextObjects don't scale
+            return object
+        case DrawableObjectType.SubGraphic:
+            return {...object,
+                width: MultScaler(object.width, scaleX),
+                height: MultScaler(object.height, scaleY)
+            }
+        case DrawableObjectType.GraphicGroup:
+            return {
+                ...object,
+                width: MultScaler(object.width, scaleX),
+                height: MultScaler(object.height, scaleY),
+                subGraphics: object.subGraphics
+                    .map(graphic => {
+                        return {
+                            ...graphic,
+                            posX: MultScaler(graphic.posX, scaleX),
+                            posY: MultScaler(graphic.posY, scaleY),
+                            width: MultScaler(graphic.width, scaleX),
+                            height: MultScaler(graphic.height, scaleY),
+                        }
+                    })
+            }
     }
 }

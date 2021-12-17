@@ -3,6 +3,28 @@ using System.Drawing;
 
 namespace ProjectAPI.Interfaces
 {
+    public interface DrawableObject
+    {
+        string type { get; }
+        Dimension posX { get; }
+        Dimension posY { get; }
+        Dimension width { get; } 
+        Dimension height { get; }
+    }
+
+    public record TextObject(
+        string text,
+        string font,
+        int fontSize,
+        Dimension posX,
+        Dimension posY,
+        Dimension width,
+        Dimension height
+    ) : DrawableObject
+    {
+        public string type { get; } = nameof(TextObject);
+    }
+
     public record Image(
         string guid,
         string mimetype,
@@ -11,7 +33,10 @@ namespace ProjectAPI.Interfaces
         Dimension posY,
         Dimension width,
         Dimension height
-    );
+    ) : DrawableObject
+    {
+        public string type { get; } = nameof(Image);
+    }
 
     public enum LaserMode
     {
@@ -19,6 +44,7 @@ namespace ProjectAPI.Interfaces
         Score,
         Engrave
     }
+
     /// <summary>
     /// Represents a subset of an SVG that is all the same color. Used to associate a laser mode to a color in an SVG
     /// </summary>
@@ -39,31 +65,37 @@ namespace ProjectAPI.Interfaces
         Dimension width,
         Dimension height,
         Color color,
-        LaserMode mode): Image(guid, "image/svg+xml", url, posX, posY, width, height);
+        LaserMode mode) : Image(guid, "image/svg+xml", url, posX, posY, width, height)
+    {
+        public string type { get; } = nameof(SvgSubGraphic);
+    }
         // LaserMode mode);
 
-    /// <summary>
-    /// Represents an original uploaded svg file, and aggregates the synthetic children of the svg 
-    /// </summary>
-    /// <param name="guid"></param>
-    /// <param name="mimetype"></param>
-    /// <param name="url"></param>
-    /// <param name="posX">The starting x position of the whole image on the canvas</param>
-    /// <param name="posY">The starting y position of the whole image on the canvas</param>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="originalFileName"></param>
-    /// <param name="subGraphics"></param>
-    public record SvgGraphicGroup(
-        string guid,
-        string url,
-        string name,
-        Dimension posX,
-        Dimension posY,
-        Dimension width,
-        Dimension height,
-        float angle,
-        SvgSubGraphic[] subGraphics): Image(guid, "image/svg+xml", url, posX, posY, width, height);
+        /// <summary>
+        /// Represents an original uploaded svg file, and aggregates the synthetic children of the svg 
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <param name="mimetype"></param>
+        /// <param name="url"></param>
+        /// <param name="posX">The starting x position of the whole image on the canvas</param>
+        /// <param name="posY">The starting y position of the whole image on the canvas</param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="originalFileName"></param>
+        /// <param name="subGraphics"></param>
+        public record SvgGraphicGroup(
+            string guid,
+            string url,
+            string name,
+            Dimension posX,
+            Dimension posY,
+            Dimension width,
+            Dimension height,
+            float angle,
+            SvgSubGraphic[] subGraphics) : Image(guid, "image/svg+xml", url, posX, posY, width, height)
+        {
+            public string type { get; } = nameof(SvgGraphicGroup);
+        }
 
     public record Material(
         string category,
@@ -147,7 +179,7 @@ namespace ProjectAPI.Interfaces
             if (obj is Dimension d)
             {
                 var n = d.ConvertTo(this.unit);
-                if (n.value == value)
+                if (Math.Abs(n.value - value) < 0.0001)
                 {
                     return 0;
                 }
@@ -174,7 +206,7 @@ namespace ProjectAPI.Interfaces
         Material material,
         Dimension boardWidth,
         Dimension boardHeight,
-        SvgGraphicGroup[] graphics,
+        DrawableObject [] objects,
         DimensionUnits DimensionUnits)
     {
         public bool readOnly = false;

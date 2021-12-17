@@ -24,6 +24,15 @@
     flex-direction: column;
 }
 
+.text-object-item {
+    display: flex;
+    flex-direction: column;
+}
+.text-object-properties {
+    display: flex;
+    flex-direction: row;
+}
+
 .graphic-color-item {
     flex-grow: 1;
     padding: 8px;

@@ -24,40 +24,60 @@ export enum LaserMode {
     Score,
     Engrave
 }
-export class SvgSubGraphic {
-    constructor (
-        public color: string,
-        public guid: string,
-        public url: string,
-        public mode: LaserMode,
-        public mimetype: string,
-        public posX : Dimension,
-        public posY : Dimension,
-        public width: Dimension,
-        public height : Dimension
-    ) {}
+
+export enum DrawableObjectType {
+    SubGraphic = "SvgSubGraphic",
+    GraphicGroup = "GraphicGroup",
+    TextObject = "TextObject"
 }
 
-export class GraphicGroup {
-    constructor(
-        public guid: string,
-        public name: string,
-        public mimetype: string,
-        public url: string,
-        public subGraphics: SvgSubGraphic[],
-        public posX : Dimension,
-        public posY : Dimension,
-        public width: Dimension,
-        public height : Dimension,
-        public angle : number) {}
+export type SvgSubGraphic ={
+    type : DrawableObjectType.SubGraphic,
+    color: string,
+    guid: string,
+    url: string,
+    mode: LaserMode,
+    mimetype: string,
+    posX : Dimension,
+    posY : Dimension,
+    width: Dimension,
+    height : Dimension
 }
-export class Project {
-    constructor(
-        public projectId: string,
-        public material:Material,
-        public boardWidth : Dimension,
-        public boardHeight : Dimension,
-        public graphics: GraphicGroup[]) {}
+
+export type SvgGraphicGroup = {
+
+    type : DrawableObjectType.GraphicGroup,
+    guid: string,
+    name: string,
+    mimetype: string,
+    url: string,
+    subGraphics: SvgSubGraphic[],
+    angle : number,
+    posX : Dimension,
+    posY : Dimension,
+    width: Dimension,
+    height : Dimension
+}
+
+export type TextObject = {
+    type : DrawableObjectType.TextObject,
+    text : string,
+    mode: LaserMode,
+    font : string,
+    fontSize : string,
+    textAlign: CanvasTextAlign,
+    posX : Dimension,
+    posY : Dimension,
+}
+
+export type DrawableObject = SvgSubGraphic | SvgGraphicGroup | TextObject
+
+export interface Project {
+        projectId: string,
+        material:Material,
+        boardWidth : Dimension,
+        boardHeight : Dimension,
+        objects : DrawableObject [],
 }
 
 export enum OrderStatus

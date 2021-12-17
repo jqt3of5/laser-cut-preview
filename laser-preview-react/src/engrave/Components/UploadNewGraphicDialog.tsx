@@ -1,5 +1,5 @@
 import React, {Dispatch, useEffect, useState} from "react";
-import {GraphicGroup, SvgSubGraphic} from "../../common/dto";
+import {SvgGraphicGroup, SvgSubGraphic} from "../../common/dto";
 import './UploadNewGraphicDialog.css'
 import '../../common/common.css'
 import {EngraveActionType, EngraveAppAction} from "../Views/EngraveAppState";
@@ -15,7 +15,7 @@ enum Stage {
 export interface UploadNewGraphicState
 {
     subGraphicIndex : number
-    graphic : GraphicGroup| null
+    graphic : SvgGraphicGroup| null
     stage : Stage
 }
 
@@ -24,7 +24,7 @@ export interface UploadNewGraphicProps
     //TODO: Units could belong to a context
     units: DimensionUnits
     isShowing : boolean
-    graphic : GraphicGroup | null
+    graphic : SvgGraphicGroup | null
     dispatch : Dispatch<EngraveAppAction>
 }
 

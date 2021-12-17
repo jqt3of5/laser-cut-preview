@@ -1,4 +1,4 @@
-import {Project, GraphicGroup, SvgSubGraphic, MaterialCategory, Material, UploadedFile} from "../src/common/dto";
+import {Project, SvgGraphicGroup, SvgSubGraphic, MaterialCategory, Material, UploadedFile} from "../src/common/dto";
 
 var fs = require("fs")
 var uuid = require("uuid")
@@ -56,10 +56,10 @@ export class Repo {
     //     })
     // }
 
-    saveGraphic(file: UploadedFile) : Promise<GraphicGroup> {
+    saveGraphic(file: UploadedFile) : Promise<SvgGraphicGroup> {
         const guid = uuid.v4()
         //TODO: ensure uploadDir exists
-        return new Promise<GraphicGroup>((resolve, reject) => {
+        return new Promise<SvgGraphicGroup>((resolve, reject) => {
             fs.open(uploadDir + guid, 'w', (err, fd) => {
                 if (err) {
                     console.log(err)
@@ -86,8 +86,8 @@ export class Repo {
             })
         })
     }
-    getGraphic(imageId : string) : Promise<GraphicGroup> {
-        return new Promise<GraphicGroup>((resolve, reject)=> {
+    getGraphic(imageId : string) : Promise<SvgGraphicGroup> {
+        return new Promise<SvgGraphicGroup>((resolve, reject)=> {
             let graphic = documentDB.graphics[imageId]
             if (graphic===undefined)
             {

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Buffers.Text;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Linq;
-using Core.Data;
 using ProjectAPI.Interfaces;
 
-namespace LaserPreview.Models
+namespace Core.Data
 {
     public class ProjectModel
     {
@@ -21,7 +18,11 @@ namespace LaserPreview.Models
 
         private Project CreateProject(string projectId)
         {
-            return new Project(projectId, _materialsModel.DefaultMaterial, new Dimension(18, DimensionUnits.Inches), new Dimension(12, DimensionUnits.Inches), new SvgGraphicGroup[]{}, DimensionUnits.Inches);
+            return new Project(projectId, _materialsModel.DefaultMaterial, 
+                new Dimension(18, DimensionUnits.Inches), 
+                new Dimension(12, DimensionUnits.Inches), 
+                new DrawableObject[]{},
+                DimensionUnits.Inches);
         }
         
         public Project GetProject(string projectId)
