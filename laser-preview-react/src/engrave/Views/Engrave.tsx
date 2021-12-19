@@ -55,8 +55,8 @@ function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAp
             let textObject = {type: DrawableObjectType.TextObject,
                 text: "Testing text",
                 font : "Helvetica",
-                fontSize: "96",
-                textAlign: "center",
+                fontSize: 96,
+                textAlign: "start",
                 mode: LaserMode.Engrave,
                 posX : new Dimension(1, DimensionUnits.Inches),
                 posY : new Dimension(1, DimensionUnits.Inches),
@@ -165,10 +165,12 @@ function Engrave (props : AppProps)
             </div>
             <div className={"App-content"}>
                 {/*If the backend is down, this looks terrible*/}
-                {project !==null &&
+                <div className={"cut-view-container"}>
+                    {project !==null &&
                     <CutView material={project.material} objects={project.objects} boardHeight={project.boardHeight}
                              boardWidth={project.boardWidth} snapTo={snapTo} dispatch={dispatch}/>
-                }
+                    }
+                </div>
 
                 <div className="detailBar">
                     <div className={"configuration-view bottom-separator"}>

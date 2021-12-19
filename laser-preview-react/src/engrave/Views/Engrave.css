@@ -26,20 +26,21 @@
   box-shadow: 0px 5px 10px 1px whitesmoke;
   display: flex;
   align-items: center;
+  height: 75px;
 }
+
 .App-content {
   display: flex;
   height: 90vh;
   align-content: stretch;
 }
 
-.cut-view {
+.cut-view-container {
   flex-grow: 1;
 }
 
-.cut-view canvas {
-  height: 85vh;
-  padding: 10px;
+.cut-view-container canvas {
+  height: 90vh;
   margin: auto;
   display: block;
 }

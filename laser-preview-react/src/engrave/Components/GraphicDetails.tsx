@@ -15,7 +15,7 @@ interface TextDetailState {
 }
 export function TextDetail(props : TextDetailProps)
 {
-    let fonts = ["Arial", "Verdana", "Tahoma", "Trebuchet MS"]
+    let fonts = ["Arial", "Verdana", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Bush Script MT"]
    let [state, setState] = useState<TextDetailState>({
    })
 
@@ -31,7 +31,7 @@ export function TextDetail(props : TextDetailProps)
 
             <div className={"fancy-input"}>
                 <input className={"input-entry"} value={props.textObject.fontSize} onChange={fontSizeSelected}/>
-                <div className={"input-unit"}>{ToUnitName(DimensionUnits.Pixels)}</div>
+                <div className={"input-unit"}>{ToUnitName(DimensionUnits.Points)}</div>
             </div>
             <Button variant={"warning"} onClick={event => props.onChange(props.textObject, null)}>delete</Button>
         </div>
@@ -46,6 +46,28 @@ export function TextDetail(props : TextDetailProps)
                 <option value={"Engrave"}>Engrave</option>
             </select>
         </div>
+        <select className={"graphic-line-color-mode pretty-select"}
+                value={props.textObject.textAlign}
+                onChange={e => {
+                    let textObject =props.textObject
+                    switch(e.currentTarget.value)
+                    {
+                        case "start":
+                            textObject = {...textObject, textAlign: "start"}
+                            break;
+                        case "center":
+                            textObject = {...textObject, textAlign: "center"}
+                            break;
+                        case "end":
+                            textObject = {...textObject, textAlign: "end"}
+                            break;
+                    }
+                    props.onChange(props.textObject, textObject)
+                }}>
+            <option value={"start"}>Left</option>
+            <option value={"center"}>Center</option>
+            <option value={"end"}>Right</option>
+        </select>
         <textarea onChange={textchanged} value={props.textObject.text} rows={2} cols={20}></textarea>
     </div>
 
@@ -56,7 +78,7 @@ export function TextDetail(props : TextDetailProps)
 
     function fontSizeSelected(event : SyntheticEvent<HTMLInputElement>)
     {
-        props.onChange(props.textObject, {...props.textObject, fontSize: event.currentTarget.value})
+        props.onChange(props.textObject, {...props.textObject, fontSize: parseFloat(event.currentTarget.value)})
     }
 
     function textchanged(event : SyntheticEvent<HTMLTextAreaElement>)

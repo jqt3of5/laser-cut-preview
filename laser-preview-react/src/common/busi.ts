@@ -42,7 +42,7 @@ export function ResizeGraphicGroup<Graphic extends DrawableObject>(group : Graph
 
             return ScaleGraphicGroup(group, scaleX, scaleY)
         case DrawableObjectType.TextObject:
-            //TextObjects don't scale
+            //TODO: TextObjects don't scale based on width/height
             return group
     }
 }
@@ -52,8 +52,9 @@ export function ScaleGraphicGroup<Graphic extends DrawableObject>(object: Graphi
     switch(object.type)
     {
         case DrawableObjectType.TextObject:
-            //TextObjects don't scale
-            return object
+            return {...object,
+                fontSize: (object.fontSize * scaleX).toFixed(0)
+            }
         case DrawableObjectType.SubGraphic:
             return {...object,
                 width: MultScaler(object.width, scaleX),

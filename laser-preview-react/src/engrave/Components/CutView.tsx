@@ -49,7 +49,6 @@ interface LoadedTextObject {
     //Canvas pixels
     width : number
     height : number
-    lineHeight : number
     translateX : number
     translateY : number
     scaleX : number
@@ -310,9 +309,7 @@ export function CutView (props : CutViewProps) {
     }, [state.background, state.objects, state.hoverGraphicIndex, state.selectedGraphicIndex])
 
     return (
-        <div className={"cut-view"}>
-            <canvas ref={canvasRef} className={"cut-material"} onMouseDown={onMouseDown} onMouseUp={onMouseUp} onMouseMove={onMouseMove}/>
-        </div>
+        <canvas ref={canvasRef} className={"cut-material"} onMouseDown={onMouseDown} onMouseUp={onMouseUp} onMouseMove={onMouseMove}/>
     )
 
     function loadGraphics() {
@@ -373,7 +370,6 @@ export function CutView (props : CutViewProps) {
 
                         let width = 0
                         let height = 0
-                        let lineHeight = 0
                         if (canvasRef.current !== null)
                         {
                             let ctx = canvasRef.current.getContext("2d")
@@ -385,14 +381,12 @@ export function CutView (props : CutViewProps) {
                                 height = linesMeasures.map(measure => measure.actualBoundingBoxAscent).reduce((previousValue, currentValue) => {
                                     return previousValue + currentValue
                                 })
-                                lineHeight = Math.max(...linesMeasures.map(m => m.actualBoundingBoxAscent))
                             }
                         }
                         resolve({
                             type: DrawableObjectType.TextObject, object: object,
                             height: height,
                             width: width,
-                            lineHeight: lineHeight,
                             startX: ToPixels(object.posX, CutView.pxPerUnit, props.boardHeight.unit),
                             startY: ToPixels(object.posY, CutView.pxPerUnit, props.boardWidth.unit),
                             translateX: 0,
@@ -424,6 +418,8 @@ export function CutView (props : CutViewProps) {
             ctx.rect(startX, startY, width, height)
             ctx.stroke()
 
+            drawScaleHandles(startX, startY, width,height)
+
             switch (object.type) {
                 case DrawableObjectType.GraphicGroup:
                     for (const graphic of object.loadedGraphics) {
@@ -448,30 +444,47 @@ export function CutView (props : CutViewProps) {
                     }
                     break;
                 case DrawableObjectType.TextObject:
-                    ctx.font = `${object.object.fontSize}px ${object.object.font}`
+                    ctx.font = `${object.object.fontSize*object.scaleX}px ${object.object.font}`
                     ctx.strokeStyle = 'black'
                     ctx.fillStyle = 'black'
+                    ctx.lineWidth = 1
 
                     ctx.save()
                     ctx.translate(startX, startY)
                     ctx.textAlign =  object.object.textAlign
-                    for (const line of object.object.text.split("\n")) {
-                        ctx.translate(0, object.lineHeight)
+                    for (const line of object.object.text.split('\n')) {
+
+                        ctx.translate(0, ctx.measureText(line).actualBoundingBoxAscent)
+
+                        let textStart = 0
+                        switch(object.object.textAlign)
+                        {
+                            case "center":
+                                textStart = width/2
+                                break;
+                            case "end":
+                            case "right":
+                                textStart = width
+                                break;
+                            case "left":
+                            case "start":
+                                break;
+                        }
+
                         switch(object.object.mode)
                         {
                             case LaserMode.Cut:
                             case LaserMode.Score:
-                                ctx.strokeText(line, 0, 0, width)
+                                ctx.strokeText(line, textStart, 0, width)
                                 break;
                             case LaserMode.Engrave:
-                                ctx.fillText(line, 0, 0, width)
+                                ctx.fillText(line, textStart, 0, width)
                                 break;
                         }
                     }
                     ctx.restore()
                     break;
             }
-            drawScaleHandles(startX, startY, width,height)
 
             if (state.selectedGraphicIndex !==-1 && object===state.objects[state.selectedGraphicIndex])
                 {
@@ -590,7 +603,7 @@ export function CutView (props : CutViewProps) {
             let newGraphic = ConvertLoadedObjectToObject(object, CutView.pxPerUnit, props.boardWidth.unit)
             newGraphic = ScaleGraphicGroup(newGraphic, object.scaleX, object.scaleY)
 
-            //TODO: All the prior logic shold really be in the reducer function, but unfortunately I need a way to pass the parent dispatcher into it.
+            //TODO: All the prior logic should really be in the reducer function, but unfortunately I need a way to pass the parent dispatcher into it.
             props.dispatch({type: EngraveActionType.ObjectChanged, oldObject: object.object, object: newGraphic})
         }
         dispatch({type: CutViewActionType.Finish})

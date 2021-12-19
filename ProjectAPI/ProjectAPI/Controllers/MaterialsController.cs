@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Text.Json;
 using Core.Data;
-using LaserPreview.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;

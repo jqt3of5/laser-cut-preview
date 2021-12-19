@@ -64,7 +64,7 @@ export type TextObject = {
     text : string,
     mode: LaserMode,
     font : string,
-    fontSize : string,
+    fontSize : number,
     textAlign: CanvasTextAlign,
     posX : Dimension,
     posY : Dimension,
