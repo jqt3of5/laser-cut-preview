@@ -13,21 +13,22 @@ namespace ProjectAPI.Interfaces
     //The react side has distriminated unions, so I'm using this dto to transfer any instance of an object, using "type" as the differentiating parameter
     public record DrawableObjectDto() : DrawableObject, TextObject, SvgSubGraphic, SvgGraphicGroup
     {
-        public string type { get; }
-        public string text { get; }
-        public string font { get; }
-        public int fontSize { get; }
-        public string guid { get; }
-        public string url { get; }
-        public string name { get; }
-        public Dimension posX { get; }
-        public Dimension posY { get; }
-        public Dimension width { get; }
-        public Dimension height { get; }
-        public float angle { get; }
-        public SvgSubGraphic[] subGraphics { get; }
-        public Color color { get; }
-        public LaserMode mode { get; }
+        public string type { init; get; }
+        public string text { init; get; }
+        public string font { init; get; }
+        public int fontSize { init; get; }
+        public string guid { init; get; }
+        public string mimetype { init; get; }
+        public string url { init; get; }
+        public string name { init; get; }
+        public Dimension posX { init; get; }
+        public Dimension posY { init; get; }
+        public Dimension width { init; get; }
+        public Dimension height { init; get; }
+        public float angle { init; get; }
+        public SvgSubGraphic[] subGraphics { init; get; }
+        public Color color { init; get; }
+        public LaserMode mode { init; get; }
     }
     
     public interface DrawableObject
@@ -76,7 +77,7 @@ namespace ProjectAPI.Interfaces
     /// <param name="height"></param>
     /// <param name="color"></param>
     /// <param name="mode"></param>
-    public interface SvgSubGraphic
+    public interface SvgSubGraphic : ImageObject
     {
         string guid { get; }
         string url{ get; }
@@ -88,7 +89,7 @@ namespace ProjectAPI.Interfaces
         LaserMode mode{ get; } 
         // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
         // public string type { get; } = nameof(SvgSubGraphic);
-    }
+    } 
 
         /// <summary>
         /// Represents an original uploaded svg file, and aggregates the synthetic children of the svg 
@@ -102,7 +103,7 @@ namespace ProjectAPI.Interfaces
         /// <param name="height"></param>
         /// <param name="originalFileName"></param>
         /// <param name="subGraphics"></param>
-        public interface SvgGraphicGroup
+        public interface SvgGraphicGroup : ImageObject
         {
             string guid{ get; }
             string url{ get; }
