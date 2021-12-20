@@ -11,7 +11,7 @@ namespace Core.Data
     {
         public string UploadDir = "uploads";
         private ConcurrentDictionary<string, SvgGraphicGroup> _graphics = new ConcurrentDictionary<string, SvgGraphicGroup>();
-        private ConcurrentDictionary<string, Image> _images = new ConcurrentDictionary<string, Image>();
+        private ConcurrentDictionary<string, ImageObject> _images = new ConcurrentDictionary<string, ImageObject>();
 
         private string ImagePath(string imageId, string ext = ".svg")
         {
@@ -22,7 +22,7 @@ namespace Core.Data
             return File.OpenRead(ImagePath(graphicId));
         }
         
-        public Image? GetImageObject(string imageId)
+        public ImageObject? GetImageObject(string imageId)
         {
             if (!_images.ContainsKey(imageId))
             {

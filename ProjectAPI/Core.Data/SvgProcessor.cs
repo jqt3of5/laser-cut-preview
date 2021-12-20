@@ -30,6 +30,42 @@ namespace Core.Data
     }
     public class SvgProcessor : IGraphicProcessor
     {
+
+        private SvgGraphicGroup CreateGraphicGroup(string guid, string url, string name, Dimension posX, Dimension posY, Dimension width, Dimension height, SvgSubGraphic [] subGraphics)
+        {
+            return new DrawableObjectDto()
+            {
+                type = nameof(SvgGraphicGroup),
+                guid = guid,
+                mimetype = "image/svg+xml",
+                url = url,
+                name = name,
+                posX = posX,
+                posY = posY,
+                width = width,
+                height = height,
+                subGraphics = subGraphics,
+            };
+        }
+
+        private SvgSubGraphic CreateSubGraphic(string guid, string url, Dimension posX, Dimension posY, Dimension width, Dimension height, Color color, LaserMode mode)
+        {
+            return new DrawableObjectDto()
+            {
+                type = nameof(SvgSubGraphic),
+                guid = guid,
+                mimetype = "image/svg+xml",
+                url = url,
+                posX = posX,
+                posY = posY,
+                width = width,
+                height = height,
+                color = color,
+                mode = mode
+            };
+        } 
+        
+        
         private readonly SvgDocument _orignalDoc;
         private IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)>? _subgraphicList; 
 
@@ -111,9 +147,9 @@ namespace Core.Data
             var heightUnit = _orignalDoc.Height.Type.ToUnits();
 
             //TODO: Generate the URL in a smarter way
-            var graphic = new SvgGraphicGroup(guid,   $"/graphic/{guid}/image", name,
+            var graphic = CreateGraphicGroup(guid,   $"/graphic/{guid}/image", name,
                 new Dimension(0, widthUnit), new Dimension(0, heightUnit), 
-                width ?? new Dimension(0, widthUnit), height?? new Dimension(0, heightUnit),0,
+                width ?? new Dimension(0, widthUnit), height?? new Dimension(0, heightUnit),
                 _subgraphicList.Select(m => m.subGraphic).ToArray());
 
             SvgDocument groupDoc = new SvgDocument();
@@ -138,7 +174,7 @@ namespace Core.Data
             
             var modeGuid = Guid.NewGuid().ToString();
             //TODO: Generate the URL in a smarter way
-            return new SvgSubGraphic(modeGuid, $"/graphic/{modeGuid}/image", 
+            return CreateSubGraphic(modeGuid, $"/graphic/{modeGuid}/image", 
                             pxPerWidthUnit.FromPixels(doc.Bounds.X - offsetX),
                             pxPerHeightUnit.FromPixels(doc.Bounds.Y - offsetY),
                                 pxPerWidthUnit.FromPixels(doc.Bounds.Width), 
