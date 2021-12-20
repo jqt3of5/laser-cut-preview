@@ -3,6 +3,33 @@ using System.Drawing;
 
 namespace ProjectAPI.Interfaces
 {
+    public enum LaserMode
+    {
+        Cut,
+        Score,
+        Engrave
+    }
+    
+    //The react side has distriminated unions, so I'm using this dto to transfer any instance of an object, using "type" as the differentiating parameter
+    public record DrawableObjectDto() : DrawableObject, TextObject, SvgSubGraphic, SvgGraphicGroup
+    {
+        public string type { get; }
+        public string text { get; }
+        public string font { get; }
+        public int fontSize { get; }
+        public string guid { get; }
+        public string url { get; }
+        public string name { get; }
+        public Dimension posX { get; }
+        public Dimension posY { get; }
+        public Dimension width { get; }
+        public Dimension height { get; }
+        public float angle { get; }
+        public SvgSubGraphic[] subGraphics { get; }
+        public Color color { get; }
+        public LaserMode mode { get; }
+    }
+    
     public interface DrawableObject
     {
         string type { get; }
@@ -12,37 +39,29 @@ namespace ProjectAPI.Interfaces
         Dimension height { get; }
     }
 
-    public record TextObject(
-        string text,
-        string font,
-        int fontSize,
-        Dimension posX,
-        Dimension posY,
-        Dimension width,
-        Dimension height
-    ) : DrawableObject
+    public interface TextObject
     {
-        public string type { get; } = nameof(TextObject);
+        string text { get; }
+        string font { get;  }
+        int fontSize { get; }
+        LaserMode mode { get; }
+        Dimension posX { get; }
+        Dimension posY { get; }
+        Dimension width { get; }
+        Dimension height { get; }
+        // string type { get; } = nameof(TextObject);
     }
 
-    public record Image(
-        string guid,
-        string mimetype,
-        string url,
-        Dimension posX,
-        Dimension posY,
-        Dimension width,
-        Dimension height
-    ) : DrawableObject
+    public interface ImageObject : DrawableObject
     {
-        public string type { get; } = nameof(Image);
-    }
-
-    public enum LaserMode
-    {
-        Cut,
-        Score,
-        Engrave
+        string guid{ get; }
+        string mimetype{ get; }
+        string url{ get; }
+        Dimension posX{ get; }
+        Dimension posY{ get; }
+        Dimension width{ get; }
+        Dimension height{ get; }
+        // public string type { get; } = nameof(ImageObject);
     }
 
     /// <summary>
@@ -57,19 +76,19 @@ namespace ProjectAPI.Interfaces
     /// <param name="height"></param>
     /// <param name="color"></param>
     /// <param name="mode"></param>
-    public record SvgSubGraphic(
-        string guid,
-        string url,
-        Dimension posX,
-        Dimension posY,
-        Dimension width,
-        Dimension height,
-        Color color,
-        LaserMode mode) : Image(guid, "image/svg+xml", url, posX, posY, width, height)
+    public interface SvgSubGraphic
     {
-        public string type { get; } = nameof(SvgSubGraphic);
+        string guid { get; }
+        string url{ get; }
+        Dimension posX{ get; }
+        Dimension posY{ get; }
+        Dimension width{ get; }
+        Dimension height{ get; }
+        Color color{ get; }
+        LaserMode mode{ get; } 
+        // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
+        // public string type { get; } = nameof(SvgSubGraphic);
     }
-        // LaserMode mode);
 
         /// <summary>
         /// Represents an original uploaded svg file, and aggregates the synthetic children of the svg 
@@ -83,18 +102,19 @@ namespace ProjectAPI.Interfaces
         /// <param name="height"></param>
         /// <param name="originalFileName"></param>
         /// <param name="subGraphics"></param>
-        public record SvgGraphicGroup(
-            string guid,
-            string url,
-            string name,
-            Dimension posX,
-            Dimension posY,
-            Dimension width,
-            Dimension height,
-            float angle,
-            SvgSubGraphic[] subGraphics) : Image(guid, "image/svg+xml", url, posX, posY, width, height)
+        public interface SvgGraphicGroup
         {
-            public string type { get; } = nameof(SvgGraphicGroup);
+            string guid{ get; }
+            string url{ get; }
+            string name{ get; }
+            Dimension posX{ get; }
+            Dimension posY{ get; }
+            Dimension width{ get; }
+            Dimension height{ get; }
+            float angle{ get; }
+            SvgSubGraphic[] subGraphics{ get; } 
+            // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
+            // public string type { get; } = nameof(SvgGraphicGroup);
         }
 
     public record Material(
@@ -102,7 +122,6 @@ namespace ProjectAPI.Interfaces
         string id,
         string name,
         string fileName);
-
 
     public record PixelConversion(
         double pixels,
@@ -206,7 +225,7 @@ namespace ProjectAPI.Interfaces
         Material material,
         Dimension boardWidth,
         Dimension boardHeight,
-        DrawableObject [] objects,
+        DrawableObjectDto [] objects,
         DimensionUnits DimensionUnits)
     {
         public bool readOnly = false;

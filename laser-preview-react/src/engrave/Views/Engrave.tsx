@@ -143,10 +143,10 @@ function Engrave (props : AppProps)
         {
             return;
         }
-        // axios.post(process.env.REACT_APP_API + "/project/" + project.projectId, project)
-        //     .then(response => {
+        axios.post(process.env.REACT_APP_API + "/project/" + project.projectId, project)
+            .then(response => {
         //         dispatch({type: EngraveActionType.UpdateProject, project: response.data, shouldSave: false})
-            // }).catch(reason => console.log(reason))
+            }).catch(reason => console.log(reason))
     }, [project])
 
     let fileInputRef = useRef<HTMLInputElement>(null)

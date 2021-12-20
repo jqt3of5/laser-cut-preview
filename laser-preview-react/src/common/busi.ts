@@ -1,4 +1,4 @@
-import {DrawableObject, DrawableObjectType, SvgGraphicGroup, SvgSubGraphic} from "./dto";
+import {DrawableObject, DrawableObjectType} from "./dto";
 import {ConvertTo, Dimension, DimensionUnits, MultScaler} from "./Dimension";
 
 export function ConvertObjectUnits(object : DrawableObject, unit: DimensionUnits) : DrawableObject

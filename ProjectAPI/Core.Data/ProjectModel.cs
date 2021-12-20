@@ -21,7 +21,7 @@ namespace Core.Data
             return new Project(projectId, _materialsModel.DefaultMaterial, 
                 new Dimension(18, DimensionUnits.Inches), 
                 new Dimension(12, DimensionUnits.Inches), 
-                new DrawableObject[]{},
+                new DrawableObjectDto[]{},
                 DimensionUnits.Inches);
         }
         

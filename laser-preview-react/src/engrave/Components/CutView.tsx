@@ -230,9 +230,6 @@ function reduce(state: CutViewState, action: CutViewAction)
                    break;
            }
 
-           console.log(state.selectedGraphicIndex)
-           console.log(translateY)
-           console.log(translateX)
            return {...state, objects: state.objects.map(group => {
                    if (group === state.objects[state.selectedGraphicIndex])
                    {
