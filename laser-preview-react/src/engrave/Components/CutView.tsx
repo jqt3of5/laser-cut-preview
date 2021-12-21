@@ -12,7 +12,7 @@ import {EngraveActionType, EngraveAppAction} from "../Views/EngraveAppState";
 import {ScaleGraphicGroup} from "../../common/busi";
 
 interface LoadedGraphicGroup {
-    type: DrawableObjectType.GraphicGroup
+    type: DrawableObjectType.SvgGraphicGroup
     object: SvgGraphicGroup
     loadedGraphics : LoadedGraphic []
     //Canvas pixels
@@ -114,7 +114,7 @@ type CutViewAction =
 export function ConvertLoadedObjectToObject(loadedObject : LoadedDrawableObject, pxPerUnit : number, unit: DimensionUnits) : DrawableObject
 {
     switch(loadedObject.type) {
-        case DrawableObjectType.GraphicGroup:
+        case DrawableObjectType.SvgGraphicGroup:
             return {...loadedObject.object,
                 posX: new Dimension((loadedObject.startX + loadedObject.translateX) / pxPerUnit, unit),
                 posY: new Dimension((loadedObject.startY + loadedObject.translateY) / pxPerUnit, unit),
@@ -129,7 +129,6 @@ export function ConvertLoadedObjectToObject(loadedObject : LoadedDrawableObject,
                         }
                     })
             }
-            break;
         case DrawableObjectType.SubGraphic:
             return {...loadedObject.object,
                     posX: new Dimension((loadedObject.startX + loadedObject.translateX) / pxPerUnit, unit),
@@ -242,9 +241,10 @@ function reduce(state: CutViewState, action: CutViewAction)
    }
 }
 
-CutView.resizeHandleWidth = 15;
+CutView.resizeHandleWidth = 10;
 CutView.pxPerUnit = 100;
-CutView.shadowBlur = 15;
+CutView.shadowBlur = 16;
+CutView.objectMargin = 16;
 
 export function CutView (props : CutViewProps) {
 
@@ -273,9 +273,102 @@ export function CutView (props : CutViewProps) {
     }, [props.boardWidth, props.boardHeight])
 
     useEffect(() => {
+        function loadGraphics(objects : DrawableObject[], boardHeight : Dimension, boardWidth: Dimension) {
+            let promises = objects.map(object => {
+                return new Promise<LoadedDrawableObject>(resolve => {
+                    switch(object.type)
+                    {
+                        case DrawableObjectType.SvgGraphicGroup:
+                            let promises = object.subGraphics.map(graphic => {
+                                return loadImage(graphic.url).then<LoadedGraphic>(image => {
+                                    return {
+                                        type: DrawableObjectType.SubGraphic,
+                                        image: image, object: graphic,
+                                        height: ToPixels(graphic.height, CutView.pxPerUnit, boardHeight.unit),
+                                        width: ToPixels(graphic.width, CutView.pxPerUnit, boardWidth.unit),
+                                        translateX: ToPixels(graphic.posX, CutView.pxPerUnit, boardHeight.unit),
+                                        translateY: ToPixels(graphic.posY, CutView.pxPerUnit, boardWidth.unit),
+                                        scaleX : 1,
+                                        scaleY : 1,
+                                        startX: ToPixels(object.posX, CutView.pxPerUnit, boardHeight.unit),
+                                        startY: ToPixels(object.posY, CutView.pxPerUnit, boardWidth.unit),
+                                    }
+                                })
+                            })
+
+                            Promise.all(promises).then<LoadedGraphicGroup>(loadedGraphics => {
+                                return {
+                                    type: DrawableObjectType.SvgGraphicGroup,
+                                    loadedGraphics: loadedGraphics, object: object,
+                                    height: ToPixels(object.height, CutView.pxPerUnit, boardHeight.unit),
+                                    width: ToPixels(object.width, CutView.pxPerUnit, boardWidth.unit),
+                                    startX: ToPixels(object.posX, CutView.pxPerUnit, boardHeight.unit),
+                                    startY: ToPixels(object.posY, CutView.pxPerUnit, boardWidth.unit),
+                                    translateX: 0,
+                                    translateY: 0,
+                                    scaleX: 1,
+                                    scaleY: 1
+                                }
+                            }).then(value => resolve(value))
+                            break;
+                        case DrawableObjectType.SubGraphic:
+                            loadImage(object.url).then<LoadedGraphic>(image => {
+                                return {
+                                    type: DrawableObjectType.SubGraphic,
+                                    image: image, object: object,
+                                    height: ToPixels(object.height, CutView.pxPerUnit, boardHeight.unit),
+                                    width: ToPixels(object.width, CutView.pxPerUnit, boardWidth.unit),
+                                    translateX: ToPixels(object.posX, CutView.pxPerUnit, boardHeight.unit),
+                                    translateY: ToPixels(object.posY, CutView.pxPerUnit, boardWidth.unit),
+                                    scaleX : 1,
+                                    scaleY : 1,
+                                    startX: ToPixels(object.posX, CutView.pxPerUnit, boardHeight.unit),
+                                    startY: ToPixels(object.posY, CutView.pxPerUnit, boardWidth.unit),
+                                }
+                            }).then(value => resolve(value))
+                            break;
+                        case DrawableObjectType.TextObject:
+
+                            let width = 0
+                            let height = 0
+                            if (canvasRef.current !== null)
+                            {
+                                let ctx = canvasRef.current.getContext("2d")
+                                if (ctx !==null) {
+
+                                    ctx.textBaseline = "bottom"
+                                    ctx.font = `${object.fontSize}px ${object.font}`
+                                    let linesMeasures = object.text.split("\n").map(line => ctx!.measureText(line))
+
+                                    width  = Math.max(...linesMeasures.map(m => m.width))
+                                    height = linesMeasures.map(measure => measure.actualBoundingBoxAscent).reduce((previousValue, currentValue) => {
+                                        return previousValue + currentValue
+                                    })
+                                }
+                            }
+                            resolve({
+                                type: DrawableObjectType.TextObject, object: object,
+                                height: height,
+                                width: width,
+                                startX: ToPixels(object.posX, CutView.pxPerUnit, boardHeight.unit),
+                                startY: ToPixels(object.posY, CutView.pxPerUnit, boardWidth.unit),
+                                translateX: 0,
+                                translateY: 0,
+                                scaleX: 1,
+                                scaleY: 1
+                            })
+                            break;
+                    }
+                })
+            })
+
+            Promise.all(promises).then(groups => {
+                dispatch({type: CutViewActionType.GraphicsLoaded, objects:groups})
+            })
+        }
         //load all a graphics
-        loadGraphics()
-    }, [props.objects, props.boardWidth, props.boardHeight])
+        loadGraphics(props.objects, props.boardHeight, props.boardWidth)
+    }, [canvasRef, props.objects, props.boardWidth, props.boardHeight])
 
     useEffect(() => {
         loadImage(`/materials/${props.material.id}`).then(background => {
@@ -290,6 +383,7 @@ export function CutView (props : CutViewProps) {
         {
             let ctx = canvasRef.current.getContext("2d")
             if (ctx !== null) {
+                ctx.textBaseline = "bottom"
                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
 
                 if (state.background !== null) {
@@ -298,7 +392,6 @@ export function CutView (props : CutViewProps) {
                     ctx.drawImage(state.background, CutView.shadowBlur, CutView.shadowBlur)
                     ctx.shadowBlur = 0
                 }
-                ctx.textBaseline = "bottom"
                 drawGraphics(ctx)
             }
         }
@@ -309,97 +402,7 @@ export function CutView (props : CutViewProps) {
         <canvas ref={canvasRef} className={"cut-material"} onMouseDown={onMouseDown} onMouseUp={onMouseUp} onMouseMove={onMouseMove}/>
     )
 
-    function loadGraphics() {
-        let promises = props.objects.map(object => {
-            return new Promise<LoadedDrawableObject>(resolve => {
-                switch(object.type)
-                {
-                    case DrawableObjectType.GraphicGroup:
-                        let promises = object.subGraphics.map(graphic => {
-                            return loadImage(graphic.url).then<LoadedGraphic>(image => {
-                                return {
-                                    type: DrawableObjectType.SubGraphic,
-                                    image: image, object: graphic,
-                                    height: ToPixels(graphic.height, CutView.pxPerUnit, props.boardHeight.unit),
-                                    width: ToPixels(graphic.width, CutView.pxPerUnit, props.boardWidth.unit),
-                                    translateX: ToPixels(graphic.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                                    translateY: ToPixels(graphic.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                                    scaleX : 1,
-                                    scaleY : 1,
-                                    startX: ToPixels(object.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                                    startY: ToPixels(object.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                                }
-                            })
-                        })
 
-                        Promise.all(promises).then<LoadedGraphicGroup>(loadedGraphics => {
-                            return {
-                                type: DrawableObjectType.GraphicGroup,
-                                loadedGraphics: loadedGraphics, object: object,
-                                height: ToPixels(object.height, CutView.pxPerUnit, props.boardHeight.unit),
-                                width: ToPixels(object.width, CutView.pxPerUnit, props.boardWidth.unit),
-                                startX: ToPixels(object.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                                startY: ToPixels(object.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                                translateX: 0,
-                                translateY: 0,
-                                scaleX: 1,
-                                scaleY: 1
-                            }
-                        }).then(value => resolve(value))
-                        break;
-                    case DrawableObjectType.SubGraphic:
-                        loadImage(object.url).then<LoadedGraphic>(image => {
-                            return {
-                                type: DrawableObjectType.SubGraphic,
-                                image: image, object: object,
-                                height: ToPixels(object.height, CutView.pxPerUnit, props.boardHeight.unit),
-                                width: ToPixels(object.width, CutView.pxPerUnit, props.boardWidth.unit),
-                                translateX: ToPixels(object.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                                translateY: ToPixels(object.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                                scaleX : 1,
-                                scaleY : 1,
-                                startX: ToPixels(object.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                                startY: ToPixels(object.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                            }
-                        }).then(value => resolve(value))
-                        break;
-                    case DrawableObjectType.TextObject:
-
-                        let width = 0
-                        let height = 0
-                        if (canvasRef.current !== null)
-                        {
-                            let ctx = canvasRef.current.getContext("2d")
-                            if (ctx !==null) {
-                                ctx.font = `${object.fontSize}px ${object.font}`
-                                let linesMeasures = object.text.split("\n").map(line => ctx!.measureText(line))
-
-                                width  = Math.max(...linesMeasures.map(m => m.width))
-                                height = linesMeasures.map(measure => measure.actualBoundingBoxAscent).reduce((previousValue, currentValue) => {
-                                    return previousValue + currentValue
-                                })
-                            }
-                        }
-                        resolve({
-                            type: DrawableObjectType.TextObject, object: object,
-                            height: height,
-                            width: width,
-                            startX: ToPixels(object.posX, CutView.pxPerUnit, props.boardHeight.unit),
-                            startY: ToPixels(object.posY, CutView.pxPerUnit, props.boardWidth.unit),
-                            translateX: 0,
-                            translateY: 0,
-                            scaleX: 1,
-                            scaleY: 1
-                        })
-                        break;
-                }
-            })
-        })
-
-        Promise.all(promises).then(groups => {
-            dispatch({type: CutViewActionType.GraphicsLoaded, objects:groups})
-        })
-    }
 
     function drawGraphics(ctx : CanvasRenderingContext2D)  {
         for (const object of state.objects) {
@@ -412,13 +415,13 @@ export function CutView (props : CutViewProps) {
             ctx.beginPath()
             ctx.lineWidth = 2
             ctx.strokeStyle = '#7777ff'
-            ctx.rect(startX, startY, width, height)
+            ctx.rect(startX -  CutView.objectMargin, startY - CutView.objectMargin, width + CutView.objectMargin*2, height + CutView.objectMargin*2)
             ctx.stroke()
 
             drawScaleHandles(startX, startY, width,height)
 
             switch (object.type) {
-                case DrawableObjectType.GraphicGroup:
+                case DrawableObjectType.SvgGraphicGroup:
                     for (const graphic of object.loadedGraphics) {
                         if (graphic.image !== null) {
                             //draw image
@@ -505,10 +508,14 @@ export function CutView (props : CutViewProps) {
                 ctx.fillStyle = "white"
                 ctx.lineWidth = 4
                 let halfSize = CutView.resizeHandleWidth / 2
-                ctx.rect(startX - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
-                ctx.rect(startX + width - halfSize, startY - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
-                ctx.rect(startX - halfSize, startY + height - halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
-                ctx.rect(startX + width - halfSize, startY + height- halfSize, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                //top left
+                ctx.rect(startX - halfSize - CutView.objectMargin, startY - halfSize - CutView.objectMargin, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                //top right
+                ctx.rect(startX + width - halfSize + CutView.objectMargin, startY - halfSize - CutView.objectMargin, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                //bottom left
+                ctx.rect(startX - halfSize - CutView.objectMargin, startY + height - halfSize + CutView.objectMargin, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
+                //bottom right
+                ctx.rect(startX + width - halfSize + CutView.objectMargin, startY + height- halfSize + CutView.objectMargin, CutView.resizeHandleWidth, CutView.resizeHandleWidth)
                 ctx.stroke()
                 ctx.fill()
             }
@@ -653,8 +660,6 @@ export function CutView (props : CutViewProps) {
             }
         })
     }
-
-
 }
 
 function IsInRectBounds(tx : number, ty : number, x : number, y:number, w: number, h:number): boolean {
@@ -663,19 +668,20 @@ function IsInRectBounds(tx : number, ty : number, x : number, y:number, w: numbe
 
 function IsOnGraphicHandle(canvasX:number, canvasY:number, graphic : LoadedDrawableObject) : MouseMode {
     let clickTargetSize = CutView.resizeHandleWidth * 2
-    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX - CutView.resizeHandleWidth, graphic.startY + graphic.translateY - CutView.resizeHandleWidth, clickTargetSize, clickTargetSize))
+
+    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX - CutView.resizeHandleWidth - CutView.objectMargin, graphic.startY + graphic.translateY - CutView.resizeHandleWidth - CutView.objectMargin, clickTargetSize, clickTargetSize))
     {
         return MouseMode.ScaleTopLeft
     }
-    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX + graphic.width - CutView.resizeHandleWidth, graphic.startY + graphic.translateY - CutView.resizeHandleWidth, clickTargetSize, clickTargetSize))
+    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX + graphic.width - CutView.resizeHandleWidth + CutView.objectMargin, graphic.startY + graphic.translateY - CutView.resizeHandleWidth - CutView.objectMargin, clickTargetSize, clickTargetSize))
     {
         return MouseMode.ScaleTopRight
     }
-    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX - CutView.resizeHandleWidth, graphic.startY + graphic.translateY + graphic.height - CutView.resizeHandleWidth, clickTargetSize, clickTargetSize))
+    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX - CutView.resizeHandleWidth - CutView.objectMargin, graphic.startY + graphic.translateY + graphic.height - CutView.resizeHandleWidth + CutView.objectMargin, clickTargetSize, clickTargetSize))
     {
         return MouseMode.ScaleBottomLeft
     }
-    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX + graphic.width - CutView.resizeHandleWidth, graphic.startY + graphic.translateY + graphic.height- CutView.resizeHandleWidth, clickTargetSize, clickTargetSize) )
+    if (IsInRectBounds(canvasX, canvasY, graphic.startX + graphic.translateX + graphic.width - CutView.resizeHandleWidth + CutView.objectMargin, graphic.startY + graphic.translateY + graphic.height- CutView.resizeHandleWidth + CutView.objectMargin, clickTargetSize, clickTargetSize) )
     {
         return MouseMode.ScaleBottomRight
     }

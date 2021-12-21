@@ -27,12 +27,16 @@
 .text-object-item {
     display: flex;
     flex-direction: column;
+    padding: 8px;
 }
 .text-object-properties {
     display: flex;
     flex-direction: row;
 }
-
+.text-format-options {
+   display: flex;
+    padding: 4px;
+}
 .graphic-color-item {
     flex-grow: 1;
     padding: 8px;
@@ -53,10 +57,8 @@
 }
 
 .graphic-color-select {
-    align-self: stretch;
     display: flex;
     align-items: center;
 }
-.graphic-line-color-mode {
-    margin: 4px;
+.graphic-text-align {
 }

@@ -99,7 +99,7 @@
 
 .pretty-select {
   display: inline-block;
-  height: calc(2rem + 4px);
+  /*height: calc(2rem + 4px);*/
   padding: .375rem 1.75rem .375rem .75rem;
   line-height: 1;
   color: #444;
@@ -121,7 +121,7 @@
   display: inline;
   margin:4px;
 }
-.fancy-input {
+.pretty-input {
   display: flex;
 }
 .input-entry {
@@ -144,3 +144,5 @@
 .delete-icon {
 
 }
+
+

@@ -9,7 +9,7 @@ export function ConvertObjectUnits(object : DrawableObject, unit: DimensionUnits
             return {...object,
                 posX: ConvertTo(object.posX, unit),
                 posY: ConvertTo(object.posY, unit)}
-        case DrawableObjectType.GraphicGroup:
+        case DrawableObjectType.SvgGraphicGroup:
             return {...object,
                 width: ConvertTo(object.width, unit),
                 height: ConvertTo(object.height, unit),
@@ -28,6 +28,8 @@ export function ConvertObjectUnits(object : DrawableObject, unit: DimensionUnits
                 height: ConvertTo(object.height, unit),
                 posX: ConvertTo(object.posX, unit),
                 posY: ConvertTo(object.posY, unit)}
+        default:
+            return object
     }
 }
 
@@ -36,13 +38,16 @@ export function ResizeGraphicGroup<Graphic extends DrawableObject>(group : Graph
     switch(group.type)
     {
         case DrawableObjectType.SubGraphic:
-        case DrawableObjectType.GraphicGroup:
+        case DrawableObjectType.SvgGraphicGroup:
             let scaleX = newWidth.value/group.width.value
             let scaleY = newHeight.value/group.height.value
 
             return ScaleGraphicGroup(group, scaleX, scaleY)
         case DrawableObjectType.TextObject:
             //TODO: TextObjects don't scale based on width/height
+            return group
+
+        default:
             return group
     }
 }
@@ -60,7 +65,7 @@ export function ScaleGraphicGroup<Graphic extends DrawableObject>(object: Graphi
                 width: MultScaler(object.width, scaleX),
                 height: MultScaler(object.height, scaleY)
             }
-        case DrawableObjectType.GraphicGroup:
+        case DrawableObjectType.SvgGraphicGroup:
             return {
                 ...object,
                 width: MultScaler(object.width, scaleX),
@@ -76,5 +81,7 @@ export function ScaleGraphicGroup<Graphic extends DrawableObject>(object: Graphi
                         }
                     })
             }
+        default:
+            return object
     }
 }

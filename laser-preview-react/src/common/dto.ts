@@ -27,7 +27,7 @@ export enum LaserMode {
 
 export enum DrawableObjectType {
     SubGraphic = "SvgSubGraphic",
-    GraphicGroup = "GraphicGroup",
+    SvgGraphicGroup = "SvgGraphicGroup",
     TextObject = "TextObject"
 }
 
@@ -46,7 +46,7 @@ export type SvgSubGraphic ={
 
 export type SvgGraphicGroup = {
 
-    type : DrawableObjectType.GraphicGroup,
+    type : DrawableObjectType.SvgGraphicGroup,
     guid: string,
     name: string,
     mimetype: string,

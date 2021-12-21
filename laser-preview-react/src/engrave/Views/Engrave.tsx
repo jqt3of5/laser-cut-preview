@@ -15,7 +15,8 @@ import {UploadNewGraphicDialog} from "../Components/UploadNewGraphicDialog";
 import {v4 as uuidv4} from 'uuid';
 import {ConvertObjectUnits} from "../../common/busi";
 import {SubmitAndOrderDialog} from "../Components/SubmitAndOrderDialog";
-import {Button} from "react-bootstrap";
+import {Button, Dropdown} from "react-bootstrap";
+import DropdownToggle from "react-bootstrap/DropdownToggle";
 
 function reducer(state : EngraveAppState, action : EngraveAppAction) : EngraveAppState
 {
@@ -176,11 +177,17 @@ function Engrave (props : AppProps)
                     <div className={"configuration-view bottom-separator"}>
                         <div className={"configuration-header"}>
                             <h2>Details</h2>
-                            <span className={"textButton"} onClick={e => {
-                                // fileInputRef.current?.click()
-                                //TODO: select object type
-                                dispatch({type: EngraveActionType.TextObjectAdded})
-                            }}>&#43;</span>
+                            <Dropdown>
+                                <DropdownToggle variant={"secondary"}>
+                                   Add
+                                </DropdownToggle>
+                                <Dropdown.Menu>
+                                   <Dropdown.Item onClick={e => fileInputRef.current?.click() }>Vector graphic</Dropdown.Item>
+                                   <Dropdown.Item onClick={e => dispatch({type: EngraveActionType.TextObjectAdded})}>Text object</Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+
+
                             <input ref={fileInputRef} style={{display: "none"}} type={"file"} accept={".pdf, .svg"} onChange={onFileChanged}/>
                         </div>
                         <select className={"pretty-select"} value={project?.material.id}>
@@ -201,10 +208,10 @@ function Engrave (props : AppProps)
                     </div>
 
                     {project !==null &&
-                        project.objects.map((object: DrawableObject) => {
+                        project.objects.map((object: DrawableObject, index: number) => {
                             switch(object.type)
                             {
-                                case DrawableObjectType.GraphicGroup:
+                                case DrawableObjectType.SvgGraphicGroup:
                                     return <GraphicDetails key={object.guid} group={object} onChange={(old, group) => {
                                         if (group === null)
                                             dispatch({type: EngraveActionType.ObjectDeleted, object: old})
@@ -212,19 +219,21 @@ function Engrave (props : AppProps)
                                             dispatch({type: EngraveActionType.ObjectChanged, oldObject: old, object: group})
                                     }}/>
                                 case DrawableObjectType.SubGraphic:
-                                    return <SubGraphicDetail subGraphic={object} onChange={(old, graphic) => {
+                                    return <SubGraphicDetail key={object.guid} subGraphic={object} onChange={(old, graphic) => {
                                         if (graphic === null)
                                             dispatch({type: EngraveActionType.ObjectDeleted, object: old})
                                         else
                                             dispatch({type: EngraveActionType.ObjectChanged, oldObject: old, object: graphic})
-                                    }}></SubGraphicDetail>
+                                    }}/>
                                 case DrawableObjectType.TextObject:
-                                    return <TextDetail textObject={object} onChange={(old, graphic) => {
+                                    return <TextDetail key={index} textObject={object} onChange={(old, graphic) => {
                                         if (graphic === null)
                                             dispatch({type: EngraveActionType.ObjectDeleted, object: old})
                                         else
                                             dispatch({type: EngraveActionType.ObjectChanged, oldObject: old, object: graphic})
-                                    }}></TextDetail>
+                                    }}/>
+                                default:
+                                    return <div>Unsupported DrawableObject: {object}</div>
                             }
                         })
                     }

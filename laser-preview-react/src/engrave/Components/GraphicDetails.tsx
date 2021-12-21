@@ -11,16 +11,26 @@ export interface TextDetailProps
     textObject : TextObject
     onChange: (oldTextObject:TextObject, newTextObject: TextObject | null) => void
 }
-interface TextDetailState {
-}
 export function TextDetail(props : TextDetailProps)
 {
     let fonts = ["Arial", "Verdana", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Bush Script MT"]
-   let [state, setState] = useState<TextDetailState>({
-   })
 
     return <div className={"text-object-item bottom-separator"}>
         <div className={"graphic-detail-header"}>
+            <div className={"graphic-color-select"}>
+                <label>Laser mode: </label>
+                <select className={"graphic-text-align pretty-select"}
+                        value={LaserMode[props.textObject.mode]}
+                        onChange={e => props.onChange(props.textObject, {...props.textObject, mode:e.currentTarget.selectedIndex})}>
+                    <option value={"Cut"}>Cut</option>
+                    <option value={"Score"}>Score</option>
+                    <option value={"Engrave"}>Engrave</option>
+                </select>
+            </div>
+            <Button className={"graphic-delete"} variant={"warning"} onClick={event => props.onChange(props.textObject, null)}>delete</Button>
+        </div>
+
+        <div className={"text-format-options"}>
             <select className={"pretty-select"} value={props.textObject.font}>
                 {
                     fonts.map(font => {
@@ -28,46 +38,34 @@ export function TextDetail(props : TextDetailProps)
                     })
                 }
             </select>
-
-            <div className={"fancy-input"}>
+            <div className={"pretty-input"}>
                 <input className={"input-entry"} value={props.textObject.fontSize} onChange={fontSizeSelected}/>
                 <div className={"input-unit"}>{ToUnitName(DimensionUnits.Points)}</div>
             </div>
-            <Button variant={"warning"} onClick={event => props.onChange(props.textObject, null)}>delete</Button>
-        </div>
-
-        <div className={"graphic-color-select"}>
-            <label>Select laser mode: </label>
-            <select className={"graphic-line-color-mode pretty-select"}
-                    value={LaserMode[props.textObject.mode]}
-                    onChange={e => props.onChange(props.textObject, {...props.textObject, mode:e.currentTarget.selectedIndex})}>
-                <option value={"Cut"}>Cut</option>
-                <option value={"Score"}>Score</option>
-                <option value={"Engrave"}>Engrave</option>
+            <select className={"graphic-text-align pretty-select"}
+                    value={props.textObject.textAlign}
+                    onChange={e => {
+                        let textObject =props.textObject
+                        switch(e.currentTarget.value)
+                        {
+                            case "start":
+                                textObject = {...textObject, textAlign: "start"}
+                                break;
+                            case "center":
+                                textObject = {...textObject, textAlign: "center"}
+                                break;
+                            case "end":
+                                textObject = {...textObject, textAlign: "end"}
+                                break;
+                        }
+                        props.onChange(props.textObject, textObject)
+                    }}>
+                <option value={"start"}>Left</option>
+                <option value={"center"}>Center</option>
+                <option value={"end"}>Right</option>
             </select>
         </div>
-        <select className={"graphic-line-color-mode pretty-select"}
-                value={props.textObject.textAlign}
-                onChange={e => {
-                    let textObject =props.textObject
-                    switch(e.currentTarget.value)
-                    {
-                        case "start":
-                            textObject = {...textObject, textAlign: "start"}
-                            break;
-                        case "center":
-                            textObject = {...textObject, textAlign: "center"}
-                            break;
-                        case "end":
-                            textObject = {...textObject, textAlign: "end"}
-                            break;
-                    }
-                    props.onChange(props.textObject, textObject)
-                }}>
-            <option value={"start"}>Left</option>
-            <option value={"center"}>Center</option>
-            <option value={"end"}>Right</option>
-        </select>
+
         <textarea onChange={textchanged} value={props.textObject.text} rows={2} cols={20}></textarea>
     </div>
 
@@ -100,7 +98,7 @@ export function SubGraphicDetail(props : SubGraphicDetailProps)
 
             <div className={"graphic-color-select"}>
                 <label>Select laser mode: </label>
-                <select className={"graphic-line-color-mode pretty-select"} 
+                <select className={"graphic-text-align pretty-select"}
                         value={LaserMode[props.subGraphic.mode]}
                         onChange={e => props.onChange(props.subGraphic, {...props.subGraphic, mode:e.currentTarget.selectedIndex})}>
                     <option value={"Cut"}>Cut</option>
@@ -186,13 +184,13 @@ export function GraphicGroupDetail(props : GraphicGroupDetailProps)
             <div className={"graphic-dimensions"}>
                 <div className={"graphic-dimension"}>
                     <label>Width</label>
-                    <div className={"fancy-input"}>
+                    <div className={"pretty-input"}>
                         <input className={"input-entry"} value={width} onChange={onWidthChange} onBlur={onFieldLostFocus}/><div className={"input-unit"}>{ToUnitName(props.group.width.unit)}</div>
                     </div>
                 </div>
                 <div className={"graphic-dimension"}>
                     <label>Height</label>
-                    <div className={"fancy-input"}>
+                    <div className={"pretty-input"}>
                         <input className={"input-entry"} value={height} onChange={onHeightChange} onBlur={onFieldLostFocus}/><div className={"input-unit"}>{ToUnitName(props.group.height.unit)}</div>
                     </div>
                 </div>
@@ -234,13 +232,13 @@ export function GraphicDetails(props : GraphicProps) {
             <div className={"graphic-dimensions"}>
                 <div className={"graphic-dimension"}>
                     <label>Width</label>
-                    <div className={"fancy-input"}>
+                    <div className={"pretty-input"}>
                         <input className={"input-entry"} value={width} onChange={onWidthChange} onBlur={onFieldLostFocus}/><div className={"input-unit"}>{ToUnitName(props.group.width.unit)}</div>
                     </div>
                 </div>
                 <div className={"graphic-dimension"}>
                     <label>Height</label>
-                    <div className={"fancy-input"}>
+                    <div className={"pretty-input"}>
                         <input className={"input-entry"} value={height} onChange={onHeightChange} onBlur={onFieldLostFocus}/><div className={"input-unit"}>{ToUnitName(props.group.height.unit)}</div>
                     </div>
                 </div>
