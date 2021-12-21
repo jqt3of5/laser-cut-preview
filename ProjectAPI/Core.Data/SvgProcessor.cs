@@ -44,13 +44,14 @@ namespace Core.Data
                 posY = posY,
                 width = width,
                 height = height,
-                subGraphics = subGraphics,
+                //TODO: this feels a bit odd... this dto requires concrete classes to deserialize properly. Maybe we can canvert some other way?
+                subGraphics = subGraphics.Cast<SvgSubGraphicDto>().ToArray(),
             };
         }
 
         private SvgSubGraphic CreateSubGraphic(string guid, string url, Dimension posX, Dimension posY, Dimension width, Dimension height, Color color, LaserMode mode)
         {
-            return new DrawableObjectDto()
+            return new SvgSubGraphicDto()
             {
                 type = nameof(SvgSubGraphic),
                 guid = guid,

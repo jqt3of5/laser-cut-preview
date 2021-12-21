@@ -26,7 +26,7 @@ namespace ProjectAPI.Interfaces
         public Dimension width { init; get; }
         public Dimension height { init; get; }
         public float angle { init; get; }
-        public SvgSubGraphic[] subGraphics { init; get; }
+        public SvgSubGraphicDto[] subGraphics { init; get; }
         public Color color { init; get; }
         public LaserMode mode { init; get; }
     }
@@ -89,7 +89,21 @@ namespace ProjectAPI.Interfaces
         LaserMode mode{ get; } 
         // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
         // public string type { get; } = nameof(SvgSubGraphic);
-    } 
+    }
+
+    public record SvgSubGraphicDto : SvgSubGraphic
+    {
+        public string type { init; get; }
+        public string guid { init; get; }
+        public string mimetype { init; get; }
+        public string url { init; get; }
+        public Dimension posX { init; get; }
+        public Dimension posY { init; get; }
+        public Dimension width { init; get; }
+        public Dimension height { init; get; }
+        public Color color { init; get; }
+        public LaserMode mode { init; get; }
+    }
 
         /// <summary>
         /// Represents an original uploaded svg file, and aggregates the synthetic children of the svg 
@@ -113,7 +127,7 @@ namespace ProjectAPI.Interfaces
             Dimension width{ get; }
             Dimension height{ get; }
             float angle{ get; }
-            SvgSubGraphic[] subGraphics{ get; } 
+            SvgSubGraphicDto[] subGraphics{ get; } 
             // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
             // public string type { get; } = nameof(SvgGraphicGroup);
         }

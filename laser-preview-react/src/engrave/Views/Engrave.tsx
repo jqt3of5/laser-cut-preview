@@ -233,7 +233,7 @@ function Engrave (props : AppProps)
                                             dispatch({type: EngraveActionType.ObjectChanged, oldObject: old, object: graphic})
                                     }}/>
                                 default:
-                                    return <div>Unsupported DrawableObject: {object}</div>
+                                    return <div>Unsupported DrawableObject</div>
                             }
                         })
                     }
