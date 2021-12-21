@@ -368,7 +368,8 @@ export function CutView (props : CutViewProps) {
         }
         //load all a graphics
         loadGraphics(props.objects, props.boardHeight, props.boardWidth)
-    }, [canvasRef, props.objects, props.boardWidth, props.boardHeight])
+        // eslint-disable-next-line
+    }, [props.objects, props.boardWidth, props.boardHeight])
 
     useEffect(() => {
         loadImage(`/materials/${props.material.id}`).then(background => {
