@@ -59,6 +59,44 @@ namespace LaserPreviewTests
         [TestCase("Group Test.svg")]
         [TestCase("Overlapping test.svg")]
         [TestCase("Test1.svg")]
+        [TestCase("Test Fill and Stroke.svg")]
+        [TestCase("Wood clock Gears.svg")]
+        [TestCase("minutesToHoursGears.svg")]
+        [TestCase("Phyrexian.svg")]
+        public void TestExtractColorPairsNotEmpty(string filename)
+        {
+            var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
+            var processor = new SvgProcessor(originalSvg);
+
+            var colors = processor.ExtractColorPairs(originalSvg);
+           
+            Assert.That(colors, Is.Not.Null.And.Not.Empty);
+        } 
+        
+        [TestCase("Group Test.svg")]
+        [TestCase("Overlapping test.svg")]
+        [TestCase("Test1.svg")]
+        [TestCase("Test Fill and Stroke.svg")]
+        [TestCase("Wood clock Gears.svg")]
+        [TestCase("minutesToHoursGears.svg")]
+        [TestCase("Phyrexian.svg")]
+        public void TestExtractColorPairs(string filename)
+        {
+            var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
+            var processor = new SvgProcessor(originalSvg);
+
+            var colors = processor.ExtractColorPairs(originalSvg);
+
+            foreach (var color in colors)
+            {
+                var elements = processor.ExtractDrawableElementsOfColors(color, originalSvg);
+                Assert.That(elements, Is.Not.Null.And.Not.Empty);
+            }
+        } 
+        
+        [TestCase("Group Test.svg")]
+        [TestCase("Overlapping test.svg")]
+        [TestCase("Test1.svg")]
         [TestCase("Wood clock Gears.svg")]
         [TestCase("minutesToHoursGears.svg")]
         [TestCase("Phyrexian.svg")]
@@ -67,9 +105,9 @@ namespace LaserPreviewTests
         {
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
-
+        
             var subgraphics = processor.ExtractSubGraphicsFromSVG();
-
+        
             IEnumerable<SvgElement> ChildElements(SvgElement element)
             {
                 if (element.Children.Any())
@@ -88,41 +126,20 @@ namespace LaserPreviewTests
                 }
             }
             
-            Assert.Multiple(() =>
-            {
                 Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
                 foreach (var subgraphic in subgraphics)
                 {
-                    Assert.That(ChildElements(subgraphic.document), Is.All.Matches<SvgElement>(e =>
-                    {
-                        if (e.Stroke == SvgPaintServer.None)
-                        {
-                            return true;
-                        }
-                        
-                        if (e.Stroke is SvgColourServer strokeServer)
-                        {
-                            return strokeServer.Colour == subgraphic.subGraphic.color;
-                        }
-
-                        return true;
-                    }));
+                    var elements = ChildElements(subgraphic.document);
+                    Assert.That(elements, Is.Not.Empty);
                     
+                    var first = elements.First();
                     Assert.That(ChildElements(subgraphic.document), Is.All.Matches<SvgElement>(e =>
                     {
-                        if (e.Fill == SvgPaintServer.None)
-                        {
-                            return true;
-                        }
-                        if (e.Fill is SvgColourServer fillServer)
-                        {
-                            return fillServer.Colour == subgraphic.subGraphic.color;
-                        }
+                        var equals = new SvgProcessor.PaintServerPairEquality();
 
-                        return true;
+                        return equals.Equals((first.Fill, first.Stroke), (e.Fill, e.Stroke));
                     }));
                 } 
-            });
         } 
         
         [TestCase("Group Test.svg")]

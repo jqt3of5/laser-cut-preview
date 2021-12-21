@@ -33,7 +33,6 @@ export enum DrawableObjectType {
 
 export type SvgSubGraphic ={
     type : DrawableObjectType.SubGraphic,
-    color: string,
     guid: string,
     url: string,
     mode: LaserMode,

@@ -27,7 +27,6 @@ namespace ProjectAPI.Interfaces
         public Dimension height { init; get; }
         public float angle { init; get; }
         public SvgSubGraphicDto[] subGraphics { init; get; }
-        public Color color { init; get; }
         public LaserMode mode { init; get; }
     }
     
@@ -85,7 +84,6 @@ namespace ProjectAPI.Interfaces
         Dimension posY{ get; }
         Dimension width{ get; }
         Dimension height{ get; }
-        Color color{ get; }
         LaserMode mode{ get; } 
         // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
         // public string type { get; } = nameof(SvgSubGraphic);
