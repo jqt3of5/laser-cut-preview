@@ -69,7 +69,6 @@ namespace Core.Data
             };
         }
 
-
         private readonly SvgDocument _orignalDoc;
         private IReadOnlyList<(SvgDocument document, SvgSubGraphic subGraphic)>? _subgraphicList;
 
@@ -118,8 +117,8 @@ namespace Core.Data
             var uniqueColors = ExtractColorPairs(svg).Distinct(new PaintServerPairEquality());
 
             var subDocsByColor = uniqueColors
-                .Select(color => (Color: color, Elements: ExtractDrawableElementsOfColors(color, svg)))
-                .Select(group => SvgElementsToDocument(svg, group.Elements)).ToList();
+                .Select(color => ExtractDrawableElementsOfColors(color, svg))
+                .Select(group => SvgElementsToDocument(svg, group)).ToList();
 
             if (!subDocsByColor.Any())
             {
@@ -256,7 +255,14 @@ namespace Core.Data
                     {
                         PaintServersEquality equality = new();
                         if (equality.Equals(child.Fill, color.fill) && equality.Equals(child.Stroke, color.stroke))
-                            yield return child;
+                        {
+                            var c = child.DeepCopy();    
+                            c.Fill = SvgPaintServer.None;
+                            //Default to blue stroke since our default laser mode is cut
+                            c.Stroke = new SvgColourServer(Color.Blue);
+                            c.StrokeWidth = 2;
+                            yield return c;
+                        }
                     }
                 }
             }
@@ -265,7 +271,14 @@ namespace Core.Data
             {
                 PaintServersEquality equality = new();
                 if (equality.Equals(doc.Fill, color.fill) && equality.Equals(doc.Stroke, color.stroke))
-                    yield return doc;
+                {
+                    var c = doc.DeepCopy();    
+                    c.Fill = SvgPaintServer.None;
+                    //Default to blue stroke since our default laser mode is cut
+                    c.Stroke = new SvgColourServer(Color.Blue);
+                    c.StrokeWidth = 2;
+                    yield return c;
+                }
             }
         }
 
