@@ -20,15 +20,13 @@ namespace LaserPreview.Controllers
         [HttpGet("{graphicId}/image")]
         public Stream GetImage(string graphicId)
         {
-            var image = _model.GetImageObject(graphicId);
-            if (image == null)
+            var stream = _model.GetImageStream(graphicId, out var mimeType);
+            if (stream == null)
             {
                 return null;
             }
-            
-            var stream = _model.GetImageStream(graphicId);
 
-            HttpContext.Response.Headers["Content-Type"] = image.mimetype;
+            HttpContext.Response.Headers["Content-Type"] = mimeType;
             return stream;
         }
         

@@ -149,6 +149,41 @@ namespace LaserPreviewTests
         [TestCase("minutesToHoursGears.svg")]
         [TestCase("Phyrexian.svg")]
         [TestCase("Test Fill and Stroke.svg")]
+        public void SubgraphicsShouldHaveSameCount(string filename)
+        {
+            var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
+            var processor = new SvgProcessor(originalSvg);
+        
+            var subgraphics = processor.ExtractSubGraphicsFromSVG();
+            
+            IEnumerable<SvgElement> ChildElements(SvgElement element)
+            {
+                if (element.Children.Any())
+                {
+                    foreach (var child in element.Children)
+                    {
+                        foreach (var childElement in ChildElements(child))
+                        {
+                            yield return childElement;
+                        }
+                    }
+                }
+                else 
+                {
+                    yield return element;
+                }
+            }
+
+           Assert.That(ChildElements(originalSvg).Count(), Is.EqualTo(subgraphics.Sum(sub => ChildElements(sub.document).Count())));
+
+        } 
+        [TestCase("Group Test.svg")]
+        [TestCase("Overlapping test.svg")]
+        [TestCase("Test1.svg")]
+        [TestCase("Wood clock Gears.svg")]
+        [TestCase("minutesToHoursGears.svg")]
+        [TestCase("Phyrexian.svg")]
+        [TestCase("Test Fill and Stroke.svg")]
         public void TestSubDocumentBoundsAreSameAsSubGraphic(string filename)
         {
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));

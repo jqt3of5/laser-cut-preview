@@ -260,7 +260,7 @@ namespace Core.Data
                             c.Fill = SvgPaintServer.None;
                             //Default to blue stroke since our default laser mode is cut
                             c.Stroke = new SvgColourServer(Color.Blue);
-                            c.StrokeWidth = 2;
+                            c.StrokeWidth = 1;
                             yield return c;
                         }
                     }
@@ -276,11 +276,17 @@ namespace Core.Data
                     c.Fill = SvgPaintServer.None;
                     //Default to blue stroke since our default laser mode is cut
                     c.Stroke = new SvgColourServer(Color.Blue);
-                    c.StrokeWidth = 2;
+                    c.StrokeWidth = 1;
                     yield return c;
                 }
             }
         }
+
+        // public SvgElement SetToLaserMode(LaserMode mode)
+        // {
+        //     
+        // }
+        //
 
         public class PaintServerPairEquality : IEqualityComparer<(SvgPaintServer?, SvgPaintServer?)>
         {

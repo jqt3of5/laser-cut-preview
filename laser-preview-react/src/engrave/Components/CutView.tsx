@@ -141,6 +141,8 @@ export function ConvertLoadedObjectToObject(loadedObject : LoadedDrawableObject,
                 posX: new Dimension((loadedObject.startX + loadedObject.translateX) / pxPerUnit, unit),
                 posY: new Dimension((loadedObject.startY + loadedObject.translateY) / pxPerUnit, unit),
                 }
+        default:
+            return loadedObject
     }
 }
 

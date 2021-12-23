@@ -10,15 +10,36 @@ namespace Core.Data
     public class GraphicModel
     {
         public string UploadDir = "uploads";
-        private ConcurrentDictionary<string, SvgGraphicGroup> _graphics = new ConcurrentDictionary<string, SvgGraphicGroup>();
-        private ConcurrentDictionary<string, ImageObject> _images = new ConcurrentDictionary<string, ImageObject>();
+        private ConcurrentDictionary<string, SvgGraphicGroup> _graphics = new();
+        private ConcurrentDictionary<string, ImageObject> _images = new();
 
         private string ImagePath(string imageId, string ext = ".svg")
         {
             return Path.Combine(UploadDir, imageId + ext);
         }
-        public Stream GetImageStream(string graphicId)
+        public Stream? GetImageStream(string graphicId, out string mimeType)
         {
+            var image = GetImageObject(graphicId);
+            if (image == null)
+            {
+                mimeType = string.Empty;
+                return null;
+            }
+
+            // var doc = SvgDocument.Open(ImagePath(graphicId));
+            // var processor = new SvgProcessor(doc);
+            //
+            // switch (image.type)
+            // {
+            //     case nameof(SvgGraphicGroup):
+            //         break;
+            //     case nameof(SvgSubGraphic):
+            //         break;
+            //     default:
+            //         break;
+            // }
+            
+            mimeType = image.mimetype;
             return File.OpenRead(ImagePath(graphicId));
         }
         
