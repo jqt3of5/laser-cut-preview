@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using Core.Data;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using Svg;
 
@@ -83,16 +86,13 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var (doc, graphic) = processor.CreateGraphicGroupFromSubGraphics("12345", filename);
+            var graphic = processor.CreateGraphicGroupFromSubGraphics();
             
             Assert.That(graphic, Is.Not.Null);
-            Assert.That(graphic.name, Is.EqualTo(filename));
-            Assert.That(graphic.guid, Is.EqualTo("12345"));
-            Assert.That(graphic.subGraphics, Is.Not.Null.And.Empty);
-            Assert.That(graphic.posX.value, Is.Zero);
-            Assert.That(graphic.posY.value, Is.Zero);
-            Assert.That(graphic.height.value, Is.Zero);
-            Assert.That(graphic.width.value, Is.Zero);
+            Assert.That(graphic.ViewBox.MinX, Is.Zero);
+            Assert.That(graphic.ViewBox.MinY, Is.Zero);
+            Assert.That(graphic.Height, Is.Zero);
+            Assert.That(graphic.Width, Is.Zero);
         } 
         [TestCase("Group Test.svg")]
         [TestCase("Overlapping test.svg")]
@@ -161,16 +161,16 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
         
-            var subgraphics = processor.ExtractSubGraphicsFromSVG();
+            var subDocs = processor.ExtractSubGraphicsFromSVG();
         
-            Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
-            foreach (var subgraphic in subgraphics)
+            Assume.That(subDocs, Is.Not.Null.And.Not.Empty);
+            foreach (var subDoc in subDocs)
             {
-                var elements = ChildElements(subgraphic.document);
+                var elements = ChildElements(subDoc);
                 Assert.That(elements, Is.Not.Empty);
                 
                 var first = elements.First();
-                Assert.That(ChildElements(subgraphic.document).Select(e => new PrintableSvgElement(e)), Is.All.Matches<PrintableSvgElement>(e =>
+                Assert.That(ChildElements(subDoc).Select(e => new PrintableSvgElement(e)), Is.All.Matches<PrintableSvgElement>(e =>
                 {
                     var equals = new SvgProcessor.PaintServerPairEquality();
 
@@ -187,17 +187,26 @@ namespace LaserPreviewTests
         [TestCase("minutesToHoursGears.svg")]
         [TestCase("Phyrexian.svg")]
         [TestCase("Test Fill and Stroke.svg")]
-        public void SubgraphicsShouldHaveSameCount(string filename)
+        public void TestSubGraphicColorsIsDefaultBlue(string filename)
         {
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
         
-            var subgraphics = processor.ExtractSubGraphicsFromSVG();
-         
-
-           Assert.That(ChildElements(originalSvg).ToList(),Has.Count.EqualTo(subgraphics.Sum(sub => ChildElements(sub.document).Count())));
-
+            var subDocs = processor.ExtractSubGraphicsFromSVG();
+        
+            Assume.That(subDocs, Is.Not.Null.And.Not.Empty);
+            foreach (var subDoc in subDocs)
+            {
+                var elements = ChildElements(subDoc);
+                Assert.That(elements, Is.Not.Empty);
+                
+                Assert.That(ChildElements(subDoc).Select(e => e.Fill), Is.All.EqualTo(SvgPaintServer.None));
+                Assert.That(ChildElements(subDoc).Select(e => e.StrokeWidth.Value), Is.All.EqualTo(1f));
+                Assert.That(ChildElements(subDoc).Select(e => e.Stroke), Is.All.TypeOf<SvgColourServer>());
+                Assert.That(ChildElements(subDoc).Select(e => (e.Stroke as SvgColourServer).Colour), Is.All.EqualTo(Color.Blue));
+            } 
         } 
+        
         [TestCase("Group Test.svg")]
         [TestCase("Overlapping test.svg")]
         [TestCase("Test1.svg")]
@@ -205,22 +214,17 @@ namespace LaserPreviewTests
         [TestCase("minutesToHoursGears.svg")]
         [TestCase("Phyrexian.svg")]
         [TestCase("Test Fill and Stroke.svg")]
-        public void TestSubDocumentBoundsAreSameAsSubGraphic(string filename)
+        public void SubgraphicsShouldHaveSameCount(string filename)
         {
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
-
-            var subgraphics = processor.ExtractSubGraphicsFromSVG();
-           
-            Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
-            
-            foreach (var subgraphic in subgraphics)
-            {
-                Assert.That(subgraphic.document.Height.Value, Is.EqualTo(subgraphic.subGraphic.height.value));
-                Assert.That(subgraphic.document.Width.Value, Is.EqualTo(subgraphic.subGraphic.width.value));
-            }
-        } 
         
+            var subDocs = processor.ExtractSubGraphicsFromSVG();
+
+           Assert.That(ChildElements(originalSvg).ToList(),Has.Count.EqualTo(subDocs.Sum(sub => ChildElements(sub).Count())));
+
+        } 
+       
         [TestCase("Group Test.svg")]
         [TestCase("Overlapping test.svg")]
         [TestCase("Test1.svg")]
@@ -233,20 +237,16 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subgraphics = processor.ExtractSubGraphicsFromSVG();
+            var subDocs = processor.ExtractSubGraphicsFromSVG();
            
-            Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
+            Assume.That(subDocs, Is.Not.Null.And.Not.Empty);
             
             Assert.Multiple(() =>
             {
-                foreach (var subgraphic in subgraphics)
+                foreach (var subDoc in subDocs)
                 {
-                    Assert.That(subgraphic.document.Width.Type, Is.EqualTo(originalSvg.Width.Type));
-                    Assert.That(subgraphic.document.Height.Type, Is.EqualTo(originalSvg.Height.Type));
-                    Assert.That(subgraphic.subGraphic.posX.unit, Is.EqualTo(originalSvg.Width.Type.ToUnits()));
-                    Assert.That(subgraphic.subGraphic.width.unit, Is.EqualTo(originalSvg.Width.Type.ToUnits()));
-                    Assert.That(subgraphic.subGraphic.height.unit, Is.EqualTo(originalSvg.Height.Type.ToUnits()));
-                
+                    Assert.That(subDoc.Width.Type, Is.EqualTo(originalSvg.Width.Type));
+                    Assert.That(subDoc.Height.Type, Is.EqualTo(originalSvg.Height.Type));
                 } 
             });
         }
@@ -263,18 +263,39 @@ namespace LaserPreviewTests
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
 
-            var subgraphics = processor.ExtractSubGraphicsFromSVG();
+            var subDocs = processor.ExtractSubGraphicsFromSVG();
 
-            Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
+            Assume.That(subDocs, Is.Not.Null.And.Not.Empty);
             
-            var (doc, graphic) = processor.CreateGraphicGroupFromSubGraphics("1234", "test");
+            var doc = processor.CreateGraphicGroupFromSubGraphics();
 
-            var width = subgraphics.Max(tuple => tuple.subGraphic.posX.value + tuple.subGraphic.width.value) - subgraphics.Min(tuple => tuple.subGraphic.posX.value);
-            var height = subgraphics.Max(tuple => tuple.subGraphic.posY.value + tuple.subGraphic.height.value) - subgraphics.Min(tuple => tuple.subGraphic.posY.value);
+            var width = subDocs.Max(doc => doc.ViewBox.MinX + doc.ViewBox.Width) - subDocs.Min(tuple => doc.ViewBox.MinX);
+            var height = subDocs.Max(doc => doc.ViewBox.MinY + doc.ViewBox.Height) - subDocs.Min(tuple => doc.ViewBox.MinY);
 
-            Assert.That(width, Is.EqualTo(graphic.width.value));
-            Assert.That(height, Is.EqualTo(graphic.height.value));
+            Assert.That(width, Is.EqualTo(doc.ViewBox.Width));
+            Assert.That(height, Is.EqualTo(doc.ViewBox.Height));
         }  
-       
+        // [TestCase("Group Test.svg")]
+        // [TestCase("Overlapping test.svg")]
+        // [TestCase("Test1.svg")]
+        // [TestCase("Wood clock Gears.svg")]
+        // [TestCase("minutesToHoursGears.svg")]
+        // [TestCase("Phyrexian.svg")]
+        // [TestCase("Test Fill and Stroke.svg")]
+        // public void TestJsonSerializeDocuments(string filename)
+        // {
+        //     var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
+        //     var processor = new SvgProcessor(originalSvg);
+        //
+        //     var subgraphics = processor.ExtractSubGraphicsFromSVG();
+        //
+        //     var (doc, graphic) = processor.CreateGraphicGroupFromSubGraphics("1234", "test");
+        //
+        //     var writer = new StringWriter();
+        //     JsonSerializer.Create().Serialize(writer, graphic);
+        //     Console.WriteLine(writer.ToString()); 
+        //     Assert.That(writer.ToString(), Is.Not.Null.Or.Empty);
+        // }  
+
     }
 }
