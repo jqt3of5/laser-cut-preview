@@ -32,7 +32,6 @@ namespace Core.Data
 
     public class SvgProcessor : IGraphicProcessor
     {
-
         private SvgGraphicGroup CreateGraphicGroup(string guid, string url, string name, Dimension posX, Dimension posY,
             Dimension width, Dimension height, SvgSubGraphic[] subGraphics)
         {
@@ -116,8 +115,17 @@ namespace Core.Data
 
             var uniqueColors = ExtractColorPairs(svg).Distinct(new PaintServerPairEquality());
 
+            SvgElement ToCommonStroke(SvgElement element)
+            {
+                var e = element.DeepCopy();
+                e.StrokeWidth = 1;
+                e.Fill = SvgPaintServer.None;
+                e.Stroke = new SvgColourServer(Color.Blue);
+                return e;
+            }
             var subDocsByColor = uniqueColors
-                .Select(color => ExtractDrawableElementsOfColors(color, svg))
+                .Select(color => ExtractDrawableElementsWithColorPair(color, svg)).ToList()
+                .Select(elements => elements.Select(ToCommonStroke))
                 .Select(group => SvgElementsToDocument(svg, group)).ToList();
 
             if (!subDocsByColor.Any())
@@ -228,56 +236,46 @@ namespace Core.Data
             }
         }
 
-        public IEnumerable<SvgElement> ExtractDrawableElementsOfColors(
+        public IEnumerable<SvgElement> ExtractDrawableElementsWithColorPair(
             (SvgPaintServer fill, SvgPaintServer stroke) color, SvgElement doc)
         {
-            if (doc.Children.Any())
-            {
-                foreach (var child in doc.Children)
-                {
-                    if (child is SvgGroup group)
-                    {
-                        var g = group.DeepCopy();
-                        g.Children.Clear();
-
-                        foreach (var drawableChild in ExtractDrawableElementsOfColors(color, child))
-                        {
-                            g.Children.Add(drawableChild);
-                        }
-
-                        if (g.Children.Any())
-                        {
-                            yield return g;
-                        }
-                    }
-                    
-                    if (child is SvgPath || child is SvgCircle || child is SvgRectangle || child is SvgPolygon)
-                    {
-                        PaintServersEquality equality = new();
-                        if (equality.Equals(child.Fill, color.fill) && equality.Equals(child.Stroke, color.stroke))
-                        {
-                            var c = child.DeepCopy();    
-                            c.Fill = SvgPaintServer.None;
-                            //Default to blue stroke since our default laser mode is cut
-                            c.Stroke = new SvgColourServer(Color.Blue);
-                            c.StrokeWidth = 1;
-                            yield return c;
-                        }
-                    }
-                }
-            }
-
             if (doc is SvgPath || doc is SvgCircle || doc is SvgRectangle || doc is SvgPolygon)
             {
                 PaintServersEquality equality = new();
                 if (equality.Equals(doc.Fill, color.fill) && equality.Equals(doc.Stroke, color.stroke))
                 {
-                    var c = doc.DeepCopy();    
-                    c.Fill = SvgPaintServer.None;
-                    //Default to blue stroke since our default laser mode is cut
-                    c.Stroke = new SvgColourServer(Color.Blue);
-                    c.StrokeWidth = 1;
-                    yield return c;
+                    yield return doc;
+                }
+            }
+
+            //We want to maintain groups
+            if (doc is SvgGroup group)
+            {
+                var g = group.DeepCopy();
+                g.Children.Clear();
+
+                foreach (var child in doc.Children)
+                {
+                    foreach (var drawableChild in ExtractDrawableElementsWithColorPair(color, child))
+                    {
+                        g.Children.Add(drawableChild);
+                    }
+                }
+
+                if (g.Children.Any())
+                {
+                    yield return g;
+                }
+            }
+            else
+            {
+                //This might be a document, we still want to iterate, but not maintain. 
+                foreach (var child in doc.Children)
+                {
+                    foreach (var drawableChild in ExtractDrawableElementsWithColorPair(color, child))
+                    {
+                        yield return drawableChild;
+                    }
                 }
             }
         }

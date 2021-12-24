@@ -10,6 +10,61 @@ namespace LaserPreviewTests
     [TestFixture]
     public class SvgProcessor_Tests
     {
+        IEnumerable<SvgElement> ChildElements(SvgElement element)
+        {
+            if (element.Children.Any())
+            {
+                foreach (var child in element.Children)
+                {
+                    foreach (var childElement in ChildElements(child))
+                    {
+                        if (childElement is SvgPath || childElement is SvgCircle || childElement is SvgRectangle || childElement is SvgPolygon)
+                        {
+                            yield return childElement;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                yield return element;
+            }
+        }
+
+        class PrintableSvgElement 
+        {
+            public readonly SvgElement _element;
+            public PrintableSvgElement(SvgElement element)
+            {
+                _element = element;
+            }
+
+            public override string ToString()
+            {
+                string fill = string.Empty;
+                if (_element.Fill == SvgPaintServer.None || _element.Fill == null)
+                {
+                    fill = "None";
+                }
+                if (_element.Fill is SvgColourServer fillServer)
+                {
+                    fill = $"{fillServer.Colour}";
+                }
+                
+                string stroke = string.Empty;
+                if (_element.Stroke == SvgPaintServer.None || _element.Stroke == null)
+                {
+                    stroke = "None";
+                }
+                if (_element.Stroke is SvgColourServer strokeServer)
+                {
+                    stroke = $"{strokeServer.Colour}";
+                }
+
+                return $"{_element.GetType().Name} - Fill: {fill} Stroke: {stroke} lineWidth: {_element.StrokeWidth}";
+            }
+        }
+        
         [TestCase("EmptySvg.svg")]
         public void TestSubgraphicsWithEmptySvg(string filename)
         {
@@ -89,7 +144,7 @@ namespace LaserPreviewTests
 
             foreach (var color in colors)
             {
-                var elements = processor.ExtractDrawableElementsOfColors(color, originalSvg);
+                var elements = processor.ExtractDrawableElementsWithColorPair(color, originalSvg);
                 Assert.That(elements, Is.Not.Null.And.Not.Empty);
             }
         } 
@@ -108,38 +163,21 @@ namespace LaserPreviewTests
         
             var subgraphics = processor.ExtractSubGraphicsFromSVG();
         
-            IEnumerable<SvgElement> ChildElements(SvgElement element)
+            Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
+            foreach (var subgraphic in subgraphics)
             {
-                if (element.Children.Any())
+                var elements = ChildElements(subgraphic.document);
+                Assert.That(elements, Is.Not.Empty);
+                
+                var first = elements.First();
+                Assert.That(ChildElements(subgraphic.document).Select(e => new PrintableSvgElement(e)), Is.All.Matches<PrintableSvgElement>(e =>
                 {
-                    foreach (var child in element.Children)
-                    {
-                        foreach (var childElement in ChildElements(child))
-                        {
-                            yield return childElement;
-                        }
-                    }
-                }
-                else
-                {
-                    yield return element;
-                }
-            }
-            
-                Assume.That(subgraphics, Is.Not.Null.And.Not.Empty);
-                foreach (var subgraphic in subgraphics)
-                {
-                    var elements = ChildElements(subgraphic.document);
-                    Assert.That(elements, Is.Not.Empty);
-                    
-                    var first = elements.First();
-                    Assert.That(ChildElements(subgraphic.document), Is.All.Matches<SvgElement>(e =>
-                    {
-                        var equals = new SvgProcessor.PaintServerPairEquality();
+                    var equals = new SvgProcessor.PaintServerPairEquality();
 
-                        return equals.Equals((first.Fill, first.Stroke), (e.Fill, e.Stroke));
-                    }));
-                } 
+                    return equals.Equals((first.Fill, first.Stroke), (e._element.Fill, e._element.Stroke)) && first.StrokeWidth == e._element.StrokeWidth;
+                }));
+                
+            } 
         } 
         
         [TestCase("Group Test.svg")]
@@ -155,26 +193,9 @@ namespace LaserPreviewTests
             var processor = new SvgProcessor(originalSvg);
         
             var subgraphics = processor.ExtractSubGraphicsFromSVG();
-            
-            IEnumerable<SvgElement> ChildElements(SvgElement element)
-            {
-                if (element.Children.Any())
-                {
-                    foreach (var child in element.Children)
-                    {
-                        foreach (var childElement in ChildElements(child))
-                        {
-                            yield return childElement;
-                        }
-                    }
-                }
-                else 
-                {
-                    yield return element;
-                }
-            }
+         
 
-           Assert.That(ChildElements(originalSvg).Count(), Is.EqualTo(subgraphics.Sum(sub => ChildElements(sub.document).Count())));
+           Assert.That(ChildElements(originalSvg).ToList(),Has.Count.EqualTo(subgraphics.Sum(sub => ChildElements(sub.document).Count())));
 
         } 
         [TestCase("Group Test.svg")]
