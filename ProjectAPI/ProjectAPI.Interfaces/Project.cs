@@ -10,26 +10,6 @@ namespace ProjectAPI.Interfaces
         Engrave
     }
     
-    //The react side has distriminated unions, so I'm using this dto to transfer any instance of an object, using "type" as the differentiating parameter
-    public record DrawableObjectDto() : DrawableObject, TextObject, SvgSubGraphic, SvgGraphicGroup
-    {
-        public string type { init; get; }
-        public string text { init; get; }
-        public string font { init; get; }
-        public int fontSize { init; get; }
-        public string guid { init; get; }
-        public string mimetype { init; get; }
-        public string url { init; get; }
-        public string name { init; get; }
-        public Dimension posX { init; get; }
-        public Dimension posY { init; get; }
-        public Dimension width { init; get; }
-        public Dimension height { init; get; }
-        public float angle { init; get; }
-        public SvgSubGraphicDto[] subGraphics { init; get; }
-        public LaserMode mode { init; get; }
-    }
-    
     public interface DrawableObject
     {
         string type { get; }
@@ -89,46 +69,32 @@ namespace ProjectAPI.Interfaces
         // public string type { get; } = nameof(SvgSubGraphic);
     }
 
-    public record SvgSubGraphicDto : SvgSubGraphic
+    /// <summary>
+    /// Represents an original uploaded svg file, and aggregates the synthetic children of the svg 
+    /// </summary>
+    /// <param name="guid"></param>
+    /// <param name="mimetype"></param>
+    /// <param name="url"></param>
+    /// <param name="posX">The starting x position of the whole image on the canvas</param>
+    /// <param name="posY">The starting y position of the whole image on the canvas</param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="originalFileName"></param>
+    /// <param name="subGraphics"></param>
+    public interface SvgGraphicGroup : ImageObject
     {
-        public string type { init; get; }
-        public string guid { init; get; }
-        public string mimetype { init; get; }
-        public string url { init; get; }
-        public Dimension posX { init; get; }
-        public Dimension posY { init; get; }
-        public Dimension width { init; get; }
-        public Dimension height { init; get; }
-        public Color color { init; get; }
-        public LaserMode mode { init; get; }
+        string guid{ get; }
+        string url{ get; }
+        string name{ get; }
+        Dimension posX{ get; }
+        Dimension posY{ get; }
+        Dimension width{ get; }
+        Dimension height{ get; }
+        float angle{ get; }
+        DrawableObjectDto[] subGraphics{ get; } 
+        // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
+        // public string type { get; } = nameof(SvgGraphicGroup);
     }
-
-        /// <summary>
-        /// Represents an original uploaded svg file, and aggregates the synthetic children of the svg 
-        /// </summary>
-        /// <param name="guid"></param>
-        /// <param name="mimetype"></param>
-        /// <param name="url"></param>
-        /// <param name="posX">The starting x position of the whole image on the canvas</param>
-        /// <param name="posY">The starting y position of the whole image on the canvas</param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="originalFileName"></param>
-        /// <param name="subGraphics"></param>
-        public interface SvgGraphicGroup : ImageObject
-        {
-            string guid{ get; }
-            string url{ get; }
-            string name{ get; }
-            Dimension posX{ get; }
-            Dimension posY{ get; }
-            Dimension width{ get; }
-            Dimension height{ get; }
-            float angle{ get; }
-            SvgSubGraphicDto[] subGraphics{ get; } 
-            // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
-            // public string type { get; } = nameof(SvgGraphicGroup);
-        }
 
     public record Material(
         string category,
@@ -231,6 +197,26 @@ namespace ProjectAPI.Interfaces
         Picas, 
         Points,
         Pixels
+    }
+
+    //The react side has distriminated unions, so I'm using this dto to transfer any instance of an object, using "type" as the differentiating parameter
+    public record DrawableObjectDto() : DrawableObject, TextObject, SvgSubGraphic, SvgGraphicGroup
+    {
+        public string type { init; get; }
+        public string text { init; get; }
+        public string font { init; get; }
+        public int fontSize { init; get; }
+        public string guid { init; get; }
+        public string mimetype { init; get; }
+        public string url { init; get; }
+        public string name { init; get; }
+        public Dimension posX { init; get; }
+        public Dimension posY { init; get; }
+        public Dimension width { init; get; }
+        public Dimension height { init; get; }
+        public float angle { init; get; }
+        public DrawableObjectDto[] subGraphics { init; get; }
+        public LaserMode mode { init; get; }
     }
 
     public record Project(

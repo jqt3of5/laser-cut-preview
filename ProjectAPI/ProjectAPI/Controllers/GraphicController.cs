@@ -31,15 +31,21 @@ namespace LaserPreview.Controllers
         }
         
         [HttpGet("{graphicId}")]
-        public SvgGraphicGroup GetGraphicObject(string graphicId)
+        public DrawableObjectDto GetGraphicObject(string graphicId)
         {
-            var graphic = _model.GetGraphicGroup(graphicId);
+            var graphic = _model.GetImageObject(graphicId);
             if (graphic == null)
             {
                 return null;
             }
 
-            return graphic;
+            //They really should always be dtos.... but it's possible they aren't
+            if (graphic is DrawableObjectDto dto)
+            {
+                return dto;
+            }
+            
+            return null;
         }
 
         [HttpPost]

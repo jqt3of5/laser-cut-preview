@@ -91,8 +91,9 @@ namespace LaserPreviewTests
             Assert.That(graphic, Is.Not.Null);
             Assert.That(graphic.ViewBox.MinX, Is.Zero);
             Assert.That(graphic.ViewBox.MinY, Is.Zero);
-            Assert.That(graphic.Height, Is.Zero);
-            Assert.That(graphic.Width, Is.Zero);
+            //100% is the default value for SVGs
+            Assert.That(graphic.Height.Value, Is.EqualTo(100));
+            Assert.That(graphic.Width.Value, Is.EqualTo(100));
         } 
         [TestCase("Group Test.svg")]
         [TestCase("Overlapping test.svg")]

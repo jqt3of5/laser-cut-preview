@@ -67,7 +67,7 @@ namespace Core.Data
             doc.Height = new SvgUnit(defaultUnit, (float) (doc.ViewBox.Width * ratio));
             return doc;
         }
-        SvgElement SetColorsForMode(SvgElement element, LaserMode mode = LaserMode.Score)
+        public SvgElement SetColorsForMode(SvgElement element, LaserMode mode = LaserMode.Score)
         {
             if (!element.Children.Any())
             {
@@ -118,7 +118,6 @@ namespace Core.Data
            
             var subDocsByColor = uniqueColors
                 .Select(color => ExtractDrawableElementsWithColorPair(color, svg)).ToList()
-                .Select(elements => elements.Select(e => SetColorsForMode(e)))
                 .Select(group => SvgElementsToDocument(svg, group)).ToList();
 
             if (!subDocsByColor.Any())
@@ -146,6 +145,11 @@ namespace Core.Data
                 {
                     groupDoc.Children.Add(child);
                 }
+            }
+
+            if (!_subgraphicList.Any())
+            {
+                return groupDoc;
             }
             
             //Sometimes there is space above and to the left, we want the graphic to fit with no empty space around it. 

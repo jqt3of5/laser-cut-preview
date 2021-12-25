@@ -26,18 +26,28 @@ namespace Core.Data
                 return null;
             }
 
-            // var doc = SvgDocument.Open(ImagePath(graphicId));
-            // var processor = new SvgProcessor(doc);
-            //
-            // switch (image.type)
-            // {
-            //     case nameof(SvgGraphicGroup):
-            //         break;
-            //     case nameof(SvgSubGraphic):
-            //         break;
-            //     default:
-            //         break;
-            // }
+            var doc = SvgDocument.Open(ImagePath(graphicId));
+            var processor = new SvgProcessor(doc);
+            
+            switch (image.type)
+            {
+                case nameof(SvgGraphicGroup):
+                    
+                    //TODO: Get based on project
+                    //TODO: Get original
+                    break;
+                case nameof(SvgSubGraphic):
+                    //TODO: Get based on project
+                    if (image is SvgSubGraphic subGraphic)
+                    {
+                        processor.SetColorsForMode(doc, subGraphic.mode);
+                    }
+                    //TODO: Get original
+                    //TODO: Specify mode
+                    break;
+                default:
+                    break;
+            }
             
             mimeType = image.mimetype;
             return File.OpenRead(ImagePath(graphicId));
@@ -53,7 +63,7 @@ namespace Core.Data
             return _images[imageId]; 
         }
         
-        public SvgGraphicGroup? GetGraphicGroup(string graphicId)
+        public SvgGraphicGroup? GetGraphicGroupObject(string graphicId)
         {
             if (!_graphics.ContainsKey(graphicId))
             {
@@ -171,14 +181,14 @@ namespace Core.Data
                 width = width,
                 height = height,
                 //TODO: this feels a bit odd... this dto requires concrete classes to deserialize properly. Maybe we can canvert some other way?
-                subGraphics = subGraphics.Cast<SvgSubGraphicDto>().ToArray(),
+                subGraphics = subGraphics.Cast<DrawableObjectDto>().ToArray(),
             };
         }
 
         private SvgSubGraphic CreateSubGraphic(string guid, string url, Dimension posX, Dimension posY, Dimension width,
             Dimension height, LaserMode mode)
         {
-            return new SvgSubGraphicDto()
+            return new DrawableObjectDto()
             {
                 type = nameof(SvgSubGraphic),
                 guid = guid,
