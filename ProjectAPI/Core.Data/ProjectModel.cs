@@ -38,6 +38,7 @@ namespace Core.Data
         public Project SaveProject(Project project)
         {
             //TODO: Calculate estimate project cost
+            //TODO: The graphics need to be saved to the graphics model
             //not allowed to set the project as readonly from a save. 
             project.readOnly = false;
             _projects[project.projectId] = project;

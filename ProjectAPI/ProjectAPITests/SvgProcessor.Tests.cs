@@ -6,6 +6,7 @@ using System.Linq;
 using Core.Data;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using ProjectAPI.Interfaces;
 using Svg;
 
 namespace LaserPreviewTests
@@ -188,7 +189,7 @@ namespace LaserPreviewTests
         [TestCase("minutesToHoursGears.svg")]
         [TestCase("Phyrexian.svg")]
         [TestCase("Test Fill and Stroke.svg")]
-        public void TestSubGraphicColorsIsDefaultBlue(string filename)
+        public void TestSubGraphicColorsForScore(string filename)
         {
             var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
             var processor = new SvgProcessor(originalSvg);
@@ -198,6 +199,35 @@ namespace LaserPreviewTests
             Assume.That(subDocs, Is.Not.Null.And.Not.Empty);
             foreach (var subDoc in subDocs)
             {
+                processor.SetColorsForMode(subDoc, LaserMode.Score);
+                var elements = ChildElements(subDoc);
+                Assert.That(elements, Is.Not.Empty);
+                
+                Assert.That(ChildElements(subDoc).Select(e => e.Fill), Is.All.EqualTo(SvgPaintServer.None));
+                Assert.That(ChildElements(subDoc).Select(e => e.StrokeWidth.Value), Is.All.EqualTo(1f));
+                Assert.That(ChildElements(subDoc).Select(e => e.Stroke), Is.All.TypeOf<SvgColourServer>());
+                Assert.That(ChildElements(subDoc).Select(e => (e.Stroke as SvgColourServer).Colour), Is.All.EqualTo(Color.Black));
+            } 
+        } 
+        
+        [TestCase("Group Test.svg")]
+        [TestCase("Overlapping test.svg")]
+        [TestCase("Test1.svg")]
+        [TestCase("Wood clock Gears.svg")]
+        [TestCase("minutesToHoursGears.svg")]
+        [TestCase("Phyrexian.svg")]
+        [TestCase("Test Fill and Stroke.svg")]
+        public void TestSubGraphicColorsForCut(string filename)
+        {
+            var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
+            var processor = new SvgProcessor(originalSvg);
+        
+            var subDocs = processor.ExtractSubGraphicsFromSVG();
+        
+            Assume.That(subDocs, Is.Not.Null.And.Not.Empty);
+            foreach (var subDoc in subDocs)
+            {
+                processor.SetColorsForMode(subDoc, LaserMode.Cut);
                 var elements = ChildElements(subDoc);
                 Assert.That(elements, Is.Not.Empty);
                 
@@ -205,6 +235,34 @@ namespace LaserPreviewTests
                 Assert.That(ChildElements(subDoc).Select(e => e.StrokeWidth.Value), Is.All.EqualTo(1f));
                 Assert.That(ChildElements(subDoc).Select(e => e.Stroke), Is.All.TypeOf<SvgColourServer>());
                 Assert.That(ChildElements(subDoc).Select(e => (e.Stroke as SvgColourServer).Colour), Is.All.EqualTo(Color.Blue));
+            } 
+        } 
+        
+        [TestCase("Group Test.svg")]
+        [TestCase("Overlapping test.svg")]
+        [TestCase("Test1.svg")]
+        [TestCase("Wood clock Gears.svg")]
+        [TestCase("minutesToHoursGears.svg")]
+        [TestCase("Phyrexian.svg")]
+        [TestCase("Test Fill and Stroke.svg")]
+        public void TestSubGraphicColorsForEngrave(string filename)
+        {
+            var originalSvg  = SvgDocument.Open(Path.Combine("TestAssets", filename));
+            var processor = new SvgProcessor(originalSvg);
+        
+            var subDocs = processor.ExtractSubGraphicsFromSVG();
+        
+            Assume.That(subDocs, Is.Not.Null.And.Not.Empty);
+            foreach (var subDoc in subDocs)
+            {
+                processor.SetColorsForMode(subDoc, LaserMode.Engrave);
+                var elements = ChildElements(subDoc);
+                Assert.That(elements, Is.Not.Empty);
+                
+                Assert.That(ChildElements(subDoc).Select(e => e.Fill), Is.All.TypeOf<SvgColourServer>());
+                Assert.That(ChildElements(subDoc).Select(e => (e.Fill as SvgColourServer).Colour), Is.All.EqualTo(Color.Black));
+                Assert.That(ChildElements(subDoc).Select(e => e.StrokeWidth.Value), Is.All.EqualTo(1f));
+                Assert.That(ChildElements(subDoc).Select(e => e.Stroke), Is.All.EqualTo(SvgPaintServer.None));
             } 
         } 
         

@@ -26,30 +26,66 @@ namespace Core.Data
                 return null;
             }
 
+            mimeType = image.mimetype;
+            
+            //Open the doc associated to the graphicId
             var doc = SvgDocument.Open(ImagePath(graphicId));
             var processor = new SvgProcessor(doc);
             
+            var stream = new MemoryStream();
             switch (image.type)
             {
                 case nameof(SvgGraphicGroup):
+                    //TODO: Original
+                    if (image is SvgGraphicGroup group)
+                    {
+                        //Get mode for each subgraphic based on project
+                        var modes = group.subGraphics.Select(sub => sub.mode);
+                        
+                        //get each subgraphic 
+                        var subDocuments = processor.ExtractSubGraphicsFromSVG();
+                        
+                        //zip them together
+                        var docModes = subDocuments.Zip(modes);
+                        
+                        //change the colors for each mode
+                        foreach (var (subDoc, mode) in docModes)
+                        {
+                            if (mode.HasValue)
+                            {
+                                processor.SetColorsForMode(subDoc, mode.Value);
+                            }
+                        }
+                        
+                        var groupDocument = processor.CreateGraphicGroupFromSubGraphics(subDocuments);
+                        groupDocument.Write(stream);
+                        stream.Seek(0, SeekOrigin.Begin);
+                        return stream;
+                    }
                     
-                    //TODO: Get based on project
-                    //TODO: Get original
                     break;
+                
                 case nameof(SvgSubGraphic):
-                    //TODO: Get based on project
+                    //TODO: Specify mode
+                    //TODO: Original
+                    //Get mode for subgraphic based on project
                     if (image is SvgSubGraphic subGraphic)
                     {
-                        processor.SetColorsForMode(doc, subGraphic.mode);
+                        if (subGraphic.mode != null)
+                        {
+                            processor.SetColorsForMode(doc, subGraphic.mode.Value);
+                        }
                     }
-                    //TODO: Get original
-                    //TODO: Specify mode
-                    break;
+
+                    doc.Write(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    return stream;
+                    
                 default:
                     break;
             }
             
-            mimeType = image.mimetype;
+            //Return original
             return File.OpenRead(ImagePath(graphicId));
         }
         
@@ -121,7 +157,7 @@ namespace Core.Data
                 _images[subGraphic.guid] = subGraphic;
             }
 
-            var doc = processor.CreateGraphicGroupFromSubGraphics();
+            var doc = processor.CreateGraphicGroupFromSubGraphics(subDocs);
             
             var widthUnit = doc.Width.Type.ToUnits();
             var heightUnit = doc.Height.Type.ToUnits();

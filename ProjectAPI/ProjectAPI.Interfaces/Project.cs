@@ -19,12 +19,13 @@ namespace ProjectAPI.Interfaces
         Dimension height { get; }
     }
 
-    public interface TextObject
+    public interface TextObject : DrawableObject
     {
-        string text { get; }
-        string font { get;  }
-        int fontSize { get; }
-        LaserMode mode { get; }
+        string? text { get; }
+        string? font { get;  }
+        int? fontSize { get; }
+        LaserMode? mode { get; }
+        
         Dimension posX { get; }
         Dimension posY { get; }
         Dimension width { get; }
@@ -34,9 +35,10 @@ namespace ProjectAPI.Interfaces
 
     public interface ImageObject : DrawableObject
     {
-        string guid{ get; }
-        string mimetype{ get; }
-        string url{ get; }
+        string? guid{ get; }
+        string? mimetype{ get; }
+        string? url{ get; }
+        
         Dimension posX{ get; }
         Dimension posY{ get; }
         Dimension width{ get; }
@@ -58,13 +60,14 @@ namespace ProjectAPI.Interfaces
     /// <param name="mode"></param>
     public interface SvgSubGraphic : ImageObject
     {
-        string guid { get; }
-        string url{ get; }
+        string? guid { get; }
+        string? url{ get; }
+        LaserMode? mode{ get; } 
+        
         Dimension posX{ get; }
         Dimension posY{ get; }
         Dimension width{ get; }
         Dimension height{ get; }
-        LaserMode mode{ get; } 
         // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
         // public string type { get; } = nameof(SvgSubGraphic);
     }
@@ -83,21 +86,19 @@ namespace ProjectAPI.Interfaces
     /// <param name="subGraphics"></param>
     public interface SvgGraphicGroup : ImageObject
     {
-        string guid{ get; }
-        string url{ get; }
-        string name{ get; }
+        string? guid{ get; }
+        string? url{ get; }
+        string? name{ get; }
+        float? angle{ get; }
+        DrawableObjectDto[]? subGraphics{ get; } 
+        
         Dimension posX{ get; }
         Dimension posY{ get; }
         Dimension width{ get; }
         Dimension height{ get; }
-        float angle{ get; }
-        DrawableObjectDto[] subGraphics{ get; } 
-        // : ImageObject(guid, "image/svg+xml", url, posX, posY, width, height)
-        // public string type { get; } = nameof(SvgGraphicGroup);
     }
 
     public record Material(
-        string category,
         string id,
         string name,
         string fileName);
@@ -202,21 +203,30 @@ namespace ProjectAPI.Interfaces
     //The react side has distriminated unions, so I'm using this dto to transfer any instance of an object, using "type" as the differentiating parameter
     public record DrawableObjectDto() : DrawableObject, TextObject, SvgSubGraphic, SvgGraphicGroup
     {
+        //Common Properties
         public string type { init; get; }
-        public string text { init; get; }
-        public string font { init; get; }
-        public int fontSize { init; get; }
-        public string guid { init; get; }
-        public string mimetype { init; get; }
-        public string url { init; get; }
-        public string name { init; get; }
         public Dimension posX { init; get; }
         public Dimension posY { init; get; }
         public Dimension width { init; get; }
-        public Dimension height { init; get; }
-        public float angle { init; get; }
-        public DrawableObjectDto[] subGraphics { init; get; }
-        public LaserMode mode { init; get; }
+        public Dimension height { init; get; }  
+        
+        //Text Only
+        public string? text { init; get; }
+        public string? font { init; get; }
+        public int? fontSize { init; get; }
+        
+        //Graphic Only
+        public string? guid { init; get; }
+        public string? mimetype { init; get; }
+        public string? url { init; get; }
+        public string? name { init; get; }
+        public float? angle { init; get; }
+        
+        //Graphic Group
+        public DrawableObjectDto[]? subGraphics { init; get; }
+        
+        //SubGraphic Only
+        public LaserMode? mode { init; get; }
     }
 
     public record Project(

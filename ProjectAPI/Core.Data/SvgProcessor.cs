@@ -78,7 +78,7 @@ namespace Core.Data
                 {
                     case LaserMode.Cut:
                         element.Fill = SvgPaintServer.None;
-                        element.Stroke = new SvgColourServer(Color.Black);
+                        element.Stroke = new SvgColourServer(Color.Blue);
                         break;
                     case LaserMode.Engrave:
                         element.Fill = new SvgColourServer(Color.Black);
@@ -86,7 +86,7 @@ namespace Core.Data
                         break;
                     case LaserMode.Score:
                         element.Fill = SvgPaintServer.None;
-                        element.Stroke = new SvgColourServer(Color.Blue);
+                        element.Stroke = new SvgColourServer(Color.Black);
                         break;
                 }
                
@@ -108,6 +108,11 @@ namespace Core.Data
 
         public IReadOnlyList<SvgDocument> ExtractSubGraphicsFromSVG()
         {
+            if (_subgraphicList != null && _subgraphicList.Any())
+            {
+                return _subgraphicList;
+            }
+            
             var svg = _orignalDoc;
             if (!HasRealUnits(_orignalDoc))
             {
@@ -131,15 +136,16 @@ namespace Core.Data
             return _subgraphicList;
         }
 
-        public SvgDocument CreateGraphicGroupFromSubGraphics()
+        public SvgDocument CreateGraphicGroupFromSubGraphics(IReadOnlyList<SvgDocument>? subDocs = null)
         {
-            if (_subgraphicList == null)
+            if (subDocs == null)
             {
-                ExtractSubGraphicsFromSVG();
+                subDocs = ExtractSubGraphicsFromSVG();
             }
-           
-            SvgDocument groupDoc = new SvgDocument();
-            foreach (var subDoc in _subgraphicList)
+            
+            
+            SvgDocument groupDoc = new();
+            foreach (var subDoc in subDocs)
             {
                 foreach (var child in subDoc.Children)
                 {
@@ -147,17 +153,17 @@ namespace Core.Data
                 }
             }
 
-            if (!_subgraphicList.Any())
+            if (!subDocs.Any())
             {
                 return groupDoc;
             }
             
             //Sometimes there is space above and to the left, we want the graphic to fit with no empty space around it. 
-            var xOffset = _subgraphicList.Min(subdoc => subdoc.ViewBox.MinX);
-            var yOffset = _subgraphicList.Min(subdoc => subdoc.ViewBox.MinY);
+            var xOffset = subDocs.Min(subdoc => subdoc.ViewBox.MinX);
+            var yOffset = subDocs.Min(subdoc => subdoc.ViewBox.MinY);
 
             //Grab all the dimensions of the sub documents
-            var dimensions = _subgraphicList.Select(doc =>
+            var dimensions = subDocs.Select(doc =>
             {
                 var pxPerWidthUnit = (double)doc.ViewBox.Width / doc.Width.Value;
                 var pxPerHeightUnit = (double)doc.ViewBox.Height / doc.Height.Value;
