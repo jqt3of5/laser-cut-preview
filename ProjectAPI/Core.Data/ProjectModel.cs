@@ -8,12 +8,14 @@ namespace Core.Data
     public class ProjectModel
     {
         private readonly MaterialsModel _materialsModel;
+        private readonly GraphicModel _graphicModel;
         private ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
         private ConcurrentDictionary<string, Order> _orders = new ConcurrentDictionary<string, Order>();
 
-        public ProjectModel(MaterialsModel materialsModel)
+        public ProjectModel(MaterialsModel materialsModel, GraphicModel graphicModel)
         {
             _materialsModel = materialsModel;
+            _graphicModel = graphicModel;
         }
 
         private Project CreateProject(string projectId)
@@ -38,10 +40,14 @@ namespace Core.Data
         public Project SaveProject(Project project)
         {
             //TODO: Calculate estimate project cost
-            //TODO: The graphics need to be saved to the graphics model
             //not allowed to set the project as readonly from a save. 
             project.readOnly = false;
             _projects[project.projectId] = project;
+
+            foreach (var dto in project.objects)
+            {
+                _graphicModel.SaveImageObject(dto);
+            }
             return project;
         }
         

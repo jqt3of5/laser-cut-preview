@@ -10,13 +10,58 @@ namespace Core.Data
     public class GraphicModel
     {
         public string UploadDir = "uploads";
-        private ConcurrentDictionary<string, SvgGraphicGroup> _graphics = new();
         private ConcurrentDictionary<string, ImageObject> _images = new();
 
         private string ImagePath(string imageId, string ext = ".svg")
         {
             return Path.Combine(UploadDir, imageId + ext);
         }
+
+        public bool SaveImageObject(DrawableObjectDto obj)
+        {
+            //Because we don't have discriminated unions.... do this fancy stuff
+            switch (obj)
+            {
+                case SvgGraphicGroup group when obj.type == nameof(SvgGraphicGroup):
+                    return SaveImageObject(group);
+                    break;
+                case SvgSubGraphic subGraphic when obj.type == nameof(SvgSubGraphic): 
+                    return SaveImageObject(subGraphic);
+                    break;
+            }
+
+            return false;
+
+        }
+        private bool SaveImageObject(SvgSubGraphic subGraphic)
+        {
+            if (subGraphic.guid == null)
+            {
+                return false;
+            }
+            _images[subGraphic.guid] = subGraphic;
+            return true;
+        }
+        private bool SaveImageObject(SvgGraphicGroup group)
+        {
+            if (group.guid == null)
+            {
+                return false;
+            }
+            _images[group.guid] = group;
+
+            
+            if (group.subGraphics != null)
+            {
+                foreach (SvgSubGraphic subGraphic in group.subGraphics)
+                {
+                    SaveImageObject(subGraphic);
+                }       
+            }
+            
+            return true;
+        }
+        
         public Stream? GetImageStream(string graphicId, out string mimeType)
         {
             var image = GetImageObject(graphicId);
@@ -99,16 +144,6 @@ namespace Core.Data
             return _images[imageId]; 
         }
         
-        public SvgGraphicGroup? GetGraphicGroupObject(string graphicId)
-        {
-            if (!_graphics.ContainsKey(graphicId))
-            {
-                return null;
-            }
-
-            return _graphics[graphicId];
-        }
-
         private bool SaveStream(Stream stream, int length, string filePath)
         {
             using (var reader = new BinaryReader(stream))
@@ -177,7 +212,6 @@ namespace Core.Data
             doc.Write(groupFilePath); 
             
             //TODO: Store in DB
-            _graphics[guid] = graphic; 
             _images[guid] = graphic;
              
             return graphic;
