@@ -1,0 +1,5 @@
+react-js/laser-admin/node_modules/*
+react-js/laser-preview-react/node_modules/*
+**/bin/*
+**/obj/*
+**/publish/*
